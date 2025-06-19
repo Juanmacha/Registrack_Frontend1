@@ -1,11 +1,15 @@
 import './App.css';
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './routes/routes';
 
-function App() {
+
+const App = () => {
   return (
-    <div className="h-screen bg-gradient-to-r from-blue-400 to-purple-500 flex justify-center items-center">
-      <h1 className="text-4xl font-bold text-white">¡TailwindCSS cargado correctamente! 🚀</h1>
-    </div>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   );
-}
+};
 
 export default App;
