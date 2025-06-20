@@ -3,30 +3,28 @@ import { Link } from 'react-router-dom';
 
 const LandingNavbar = () => {
   return (
-    <nav className="w-full bg-[#275FAA] px-9 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
+    <nav className="w-full bg-white shadow border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between relative">
+
         {/* Logo a la izquierda */}
-        <div className="flex items-center space-x-2">
-          <span className="text-white font-mono font-bold text-2xl text-yellowCustom">Certimarcas</span>
+        <div className="flex items-center">
+          <img src="/images/logo.jpeg" alt="Logo" className="h-11" />
         </div>
 
         {/* Links centrados */}
-        <div className="hidden md:flex space-x-6 text-white font-medium">
-          <a href="#" className="hover:text-yellowCustom">Servicios</a>
-          <a href="#" className="hover:text-yellowCustom">Sobre Nosostros</a>
-          <a href="#" className="hover:text-yellowCustom">Clientes</a>
-          <a href="#" className="hover:text-yellowCustom">Contactanos</a>
+        <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-6 text-sm font-medium text-gray-800">
+          <a href="#" className="hover:text-yellow-500">Servicios</a>
+          <a href="#" className="hover:text-yellow-500">Sobre Nosotros</a>
+          <a href="#" className="hover:text-yellow-500">Clientes</a>
+          <a href="#" className="hover:text-yellow-500">Contáctanos</a>
         </div>
 
         {/* Botones a la derecha */}
-        <div className="flex space-x-3">
-          <button className="text-white no-underline py-2 px-5 rounded-full 
-             border border-white/30 transition duration-300 ease-in-out 
-             hover:bg-white/10 hover:border-yellowCustom">
+        <div className="flex space-x-2">
+          <button className="bg-[#1a4480] text-white px-4 py-1.5 rounded text-sm font-medium hover:opacity-90">
             Iniciar sesión
           </button>
-          <button className="bg-gradient-to-r from-[#F3D259] to-[#f7e084] text-[#1a4480] no-underline px-6 py-2.5 rounded-full font-bold transition-all duration-300 shadow-[0_4px_15px_rgba(243,210,89,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(243,210,89,0.4)]">
+          <button className="border border-[#1a4480] text-[#1a4480] px-4 py-1.5 rounded text-sm font-medium hover:bg-[#1a4480]/10">
             Registrarse
           </button>
         </div>

@@ -1,28 +1,43 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Lado izquierdo */}
-      <div className="flex-1 bg-gradient-to-br from-[#275FAA] to-[#4a7bc8] text-white py-20 px-8 flex flex-col justify-center items-center text-center">
-        <h1 className="text-[2.5rem] md:text-[3.5rem] font-bold mb-6 bg-gradient-to-r from-white to-[#F3D259] bg-clip-text text-transparent animate-fade-in-up">
-          Certimarcas
-        </h1>
-        <p className="text-lg md:text-[1.3rem] mb-10 opacity-90 animate-fade-in-up animation-delay-[200ms] animation-fill-both">
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Velit veritatis quisquam quod. Asperiores, cum. Ipsam laboriosam asperiores quam ipsum! Recusandae aspernatur ipsa nesciunt ut ipsam quo, vitae itaque reiciendis nostrum.
-        </p>
-        <button className="bg-gradient-to-r from-[#F3D259] to-[#f7e084] text-[#1a4480] px-6 py-2.5 rounded-full font-bold transition-all duration-300 shadow-[0_4px_15px_rgba(243,210,89,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(243,210,89,0.4)]">
-          Saber más
-        </button>
-      </div>
+    <section className="w-full bg-white py-20 px-6">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-24">
 
-      {/* Lado derecho */}
-      <div className="flex-1 bg-gradient-to-br  flex justify-center items-center">
-        <img src="/images/logo.png" alt="Ilustración Certimarcas" className="max-w-[80%] md:max-w-[60%] h-auto animate-fade-in-up" />
+        {/* Lado izquierdo */}
+        <div className="flex-1 text-left">
+          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-6">
+            Certimarcas
+          </h2>
+          <p className="text-[#333] leading-relaxed text-base mb-4">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mollis pretium arcu vel viverra.
+            Nulla euismod dolor et metus bibendum porta nec vel sem. Vivamus imperdiet metus nec risus eleifend
+            ultrices. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
+            Proin blandit sit amet dui non dictum. Nulla sit amet sapien sollicitudin risus rhoncus laoreet vel
+            sollicitudin nunc. Maecenas rutrum eget erat et blandit.
+          </p>
+          <p className="text-[#333] leading-relaxed text-base mb-6">
+            Vivamus congue nibh nisl, a vestibulum lectus vehicula id. Nulla vitae mi sed odio tristique mollis.
+            Aliquam et dio in massa ultricies, vel sagittis urna congue.
+          </p>
+          <button className="bg-[#1a4480] text-white px-6 py-3 rounded-md text-base font-semibold hover:bg-[#163366] transition-all">
+            Saber más
+          </button>
+        </div>
+
+        {/* Lado derecho */}
+        <div className="flex-1 flex justify-center items-center">
+          <img 
+            src="/images/jpg.jpg" 
+            alt="Certimarcas Ilustración" 
+            className="max-w-[300px] w-full h-auto object-contain"
+          />
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
 export default Hero;
+

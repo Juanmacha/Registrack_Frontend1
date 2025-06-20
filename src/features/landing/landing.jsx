@@ -3,7 +3,6 @@ import LandingNavbar from '../landing/components/landingNavbar';
 import Hero from './components/hero';
 import Specialties from './components/specialties';
 import Services from './components/services';
-import Clients from './components/clients';
 import Footer from './components/Footer';
 
 const Landing = () => {
@@ -13,7 +12,6 @@ const Landing = () => {
       <Hero/>
       <Specialties/>
       <Services/>
-      <Clients/>
       <Footer/>
     </div>
   );
