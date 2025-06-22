@@ -29,7 +29,7 @@ const Hero = () => {
         {/* Lado derecho */}
         <div className="flex-1 flex justify-center items-center">
           <img 
-            src="/images/jpg.jpg" 
+            src="/images/logoNombre.png" 
             alt="Certimarcas Ilustración" 
             className="max-w-[300px] w-full h-auto object-contain"
           />
