@@ -1,26 +1,24 @@
-// src/utils/getEstadoBadge.js
-
 const getEstadoBadge = (estado) => {
   const estadoLower = estado.toLowerCase();
+
   if (estadoLower.includes("revisión") || estadoLower.includes("activo")) {
-    return (
-      <span className="px-3 py-1 text-green-700 bg-green-100 rounded-full text-xs font-semibold">
-        Active
-      </span>
-    );
+    return {
+      label: "Active",
+      colorClass: "bg-green-100 text-green-700",
+    };
   }
+
   if (estadoLower.includes("pendiente")) {
-    return (
-      <span className="px-3 py-1 text-yellow-800 bg-yellow-100 rounded-full text-xs font-semibold">
-        Pending
-      </span>
-    );
+    return {
+      label: "Pending",
+      colorClass: "bg-yellow-100 text-yellow-800",
+    };
   }
-  return (
-    <span className="px-3 py-1 text-red-700 bg-red-100 rounded-full text-xs font-semibold">
-      Cancel
-    </span>
-  );
+
+  return {
+    label: "Cancel",
+    colorClass: "bg-red-100 text-red-700",
+  };
 };
 
 export default getEstadoBadge;

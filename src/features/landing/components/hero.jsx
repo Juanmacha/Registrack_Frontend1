@@ -7,29 +7,21 @@ const Hero = () => {
 
         {/* Lado izquierdo */}
         <div className="flex-1 text-left">
-          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-6">
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-gray-500 to-yellow-400 bg-clip-text text-transparent pb-3">
             Certimarcas
           </h2>
-          <p className="text-[#333] leading-relaxed text-base mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mollis pretium arcu vel viverra.
-            Nulla euismod dolor et metus bibendum porta nec vel sem. Vivamus imperdiet metus nec risus eleifend
-            ultrices. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
-            Proin blandit sit amet dui non dictum. Nulla sit amet sapien sollicitudin risus rhoncus laoreet vel
-            sollicitudin nunc. Maecenas rutrum eget erat et blandit.
+          <p className="text-blue-600 leading-relaxed text-lg mb-4">
+            ¿Tienes una gran idea? Nosotros la protegemos. En Registrack te ayudamos a registrar tu marca de forma fácil, rápida y sin enredos legales. Olvídate de trámites confusos: nos encargamos de todo por ti para que tú te enfoques en hacer crecer tu negocio. ¡Haz que tu marca sea solo tuya, hoy!
           </p>
-          <p className="text-[#333] leading-relaxed text-base mb-6">
-            Vivamus congue nibh nisl, a vestibulum lectus vehicula id. Nulla vitae mi sed odio tristique mollis.
-            Aliquam et dio in massa ultricies, vel sagittis urna congue.
-          </p>
-          <button className="bg-[#1a4480] text-white px-6 py-3 rounded-md text-base font-semibold hover:bg-[#163366] transition-all">
-            Saber más
+          <button className="bg-blue-600 text-white px-6 py-3 rounded-md text-base font-semibold hover:bg-[#163366] transition-all">
+            Conocer más
           </button>
         </div>
 
         {/* Lado derecho */}
         <div className="flex-1 flex justify-center items-center">
           <img 
-            src="/images/logoNombre.png" 
+            src="/images/logo.png" 
             alt="Certimarcas Ilustración" 
             className="max-w-[300px] w-full h-auto object-contain"
           />

@@ -17,17 +17,18 @@ const LandingNavbar = () => {
 
         {/* Logo a la izquierda */}
         <div className="flex items-center">
-          <img src="/images/logo.jpeg" alt="Logo" className="h-11" />
+          <Link to="/">
+            <img src="/images/logoNombre.png" alt="Logo" className="h-11 cursor-pointer" />
+          </Link>
         </div>
 
         {/* Links centrados (condicionales) */}
         <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-6 text-sm font-medium text-gray-800">
           {!user ? (
             <>
-              <a href="#" className="hover:text-yellow-500 no-underline">Servicios</a>
-              <a href="#" className="hover:text-yellow-500 no-underline">Sobre Nosotros</a>
-              <a href="#" className="hover:text-yellow-500 no-underline">Clientes</a>
-              <a href="#" className="hover:text-yellow-500 no-underline">Contáctanos</a>
+              <a href="#specialties" className="hover:text-yellow-500 no-underline">Nosotros</a>
+              <a href="#services" className="hover:text-yellow-500 no-underline">Servicios</a>
+              <a href="#footer" className="hover:text-yellow-500 no-underline">Contáctanos</a>
             </>
           ) : (
             <>

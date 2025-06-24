@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 import { CgProfile } from "react-icons/cg";
+import { useNavigate } from "react-router-dom";
+import authData from "../../auth/services/authData"; // Asegúrate de tener esto si usas una función de logout
 
 const NavBar = ({ titulo }) => {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuAbierto(!menuAbierto);
+  };
+
+  const handleVerPerfil = () => {
+    setMenuAbierto(false); // Cierra el menú
+    navigate("/profile");
+  };
+
+  const handleCerrarSesion = () => {
+    setMenuAbierto(false); // Cierra el menú
+    authData.removeToken(); // Si manejas auth, realiza logout
+    navigate("/login");
   };
 
   return (
@@ -25,10 +39,16 @@ const NavBar = ({ titulo }) => {
         {/* Menú desplegable */}
         {menuAbierto && (
           <div className="absolute right-0 mt-2 w-44 bg-white border border-white-200 rounded-xl shadow-lg z-10 overflow-hidden">
-            <button className="block w-full text-left bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 rounded-none">
-              Cambiar cuenta
+            <button
+              onClick={handleVerPerfil}
+              className="block w-full text-left bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white"
+            >
+              Ver perfil
             </button>
-            <button className="block w-full text-left bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-red-500 rounded-none">
+            <button
+              onClick={handleCerrarSesion}
+              className="block w-full text-left bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-red-500 hover:text-white"
+            >
               Cerrar sesión
             </button>
           </div>

@@ -37,49 +37,56 @@ const TablaVentasFin = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-              {datosVentasFin.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.titular}`}
-                        alt={item.titular}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div>
-                        <div className="font-semibold text-gray-800">{item.titular}</div>
-                        <div className="text-xs text-gray-500">{item.tipoPersona}</div>
+              {datosVentasFin.map((item) => {
+                const { label, colorClass } = getEstadoBadge(item.estado);
+
+                return (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.titular}`}
+                          alt={item.titular}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-800">{item.titular}</div>
+                          <div className="text-xs text-gray-500">{item.tipoPersona}</div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">{item.expediente}</td>
-                  <td className="px-6 py-4 text-center">{item.tipoSolicitud}</td>
-                  <td className="px-6 py-4 text-center">{item.marca}</td>
-                  <td className="px-6 py-4 text-center">{item.encargado}</td>
-                  <td className="px-6 py-4 text-center">
-                    {item.proximaCita || (
-                      <span className="text-xs italic text-gray-400">Sin fecha</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-center">{getEstadoBadge(item.estado)}</td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex gap-2 justify-center flex-wrap">
-                      <button className="btn btn-outline-secondary btn-sm">
-                        <i className="bi bi-pencil-fill"></i>
-                      </button>
-                      {/* <button className="btn btn-outline-secondary btn-sm">
-                        <i className="bi bi-chat-left-text-fill"></i>
-                      </button> */}
-                      <button className="btn btn-outline-secondary btn-sm">
-                        <i className="bi bi-eye-fill"></i>
-                      </button>
-                      <button className="btn btn-outline-danger btn-sm">
-                        <i className="bi bi-dash-circle"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 text-center">{item.expediente}</td>
+                    <td className="px-6 py-4 text-center">{item.tipoSolicitud}</td>
+                    <td className="px-6 py-4 text-center">{item.marca}</td>
+                    <td className="px-6 py-4 text-center">{item.encargado}</td>
+                    <td className="px-6 py-4 text-center">
+                      {item.proximaCita || (
+                        <span className="text-xs italic text-gray-400">Sin fecha</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}
+                      >
+                        {label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex gap-2 justify-center flex-wrap">
+                        <button className="btn btn-outline-secondary btn-sm">
+                          <i className="bi bi-pencil-fill"></i>
+                        </button>
+                        <button className="btn btn-outline-secondary btn-sm">
+                          <i className="bi bi-eye-fill"></i>
+                        </button>
+                        <button className="btn btn-outline-danger btn-sm">
+                          <i className="bi bi-dash-circle"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#f8fafc] text-[#1a1a1a] py-10 border-t border-gray-200">
+    <section id="footer" className="bg-white text-[#1a1a1a] py-10 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
 
         {/* Logo y descripción */}
         <div>
-          <h3 className="text-2xl text-left font-bold mb-2">Certimarcas</h3>
+          <img src="/images/logoNombre.png" alt="" />
           <p className="text-sm text-left text-gray-700">
             Vivamus congue nibh nisl, a vestibulum lectus vehicula id. Nulla vitae mi sed odio tristique mollis. Aliquam et dio in massa ultricies, vel sagittis urna congue.
           </p>
@@ -43,7 +43,7 @@ const Footer = () => {
       <div className="text-center text-xs text-gray-500 mt-8 pt-4 border-t border-gray-300">
         © 2025 Certimarcas. Todos los derechos reservados.
       </div>
-    </footer>
+    </section>
   );
 };
 

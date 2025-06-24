@@ -16,13 +16,10 @@ const AuthLayout = () => {
   <div className="flex flex-col items-center text-center z-10">
     {/* Imagen centrada */}
     <img
-      src="/images/logoNombre.png"
+      src="/images/logo.png"
       alt="Logo de Registrack"
-      className="w-50 h-24 mb-4 object-contain"
+      className="max-w-[300px] w-full h-auto object-contain"
     />
-    <p className="text-blue-700">
-      Sistema de gestión de registros
-    </p>
   </div>
 </div>
 
