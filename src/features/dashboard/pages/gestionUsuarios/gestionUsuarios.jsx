@@ -1,15 +1,41 @@
-import React, { useEffect, useState } from "react";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import SideBarGeneral from "../../components/sideBarGeneral";
-import NavBar from "../../components/navBarGeneral";
-import dataUsuarios from "./services/dataUsuarios";
+import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import TablaUsuarios from "../gestionUsuarios/components/tablaUsuarios";
+import FormularioUsuario from "../gestionUsuarios/components/FormularioUsuario";
+import VerDetalleUsuario from "../gestionUsuarios/components/verDetalleUsuario";
+import dataUsuarios from "../gestionUsuarios/services/dataUsuarios";
+import { validarUsuario } from "../gestionUsuarios/services/validarUsuario";
+
+const CAMPOS_REQUERIDOS = [
+  "firstName", "lastName", "documentType", "documentNumber", "email", "password", "role"
+];
 
 const GestionUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
+  const [nuevoUsuario, setNuevoUsuario] = useState({
+    documentType: "",
+    documentNumber: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "usuario"
+  });
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarModalVer, setMostrarModalVer] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const [indiceEditar, setIndiceEditar] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const usuariosPorPagina = 5;
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("usuarios")) || [];
-    if (stored.length === 0) {
+    let stored = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const datosIncompletos =
+      stored.length === 0 ||
+      stored.length !== dataUsuarios.length ||
+      stored.some(usuario => CAMPOS_REQUERIDOS.some(campo => !(campo in usuario)));
+    if (datosIncompletos) {
       localStorage.setItem("usuarios", JSON.stringify(dataUsuarios));
       setUsuarios(dataUsuarios);
     } else {
@@ -17,106 +43,215 @@ const GestionUsuarios = () => {
     }
   }, []);
 
-  const handleDelete = (index) => {
-    const confirmed = confirm("¿Estás seguro de que deseas eliminar este usuario?");
-    if (confirmed) {
-      const updated = usuarios.filter((_, i) => i !== index);
-      setUsuarios(updated);
-      localStorage.setItem("usuarios", JSON.stringify(updated));
-      alert("Usuario eliminado correctamente.");
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoUsuario(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleGuardarUsuario = (e) => {
+    e.preventDefault();
+    const esValido = validarUsuario(nuevoUsuario);
+    if (!esValido) return;
+    if (modoEdicion && usuarioSeleccionado !== null && indiceEditar !== null) {
+      const actualizados = [...usuarios];
+      actualizados[indiceEditar] = { ...nuevoUsuario };
+      setUsuarios(actualizados);
+      localStorage.setItem("usuarios", JSON.stringify(actualizados));
+    } else {
+      const actualizados = [...usuarios, nuevoUsuario];
+      setUsuarios(actualizados);
+      localStorage.setItem("usuarios", JSON.stringify(actualizados));
     }
+    Swal.fire({
+      icon: "success",
+      title: modoEdicion ? "Usuario actualizado exitosamente" : "Usuario registrado exitosamente",
+      confirmButtonText: "OK",
+    });
+    setModoEdicion(false);
+    setUsuarioSeleccionado(null);
+    setIndiceEditar(null);
+    setMostrarModal(false);
+    setNuevoUsuario({
+      documentType: "",
+      documentNumber: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      role: "usuario"
+    });
+  };
+
+  const handleDelete = (index) => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "No podrás revertir esta acción",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const usuariosActualizados = usuarios.filter((_, i) => i !== index);
+        setUsuarios(usuariosActualizados);
+        localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
+        Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+      }
+    });
+  };
+
+  function normalizarTexto(texto) {
+    return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
+  const usuariosFiltrados = usuarios.filter((u) => {
+    const texto = `${u.documentType} ${u.documentNumber} ${u.firstName} ${u.lastName} ${u.email} ${u.role}`;
+    return normalizarTexto(texto).includes(normalizarTexto(busqueda));
+  });
+
+  const totalPaginas = Math.ceil(usuariosFiltrados.length / usuariosPorPagina);
+  const indiceInicio = (paginaActual - 1) * usuariosPorPagina;
+  const indiceFin = indiceInicio + usuariosPorPagina;
+  const usuariosPagina = usuariosFiltrados.slice(indiceInicio, indiceFin);
+
+  const irAPagina = (num) => {
+    if (num >= 1 && num <= totalPaginas) setPaginaActual(num);
+  };
+
+  const handleVer = (usuario) => {
+    setUsuarioSeleccionado(usuario);
+    setMostrarModalVer(true);
+  };
+
+  const handleEditar = (usuario, idx) => {
+    setNuevoUsuario(usuario);
+    setModoEdicion(true);
+    setUsuarioSeleccionado(usuario);
+    setIndiceEditar(idx);
+    setMostrarModal(true);
+  };
+
+  const handleAbrirCrear = () => {
+    setNuevoUsuario({
+      documentType: "",
+      documentNumber: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      role: "usuario"
+    });
+    setModoEdicion(false);
+    setUsuarioSeleccionado(null);
+    setIndiceEditar(null);
+    setMostrarModal(true);
   };
 
   return (
-    <div className="bg-[#eceded] flex h-screen w-screen overflow-hidden">
-      <SideBarGeneral />
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <NavBar titulo="Gestión de Usuarios" />
+    <div className="flex-1 flex justify-center">
+      <div className="w-full px-4">
+        <div className="flex items-center justify-between px-4 mb-4 w-full">
+          <input
+            type="text"
+            placeholder="Buscar por nombre, apellido, documento, rol..."
+            className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
+            value={busqueda}
+            onChange={(e) => {
+              setBusqueda(e.target.value);
+              setPaginaActual(1);
+            }}
+          />
 
-        <div className="w-full max-w-full p-6">
-          <div className="flex items-center justify-between mb-4">
-            <input
-              type="text"
-              placeholder="Buscar usuario..."
-              className="form-control w-1/4 h-9 text-sm border border-gray-300 rounded-md"
-            />
-            <button className="btn btn-primary px-5 py-2 text-sm rounded-md">
-              <i className="bi bi-person-plus-fill"></i> Registrar Usuario
+          <div className="flex gap-3">
+            <button className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap" onClick={handleAbrirCrear}>
+              <i className="bi bi-plus-square"></i> Crear Usuario
+            </button>
+            <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
+              <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
             </button>
           </div>
+        </div>
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300">
-            <div className="overflow-x-auto w-full">
-              <table className="table-auto w-full divide-y divide-gray-100">
-                <thead className="text-left text-sm text-gray-500 bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 font-medium text-center">#</th>
-                    <th className="px-6 py-4 font-medium text-center">Tipo Doc</th>
-                    <th className="px-6 py-4 font-medium text-center">Documento</th>
-                    <th className="px-6 py-4 font-medium text-center">Nombre</th>
-                    <th className="px-6 py-4 font-medium text-center">Apellido</th>
-                    <th className="px-6 py-4 font-medium text-center">Email</th>
-                    <th className="px-6 py-4 font-medium text-center">Rol</th>
-                    <th className="px-6 py-4 font-medium text-center">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                  {usuarios.map((u, idx) => (
-                    <tr key={idx}>
-                      <td className="px-6 py-4 text-center">{idx + 1}</td>
-                      <td className="px-6 py-4 text-center">{u.documentType}</td>
-                      <td className="px-6 py-4 text-center">{u.documentNumber}</td>
-                      <td className="px-6 py-4 text-center">{u.firstName}</td>
-                      <td className="px-6 py-4 text-center">{u.lastName}</td>
-                      <td className="px-6 py-4 text-center">{u.email}</td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            u.role === "administrador"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex gap-2 justify-center flex-wrap">
-                          <button
-                            className="btn btn-outline-secondary btn-sm"
-                            title="Ver detalle"
-                          >
-                            <i className="bi bi-eye-fill"></i>
-                          </button>
-                          <button
-                            className="btn btn-outline-warning btn-sm"
-                            title="Editar"
-                          >
-                            <i className="bi bi-pencil-fill"></i>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(idx)}
-                            className="btn btn-outline-danger btn-sm"
-                            title="Eliminar"
-                          >
-                            <i className="bi bi-trash-fill"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {usuarios.length === 0 && (
-                    <tr>
-                      <td colSpan="8" className="px-6 py-4 text-center text-gray-400">
-                        No hay usuarios registrados.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+        <TablaUsuarios
+          usuarios={usuariosPagina}
+          handleDelete={handleDelete}
+          onVer={handleVer}
+          onEditar={handleEditar}
+          deshabilitarAcciones={mostrarModal || mostrarModalVer}
+          mostrarBusqueda={false}
+          mostrarPaginacion={false}
+        />
+
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+          <div className="text-sm text-gray-700">
+            Mostrando <span className="font-medium">{indiceInicio + 1}</span> a
+            <span className="font-medium"> {Math.min(indiceFin, usuariosFiltrados.length)}</span> de
+            <span className="font-medium"> {usuariosFiltrados.length}</span> resultados
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
+              onClick={() => irAPagina(paginaActual - 1)}
+              disabled={paginaActual === 1}
+            >
+              <i className="bi bi-chevron-left"></i>
+            </button>
+            {Array.from({ length: totalPaginas }, (_, i) => (
+              <button
+                key={i}
+                className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                  paginaActual === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-blue-600 border border-blue-200"
+                }`}
+                onClick={() => irAPagina(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
+              onClick={() => irAPagina(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+            >
+              <i className="bi bi-chevron-right"></i>
+            </button>
           </div>
         </div>
+
+        {mostrarModal && (
+          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-50">
+            <div className="absolute inset-0 backdrop-blur-sm"></div>
+            <div className="relative bg-white rounded-lg shadow-2xl p-8 w-full max-w-2xl border border-gray-200">
+              <button
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+                onClick={() => setMostrarModal(false)}
+              >
+                &times;
+              </button>
+              <h2 className="text-xl font-semibold mb-4">{modoEdicion ? "Editar Usuario" : "Agregar Nuevo Usuario"}</h2>
+              <FormularioUsuario
+                nuevoUsuario={nuevoUsuario}
+                handleInputChange={handleInputChange}
+                handleGuardarUsuario={handleGuardarUsuario}
+                modoEdicion={modoEdicion}
+                usuarioEditar={usuarioSeleccionado}
+              />
+            </div>
+          </div>
+        )}
+
+        {mostrarModalVer && (
+          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-50">
+            <div className="absolute inset-0 backdrop-blur-sm"></div>
+            <div className="relative">
+              <VerDetalleUsuario usuario={usuarioSeleccionado} onClose={() => setMostrarModalVer(false)} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

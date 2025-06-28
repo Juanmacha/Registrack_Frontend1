@@ -28,7 +28,7 @@ const Login = () => {
 
       // Redirigir según el rol
       if (user?.role === "admin") {
-        navigate("/dashboard");
+        navigate("/admin/dashboard");
       } else {
         navigate("/");
       }

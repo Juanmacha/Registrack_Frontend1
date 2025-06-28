@@ -1,8 +1,9 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaRedo } from 'react-icons/fa';
-import LandingNavbar from '../components/landingNavbar';
-import authData from '../../auth/services/authData'; 
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FaCheck } from "react-icons/fa";
+import LandingNavbar from "../components/landingNavbar";
+import Footer from "../components/Footer";
+import authData from "../../auth/services/authData";
 
 const RenovacionMarca = () => {
   const navigate = useNavigate();
@@ -10,58 +11,72 @@ const RenovacionMarca = () => {
 
   const handleAdquirirServicio = () => {
     if (!user) {
-      alert("Debes estar logueado para adquirir este servicio");
+      alert("Debes iniciar sesión para adquirir este servicio.");
       navigate("/login");
     } else {
-      navigate("/checkout/renovacion"); // ajusta esta ruta según tu flujo real
+      navigate("/checkout/renovacion"); // Ajusta esta ruta según tu flujo real
     }
   };
 
   return (
-    <section>
+    <div className="font-sans bg-white min-h-screen">
       <LandingNavbar />
 
-      <div className="p-6 md:p-10 max-w-4xl mx-auto">
-        <h2 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 via-blue-500 to-gray-700 bg-clip-text text-transparent pb-3">
-          Renovación de Marca
-        </h2>
-
-        <div className="bg-gray-100 border border-gray-300 rounded-md p-6 relative">
-          <p className="text-gray-700 text-left font-medium mb-2">
-            La renovación de marca es un proceso fundamental para mantener vigente tu propiedad intelectual. En <span className="font-semibold">Registrack</span>, te facilitamos este trámite para que tu marca no pierda su protección legal.
+      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-12 bg-white">
+        {/* TEXTO */}
+        <div className="w-full md:w-1/2 px-4 md:px-10">
+          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+            Protección continua
+          </h4>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+            Renovación de Marca
+          </h2>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Renovar tu marca a tiempo garantiza que sigas disfrutando de su protección legal. En <span className="font-semibold">Registrack</span>, hacemos el proceso rápido y sin estrés.
+          </p>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Verificamos los tiempos, gestionamos la documentación y presentamos la solicitud ante la <span className="font-semibold">Superintendencia de Industria y Comercio</span> (SIC).
+          </p>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            No dejes vencer tu registro. Una marca vencida puede ser reclamada por terceros.
           </p>
 
-          <p className="text-gray-700 text-left mb-2">
-            Nuestro equipo se encarga de <span className="font-semibold">verificar los tiempos</span>, <span className="font-semibold">preparar la documentación</span> y <span className="font-semibold">presentar la renovación ante la SIC</span> sin complicaciones para ti.
-          </p>
+          <ul className="space-y-4 text-gray-700 text-base mb-8">
+            {[
+              "Asesoría sobre vencimientos y requisitos.",
+              "Preparación y envío de la documentación.",
+              "Presentación ante la SIC.",
+              "Seguimiento del trámite y entrega de constancia.",
+            ].map((item, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="w-8 h-8 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full mt-1">
+                  <FaCheck className="text-lg" />
+                </div>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
 
-          <p className="text-gray-700 mb-4 text-left">
-            No dejes que se te pase el tiempo. Una marca vencida puede ser solicitada por terceros.
-            Protege lo que te pertenece con nuestro servicio de renovación.
-          </p>
-
-          <div className="mb-6">
-            <h3 className="font-bold text-gray-800 text-lg mb-2 text-left">¿Qué incluye este servicio?</h3>
-            <ul className="list-disc list-inside text-gray-700 space-y-1 text-left">
-              <li>Asesoría sobre la fecha de vencimiento y requisitos</li>
-              <li>Preparación y gestión de documentos</li>
-              <li>Presentación ante la Superintendencia de Industria y Comercio</li>
-              <li>Seguimiento y entrega de constancia</li>
-            </ul>
-          </div>
-
-          <div className="flex justify-between items-center gap-3">
-            <button
-              onClick={handleAdquirirServicio}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-            >
-              Adquirir Servicio
-            </button>
-            <FaRedo className="text-5xl text-blue-700 ml-5" />
-          </div>
+          <button
+            onClick={handleAdquirirServicio}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-md text-lg transition"
+          >
+            Adquirir Servicio
+          </button>
         </div>
-      </div>
-    </section>
+
+        {/* IMAGEN */}
+        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+          <img
+            src="/images/servicioRenovacion.jpeg" // Asegúrate de tener esta imagen en /public/images/
+            alt="Renovación de Marca"
+            className="w-full h-full object-contain animate-float max-h-[500px]"
+          />
+        </div>
+      </section>
+
+      <Footer />
+    </div>
   );
 };
 

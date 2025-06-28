@@ -1,103 +1,135 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import LandingNavbar from '../components/landingNavbar';
-import authData from '../../auth/services/authData'; // Importamos el servicio de autenticación
-import { FaRegFileArchive } from "react-icons/fa";
-
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FaCheck } from "react-icons/fa";
+import LandingNavbar from "../components/landingNavbar";
+import Footer from "../components/Footer";
+import authData from "../../auth/services/authData";
 
 const PresentacionOposicion = () => {
-    const navigate = useNavigate();
-    const user = authData.getUser(); // Usamos el mismo método que el navbar
+  const navigate = useNavigate();
+  const user = authData.getUser();
 
-    const handleAdquirirServicio = () => {
-        if (!user) {
-            alert("Debes estar logueado para adquirir un servicio");
-            navigate("/login");
-        } else {
-            navigate("#"); // Cambia esta ruta por la correcta si es diferente
-        }
-    };
+  const handleAdquirirPresentacion = () => {
+    if (!user) {
+      alert("Debes iniciar sesión para adquirir este servicio.");
+      navigate("/login");
+    } else {
+      navigate("/formulario-oposicion"); // ✅ Reemplaza con tu ruta real
+    }
+  };
 
-    return (
-        <section>
-            <LandingNavbar />
+  const handleAdquirirRespuesta = () => {
+    if (!user) {
+      alert("Debes iniciar sesión para adquirir este servicio.");
+      navigate("/login");
+    } else {
+      navigate("/formulario-respuesta-oposicion"); // ✅ Reemplaza con tu ruta real
+    }
+  };
 
-            <div className="p-6 md:p-10 max-w-4xl mx-auto">
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-gray-500 to-yellow-400 bg-clip-text text-transparent pb-3">
-                    Presentacion de Oposicion
-                </h2>
+  return (
+    <div className="font-sans bg-white min-h-screen">
+      <LandingNavbar />
 
-                <div className="bg-gray-100 border border-gray-300 rounded-md p-6 relative">
-                    <p className="text-gray-700 text-left font-medium mb-2">
-                        Si una nueva marca es similar o idéntica a la tuya, puedes presentar una oposición a su registro para proteger tu identidad comercial y evitar posibles conflictos legales. En Nombre de tu empresa, nos encargamos de todo el proceso de oposición, asegurando que tu marca se mantenga única y libre de riesgos por parte de terceros.
-                    </p>
+      {/* Presentación de oposición */}
+      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-12 bg-white border-b">
+        <div className="w-full md:w-1/2 px-4 md:px-10">
+          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+            Servicio legal
+          </h4>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+            Presentación de Oposición
+          </h2>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Si detectas que una marca en trámite es similar a la tuya, puedes presentar una oposición para evitar conflictos legales y proteger tu identidad comercial.
+          </p>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            En <span className="font-semibold">Registrack</span>, nos encargamos del análisis, redacción legal y presentación ante la SIC para defender tu marca.
+          </p>
 
-
-                    <p className="text-gray-700 mb-2 text-left">¿Por qué presentar una oposición?</p>
-                    <span className='text-left'>Para evitar que otra empresa registre una marca que pueda confundirse con la tuya y afectar tu reputación comercial.</span>
-
-                    <div className="mb-6">
-                        <h3 className="font-bold text-gray-800 text-lg mb-2 text-left">¿Cómo lo hacemos?</h3>
-                        <ol className="list-decimal list-inside text-gray-700 space-y-1 text-left">
-                            <li><span className="font-medium">Análisis de riesgo</span> – Evaluamos si la nueva marca podría generar confusión con la tuya.</li>
-                            <li><span className="font-medium">Redacción del documento</span> – Elaboramos y fundamentamos la solicitud con argumentos legales sólidos.</li>
-                            <li><span className="font-medium">Presentación y seguimiento</span> – Registramos el trámite ante la <span className="italic">Cámara de Industria y Comercio</span> y damos seguimiento hasta su resolución.</li>
-                        </ol>
-                    </div>
-
-                    <div className="flex justify-between items-center gap-3">
-                        <button
-                            onClick={handleAdquirirServicio}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Adquirir Servicio
-                        </button>
-                        <FaRegFileArchive className="text-5xl ml-5" />
-                    </div>
+          <ul className="space-y-4 text-gray-700 text-base mb-8">
+            {[
+              "Evaluación de riesgos y similitudes entre marcas.",
+              "Fundamentación legal sólida y personalizada.",
+              "Presentación ante la SIC y seguimiento del trámite.",
+            ].map((item, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-lg" />
                 </div>
-            </div>
-            <div className="p-6 md:p-10 max-w-4xl mx-auto">
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-gray-500 to-yellow-400 bg-clip-text text-transparent pb-3">
-                    Respuesta de Oposición
-                </h2>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
 
-                <div className="bg-gray-100 border border-gray-300 rounded-md p-6 relative">
-                    <p className="text-gray-700 text-left font-medium mb-2">
-                        Si tu marca ha recibido una oposición durante su registro, puedes responder para defender tu identidad comercial y continuar con el proceso legal. En <span className="font-semibold">Registrack</span>, preparamos y gestionamos tu respuesta para garantizar que tu marca tenga todas las oportunidades de ser registrada correctamente.
-                    </p>
+          <button
+            onClick={handleAdquirirPresentacion}
+            className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
+          >
+            Adquirir Presentación
+          </button>
+        </div>
 
-                    <p className="text-gray-700 text-left mb-2">
-                        Evita perder tu marca. Nos encargamos de todo el proceso legal para que puedas avanzar con confianza.
-                    </p>
+        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+          <img
+            src="/images/servicioOposicion.jpeg" // ✅ Cambia por tu imagen real
+            alt="Presentación de Oposición"
+            className="w-full h-full object-contain animate-float max-h-[500px]"
+          />
+        </div>
+      </section>
 
-                    <p className="text-gray-700 mb-4 text-left">
-                        Si enfrentas una oposición, no te detengas. Con <span className="font-semibold">Certimarcas</span>, responde de forma profesional y oportuna.
-                    </p>
+      {/* Respuesta a oposición */}
+      <section className="w-full flex flex-col md:flex-row-reverse items-center justify-between px-6 py-12 bg-white">
+        <div className="w-full md:w-1/2 px-4 md:px-10">
+          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+            Defensa de marca
+          </h4>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+            Respuesta a Oposición
+          </h2>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Si tu solicitud de registro fue objetada por otra marca, tienes el derecho a responder para proteger tu propuesta.
+          </p>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Con <span className="font-semibold">Certimarcas</span>, redactamos tu defensa con argumentos sólidos y realizamos el trámite completo ante la SIC.
+          </p>
 
-                    <div className="mb-6">
-                        <h3 className="font-bold text-gray-800 text-lg mb-2 text-left">¿Cómo lo hacemos?</h3>
-                        <ol className="list-decimal list-inside text-gray-700 space-y-1 text-left">
-                            <li><span className="font-medium">Análisis de riesgo</span> – Evaluamos los motivos de la oposición y analizamos su impacto en tu marca.</li>
-                            <li><span className="font-medium">Preparación del documento de respuesta</span> – Redactamos tu defensa con argumentos jurídicos sólidos.</li>
-                            <li><span className="font-medium">Presentación y seguimiento</span> – Registramos la respuesta ante la <span className="italic">Cámara de Industria y Comercio</span> y realizamos el seguimiento correspondiente.</li>
-                        </ol>
-                    </div>
-
-                    <div className="flex justify-between items-center gap-3">
-                        <button
-                            onClick={handleAdquirirServicio}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Adquirir Servicio
-                        </button>
-                        <FaRegFileArchive className="text-5xl ml-5" />
-                    </div>
+          <ul className="space-y-4 text-gray-700 text-base mb-8">
+            {[
+              "Análisis legal detallado de la oposición recibida.",
+              "Preparación del documento de respuesta formal.",
+              "Presentación y seguimiento ante la SIC.",
+            ].map((item, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-lg" />
                 </div>
-            </div>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
 
+          <button
+            onClick={handleAdquirirRespuesta}
+            className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
+          >
+            Adquirir Respuesta
+          </button>
+        </div>
 
-        </section>
-    );
+        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+          <img
+            src="/images/servicioRespuesta.jpeg" // ✅ Cambia por tu imagen real
+            alt="Respuesta a Oposición"
+            className="w-full h-full object-contain animate-float max-h-[500px]"
+          />
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
 };
 
 export default PresentacionOposicion;

@@ -1,24 +1,37 @@
-const getEstadoBadge = (estado) => {
-  const estadoLower = estado.toLowerCase();
+const colorMap = {
+  completado: "#28A745",
+  pagado: "#28A745",
+  exitoso: "#28A745",
+  pendiente: "#FFA726",
+  proceso: "#FFA726",
+  fallido: "#DC3545",
+  rechazado: "#DC3545",
+  cancelado: "#DC3545",
+  expirado: "#6C757D",
+};
 
-  if (estadoLower.includes("revisión") || estadoLower.includes("activo")) {
-    return {
-      label: "Active",
-      colorClass: "bg-green-100 text-green-700",
-    };
-  }
+const textoMap = {
+  completado: "Completado",
+  pagado: "Pagado",
+  exitoso: "Completado",
+  pendiente: "Pendiente",
+  proceso: "En Proceso",
+  fallido: "Fallido",
+  rechazado: "Rechazado",
+  cancelado: "Cancelado",
+  expirado: "Expirado",
+};
 
-  if (estadoLower.includes("pendiente")) {
-    return {
-      label: "Pending",
-      colorClass: "bg-yellow-100 text-yellow-800",
-    };
-  }
+const getEstadoPagoBadge = (estado) => {
+  const estadoNormalizado = estado?.toLowerCase().replace(/\s/g, "") || "";
+  const key = Object.keys(colorMap).find((k) =>
+    estadoNormalizado.includes(k)
+  );
 
   return {
-    label: "Cancel",
-    colorClass: "bg-red-100 text-red-700",
+    color: colorMap[key] || "#6C757D",
+    texto: textoMap[key] || estado || "Sin estado",
   };
 };
 
-export default getEstadoBadge;
+export default getEstadoPagoBadge;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom'; // <-- Asegúrate de importar Navigate
 
 import Landing from '../features/landing/landing';
 import Login from '../features/auth/pages/login';
@@ -7,6 +7,7 @@ import Register from '../features/auth/pages/register';
 import Profile from '../features/auth/pages/profile';
 import ForgotPassword from '../features/auth/pages/forgotPassword';
 import ResetPassword from '../features/auth/pages/resetPassword';
+
 import Dashboard from '../features/dashboard/pages/dashAdmin/dashboard';
 import Pagos from '../features/dashboard/pages/pagos/pagos';
 import Calendario from '../features/dashboard/pages/gestionCitas/calendario';
@@ -19,6 +20,9 @@ import Empleados from '../features/dashboard/pages/gestionEmpleados/empleados';
 
 import AuthLayout from '../features/auth/components/authLayout';
 import AdminRoute from '../features/auth/components/admnRoute';
+
+// Layout general para admin
+import AdminLayout from '../features/dashboard/layouts/adminLayouts';
 
 // Nuevas páginas de servicios
 import Busqueda from '../features/landing/pages/busqueda';
@@ -43,9 +47,7 @@ const AppRoutes = () => {
       <Route path="/pages/certificacion" element={<Certificacion />} />
       <Route path="/pages/ampliacion" element={<Ampliacion />} />
 
-
-
-      {/* Layout para auth (login/register/etc.) */}
+      {/* Layout para autenticación */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -53,84 +55,28 @@ const AppRoutes = () => {
         <Route path="/resetPassword" element={<ResetPassword />} />
       </Route>
 
-      {/* Ruta protegida solo para admin */}
+      {/* Rutas protegidas para admin con layout común */}
       <Route
-        path="/dashboard"
+        path="/admin"
         element={
           <AdminRoute>
-            <Dashboard />
+            <AdminLayout />
           </AdminRoute>
         }
-      />
+      >
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="pagos" element={<Pagos />} />
+        <Route path="ventasServiciosProceso" element={<GestionVentasServiciosProceso />} />
+        <Route path="ventasServiciosFin" element={<GestionVentasServiciosFin />} />
+        <Route path="calendario" element={<Calendario />} />
+        <Route path="gestionClientes" element={<GestionClientes />} />
+        <Route path="gestionUsuarios" element={<GestionUsuarios />} />
+        <Route path="roles" element={<Roles />} />
+        <Route path="empleados" element={<Empleados />} />
+      </Route>
 
-      <Route
-        path="/ventasServiciosProceso"
-        element={
-          <AdminRoute>
-            <GestionVentasServiciosProceso />
-          </AdminRoute>
-        }
-      />
-
-      <Route
-        path="/ventasServiciosFin"
-        element={
-          <AdminRoute>
-            <GestionVentasServiciosFin />
-          </AdminRoute>
-        }
-      />
-
-      {/* Ruta Pago */}
-      <Route
-        path="/pagos"
-        element={
-          <AdminRoute>
-            <Pagos />
-          </AdminRoute>
-        }
-      />
-
-      <Route
-        path="/calendario"
-        element={
-          <AdminRoute>
-            <Calendario />
-          </AdminRoute>
-        } />
-
-      <Route
-        path="/gestionClientes"
-        element={
-          <AdminRoute>
-            <GestionClientes />
-          </AdminRoute>
-        } />
-
-      <Route
-        path="/gestionUsuarios"
-        element={
-          <AdminRoute>
-            <GestionUsuarios />
-          </AdminRoute>
-        } />
-
-      <Route
-        path="/roles"
-        element={
-          <AdminRoute>
-            <Roles />
-          </AdminRoute>
-        } />
-
-      <Route
-        path="/empleados"
-        element={
-          <AdminRoute>
-            <Empleados />
-          </AdminRoute>
-        } />
-
+      {/* ✅ Redirección temporal por compatibilidad */}
+      <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   );
 };

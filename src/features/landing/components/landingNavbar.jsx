@@ -1,10 +1,11 @@
+// NavBarLanding.jsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authData from "../../auth/services/authData";
 
-const LandingNavbar = () => {
+const NavBarLanding = () => {
   const navigate = useNavigate();
-  const user = authData.getUser(); // Obtenemos el usuario logueado
+  const user = authData.getUser();
 
   const handleLogout = () => {
     authData.removeToken();
@@ -12,71 +13,109 @@ const LandingNavbar = () => {
   };
 
   return (
-    <nav className="w-full bg-white shadow border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between relative">
-
-        {/* Logo a la izquierda */}
+    <nav className="w-full bg-white fixed top-0 left-0 z-50">
+      <div className="max-w-screen-xl mx-auto h-28 flex items-center justify-between px-10">
+        {/* LOGO */}
         <div className="flex items-center">
           <Link to="/">
-            <img src="/images/logoNombre.png" alt="Logo" className="h-11 cursor-pointer" />
+            <img
+              src="/images/logoNombre.png"
+              alt="Logo"
+              className="h-20 w-auto object-contain cursor-pointer"
+            />
           </Link>
         </div>
 
-        {/* Links centrados (condicionales) */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-6 text-sm font-medium text-gray-800">
+        {/* ENLACES DE NAVEGACIÓN */}
+        <div className="hidden md:flex gap-8 text-lg text-gray-700">
           {!user ? (
             <>
-              <a href="#specialties" className="hover:text-yellow-500 no-underline">Nosotros</a>
-              <a href="#services" className="hover:text-yellow-500 no-underline">Servicios</a>
-              <a href="#footer" className="hover:text-yellow-500 no-underline">Contáctanos</a>
+              <a
+                href="#nosotros"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Nosotros
+              </a>
+              <a
+                href="#servicios"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Servicios
+              </a>
+              <a
+                href="#footer"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Contáctanos
+              </a>
             </>
           ) : (
             <>
-              <Link to="/dashboard" className="hover:text-yellow-500 no-underline">Servicios</Link>
-              <Link to="/mis-marcas" className="hover:text-yellow-500 no-underline">Mis procesos</Link>
-              <Link to="/configuracion" className="hover:text-yellow-500 no-underline">Historial de servicios</Link>
-              <Link to="/ayuda" className="hover:text-yellow-500 no-underline">Ayuda</Link>
+              <Link
+                to="/#"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Servicios
+              </Link>
+              <Link
+                to="/mis-marcas"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Mis procesos
+              </Link>
+              <Link
+                to="/configuracion"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Historial
+              </Link>
+              <Link
+                to="/ayuda"
+                className="text-lg text-gray-700 hover:text-blue-600 transition no-underline"
+              >
+                Ayuda
+              </Link>
             </>
           )}
         </div>
 
-        {/* Botones a la derecha */}
-        <div className="flex space-x-2">
+        <div className="flex gap-4">
           {!user ? (
             <>
               <Link
                 to="/login"
-                className="bg-[#1a4480] text-white px-4 py-1.5 rounded text-sm font-medium hover:opacity-90 no-underline"
+                className="no-underline px-6 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded transition hover:bg-blue-100"
               >
-                Iniciar sesión
+                Iniciar Sesión
               </Link>
               <Link
                 to="/register"
-                className="border border-[#1a4480] text-[#1a4480] px-4 py-1.5 rounded text-sm font-medium hover:bg-[#1a4480]/10 no-underline"
+                className="no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded transition hover:bg-blue-800"
               >
-                Registrarse
+                Regístrate
               </Link>
             </>
           ) : (
             <>
               <Link
                 to="/profile"
-                className="border border-[#1a4480] text-[#1a4480] px-4 py-1.5 rounded text-sm font-medium hover:bg-[#1a4480]/10 no-underline"
+                className="no-underline px-6 py-2 text-sm border border-blue-700 text-blue-700 rounded transition hover:bg-blue-100"
               >
-                Ver perfil
+                Perfil
               </Link>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-red-600"
+                className="px-6 py-2 text-sm bg-red-500 text-white rounded transition hover:bg-red-600"
               >
-                Cerrar sesión
+                Cerrar Sesión
               </button>
             </>
           )}
         </div>
+
       </div>
     </nav>
   );
 };
 
-export default LandingNavbar;
+export default NavBarLanding;

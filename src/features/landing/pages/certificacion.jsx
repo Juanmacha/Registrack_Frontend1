@@ -1,70 +1,83 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaRegFileArchive } from "react-icons/fa";
-import LandingNavbar from '../components/landingNavbar';
-import authData from '../../auth/services/authData'; // Importamos el servicio de autenticación
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FaCheck } from "react-icons/fa";
+import NavBarLanding from "../components/landingNavbar";
+import Footer from "../components/Footer";
+import authData from "../../auth/services/authData"; // ✅ Importación para verificar login
 
-const certificacion = () => {
+const Certificaciones = () => {
   const navigate = useNavigate();
-  const user = authData.getUser(); // Usamos el mismo método que el navbar
+  const user = authData.getUser(); // ✅ Obtenemos el usuario actual
 
-  const handleAdquirirServicio = () => {
+  const handleAdquirirCertificacion = () => {
     if (!user) {
-      alert("Debes estar logueado para adquirir un servicio");
+      alert("Debes iniciar sesión para poder adquirir un servicio.");
       navigate("/login");
     } else {
-      navigate("#"); // Cambia esta ruta por la correcta si es diferente
+      // Cambia esta ruta a donde quieras redirigir después del login
+      navigate("/formulario-certificacion");
     }
   };
 
   return (
-    <section>
-      <LandingNavbar />
+    <div className="font-sans bg-white min-h-screen">
+      <NavBarLanding />
 
-      <div className="p-6 md:p-10 max-w-4xl mx-auto">
-        <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-700 via-gray-500 to-yellow-400 bg-clip-text text-transparent pb-3">
-          Cesión de marca
-        </h2>
-
-        <div className="bg-gray-100 border border-gray-300 rounded-md p-6 relative">
-          <p className="text-gray-700 text-left font-medium mb-2">
-            La cesión de marca es el proceso legal mediante el cual el titular transfiere los derechos de su marca a otra persona o empresa. En Nombre de tu empresa, gestionamos este trámite de manera segura y eficiente, asegurando que la transferencia se realice correctamente y sin complicaciones legales.
+      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-8 bg-white">
+        {/* TEXTO */}
+        <div className="w-full md:w-1/2 px-4 md:px-10">
+          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+            ¿Por qué certificar tu marca?
+          </h4>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+            Protege lo que te hace único.
+          </h2>
+          <p className="text-gray-600 text-lg mb-6 text-left">
+            Certificar tu marca es asegurar legalmente tu identidad comercial y evitar que otros se beneficien de lo que tú construiste. Al hacerlo con nosotros, obtienes respaldo jurídico, asesoría profesional y más de 12 años de experiencia acompañando a emprendedores, empresas y visionarios en el registro nacional e internacional de sus marcas.
           </p>
 
-          <p className="text-gray-700 text-left mb-2">
-            En <span className="font-semibold">Registrack</span>, te ayudamos a registrar tu marca
-            de forma <span className="font-semibold">fácil, rápida y sin enredos legales</span>,
-            asegurando que tu propiedad intelectual esté segura.
-          </p>
+          {/* LISTA CON CHULOS DE REACT ICONS */}
+          <ul className="space-y-4 text-gray-700 text-base mb-8">
+            {[
+              "Protección jurídica exclusiva sobre tu marca registrada.",
+              "Asesoría experta con más de 12 años de experiencia.",
+              "Trámite rápido, confiable y garantizado ante la Cámara de Comercio.",
+              "Defensa legal ante oposiciones o conflictos por similitud.",
+              "Mayor valor comercial y posicionamiento de tu marca en el mercado.",
+            ].map((text, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-lg" />
+                </div>
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
 
-          <p className="text-gray-700 mb-4 text-left">
-            Si tienes una gran idea o estás lanzando un nuevo negocio,
-            <span className="font-semibold"> Certimarcas</span> es tu mejor aliado.
-            Olvídate de los trámites confusos, nosotros nos encargamos de todo para que tú te enfoques en crecer.
-          </p>
-
-          <div className="mb-6">
-            <h3 className="font-bold text-gray-800 text-lg mb-2 text-left">¿Cómo funciona el proceso?</h3>
-            <ol className="list-decimal list-inside text-gray-700 space-y-1 text-left">
-              <li><span className="font-medium">Asesoría personalizada</span> – Te guiamos paso a paso para conocer si tu marca puede ser registrada.</li>
-              <li><span className="font-medium">Gestión de documentos</span> – Preparamos toda la documentación requerida.</li>
-              <li><span className="font-medium">Registro ante autoridades</span> – Inscribimos tu marca ante la <span className="italic">Superintendencia de Industria y Comercio</span>.</li>
-            </ol>
-          </div>
-
-          <div className="flex justify-between items-center gap-3">
+          {/* BOTÓN con verificación de login */}
+          <div className="w-full text-left pt-2">
             <button
-              onClick={handleAdquirirServicio}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleAdquirirCertificacion}
+              className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
             >
-              Adquirir Servicio
+              Adquirir mi certificación
             </button>
-            <FaRegFileArchive className="text-5xl ml-5" />
           </div>
         </div>
-      </div>
-    </section>
+
+        {/* IMAGEN */}
+        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+          <img
+            src="/images/servicioCertificacion.jpg"
+            alt="Asesoría personalizada"
+            className="w-full h-full object-contain animate-float max-h-[500px]"
+          />
+        </div>
+      </section>
+
+      <Footer />
+    </div>
   );
 };
 
-export default certificacion;
+export default Certificaciones;

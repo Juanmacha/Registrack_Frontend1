@@ -1,184 +1,148 @@
 import React, { useEffect, useState } from "react";
-import SideBarGeneral from "../../components/sideBarGeneral";
-import NavBar from "../../components/navBarGeneral";
+import TablaEmpleados from "./components/tablaEmpleados";
+import empleadosMock from "./services/dataEmpleados";
 
 const Empleados = () => {
   const [datosEmpleados, setDatosEmpleados] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const empleadosPorPagina = 5;
 
-  // Cargar desde localStorage al iniciar
+  // Cargar empleados desde localStorage o mock
   useEffect(() => {
-    const datosGuardados = localStorage.getItem("empleados");
-    if (datosGuardados) {
-      setDatosEmpleados(JSON.parse(datosGuardados));
+    const guardados = localStorage.getItem("empleados");
+    if (guardados) {
+      setDatosEmpleados(JSON.parse(guardados));
     } else {
-      // Si no hay datos, se inicializa con valores simulados
-      const datosIniciales = [
-        {
-          id: 1,
-          tipoDocumento: "CC",
-          documento: "123456789",
-          nombre: "Juan",
-          apellidos: "Pérez",
-          email: "juan@example.com",
-          rol: "Administrador",
-          estado: "Activo",
-        },
-        {
-          id: 2,
-          tipoDocumento: "NIT",
-          documento: "987654321",
-          nombre: "Ana",
-          apellidos: "Gómez",
-          email: "ana@example.com",
-          rol: "Empleado",
-          estado: "Inactivo",
-        },
-        {
-          id: 3,
-          tipoDocumento: "NIT",
-          documento: "987654321",
-          nombre: "Ana",
-          apellidos: "Gómez",
-          email: "ana@example.com",
-          rol: "Empleado",
-          estado: "Eliminado",
-        },
-      ];
-      localStorage.setItem("empleados", JSON.stringify(datosIniciales));
-      setDatosEmpleados(datosIniciales);
+      localStorage.setItem("empleados", JSON.stringify(empleadosMock));
+      setDatosEmpleados(empleadosMock);
     }
   }, []);
 
-  // Función para mostrar badge del estado
-  const getEstadoBadge = (estado) => {
-    const color =
-      {
-        Activo: "bg-green-200 text-green-700",
-        Inactivo: "bg-red-200 text-red-700",
-        Eliminado: "bg-yellow-200 text-yellow-700",
-      }[estado] || "bg-gray-200 text-gray-700";
+  // Filtrar empleados por búsqueda
+  const empleadosFiltrados = datosEmpleados.filter((empleado) =>
+    `${empleado.nombre} ${empleado.apellidos} ${empleado.documento} ${empleado.rol}`
+      .toLowerCase()
+      .includes(busqueda.toLowerCase())
+  );
 
-    return (
-      <span className={`px-2 py-1 text-xs rounded-md ${color}`}>{estado}</span>
-    );
+  // Calcular paginación
+  const totalPaginas = Math.ceil(empleadosFiltrados.length / empleadosPorPagina);
+  const indiceInicio = (paginaActual - 1) * empleadosPorPagina;
+  const indiceFin = indiceInicio + empleadosPorPagina;
+  const empleadosPaginados = empleadosFiltrados.slice(indiceInicio, indiceFin);
+
+  // Funciones de acción
+  const handleVer = (empleado) => {
+    alert(`Ver: ${empleado.nombre} ${empleado.apellidos}`);
+  };
+
+  const handleEditar = (empleado) => {
+    alert(`Editar: ${empleado.nombre} ${empleado.apellidos}`);
+  };
+
+  const handleEliminar = (empleado) => {
+    const confirmacion = confirm(`¿Eliminar a ${empleado.nombre}?`);
+    if (confirmacion) {
+      const actualizados = datosEmpleados.filter(e => e.id !== empleado.id);
+      setDatosEmpleados(actualizados);
+      localStorage.setItem("empleados", JSON.stringify(actualizados));
+    }
+  };
+
+  const irAPagina = (pagina) => {
+    if (pagina >= 1 && pagina <= totalPaginas) {
+      setPaginaActual(pagina);
+    }
+  };
+
+  // 🔧 Función para abrir modal o acción de creación
+  const handleAbrirCrear = () => {
+    alert("Abrir formulario para crear nuevo empleado");
   };
 
   return (
-    <div className="bg-[#eceded] flex h-screen w-screen overflow-hidden">
-      <SideBarGeneral />
+    <div className="w-full max-w-8xl mx-auto px-4 bg-[#eceded] min-h-screen">
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <NavBar titulo="Empleados Registrados" />
         <div className="flex-1 flex mt-12 justify-center">
           <div className="w-full px-4">
-            <div className="w-full max-w-full">
-              <div className="flex items-center justify-between px-4 mb-4 w-full">
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  className="form-control w-48 h-9 text-sm border border-gray-300 rounded-md"
-                />
 
-                <div className="flex justify-end gap-3 ">
-                  <button
-                    className="btn btn-primary  text-sm rounded-md w-52 h-10 ml-3"
-                    onClick={() => setShowModal(true)}
-                  >
-                    <i className="bi bi-plus"></i> Crear Empleado
-                  </button>
-                  <button className="btn btn-success px-4 py-2 text-sm rounded-md w-52">
-                    <i className="bi bi-file-earmark-excel-fill"></i> Descargar
-                    Excel
-                  </button>
-                </div>
-              </div>
+            {/* === Barra superior: búsqueda + botones === */}
+            <div className="flex items-center justify-between px-4 mb-4 w-full">
+              <input
+                type="text"
+                placeholder="Buscar por nombre, apellido, documento, rol..."
+                className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                  setPaginaActual(1);
+                }}
+              />
 
-              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
-                <div className="overflow-x-auto w-full">
-                  <table className="table-auto w-full divide-y divide-gray-100">
-                    <thead className="text-left text-sm text-gray-500 bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-4 font-medium text-center">
-                          ID
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Tipo de Documento
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Documento
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Nombre
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Apellidos
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Email
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Rol
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Estado
-                        </th>
-                        <th className="px-6 py-4 font-medium text-center">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                      {datosEmpleados.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-6 py-4 text-center">{item.id}</td>
-                          <td className="px-6 py-4 text-center">
-                            {item.tipoDocumento}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {item.documento}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {item.nombre}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {item.apellidos}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {item.email}
-                          </td>
-                          <td className="px-6 py-4 text-center">{item.rol}</td>
-                          <td className="px-6 py-4 text-center">
-                            {getEstadoBadge(item.estado)}
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <div className="flex gap-2 justify-center flex-wrap">
-                              <button className="btn btn-outline-secondary btn-sm">
-                                <i className="bi bi-pencil-fill"></i>
-                              </button>
-                              <button className="btn btn-outline-secondary btn-sm">
-                                <i className="bi bi-eye-fill"></i>
-                              </button>
-                              <button className="btn btn-outline-danger btn-sm">
-                                <i className="bi bi-dash-circle"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {datosEmpleados.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan="9"
-                            className="text-center py-6 text-gray-500 italic"
-                          >
-                            No hay empleados registrados.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="flex gap-3">
+                <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
+                  <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+                </button>
               </div>
             </div>
+
+            {/* === Tabla de empleados === */}
+            <TablaEmpleados
+              empleados={empleadosPaginados}
+              onVer={handleVer}
+              onEditar={handleEditar}
+              onEliminar={handleEliminar}
+            />
+
+            {/* === Paginación === */}
+            <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+              <div className="text-sm text-gray-700">
+                Mostrando{" "}
+                <span className="font-medium">
+                  {empleadosFiltrados.length === 0 ? 0 : indiceInicio + 1}
+                </span>{" "}
+                a{" "}
+                <span className="font-medium">
+                  {Math.min(indiceFin, empleadosFiltrados.length)}
+                </span>{" "}
+                de{" "}
+                <span className="font-medium">{empleadosFiltrados.length}</span> resultados
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
+                  onClick={() => irAPagina(paginaActual - 1)}
+                  disabled={paginaActual === 1}
+                >
+                  <i className="bi bi-chevron-left"></i>
+                </button>
+
+                {Array.from({ length: totalPaginas }, (_, i) => (
+                  <button
+                    key={i}
+                    className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                      paginaActual === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-blue-600 border border-blue-200"
+                    }`}
+                    onClick={() => irAPagina(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
+                  onClick={() => irAPagina(paginaActual + 1)}
+                  disabled={paginaActual === totalPaginas}
+                >
+                  <i className="bi bi-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

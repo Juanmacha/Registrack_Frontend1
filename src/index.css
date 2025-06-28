@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.btn-outline-primary:hover {
+  background-color: #275FAA !important;
+  border-color: #275FAA !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6C757D !important;
+  border-color: #6C757D !important;
+}
+
+.btn-outline-dark:hover {
+  background-color: #2C3E50 !important;
+  border-color: #2C3E50 !important;
+}
+
+.btn-outline-info:hover {
+  background-color: #1E4A85 !important;
+  border-color: #1E4A85 !important;
+}
