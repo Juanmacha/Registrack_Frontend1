@@ -3,8 +3,11 @@ import TablaClientes from "./components/tablaClientes";
 import VerDetalleCliente from "./components/verDetalleCliente";
 import dataClientes from "./services/dataClientes";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const CAMPOS_REQUERIDOS = [
+  "tipoDocumento",
   "documento", "nombre", "apellido", "email", "telefono",
   "nitEmpresa", "nombreEmpresa", "marca", "tipoPersona"
 ];
@@ -71,7 +74,31 @@ const GestionClientes = () => {
   };
 
   const handleExportarExcel = () => {
-    alert("Funcionalidad de exportar a Excel próximamente...");
+    const encabezados = [
+      "Tipo de persona", "Tipo de documento", "Número de documento", "Nombre", "Apellido", "Email", "Teléfono", "Estado", "NIT Empresa", "Nombre Empresa", "Marca"
+    ];
+    const datosExcel = clientesFiltrados.map((c) => ({
+      "Tipo de persona": c.tipoPersona,
+      "Tipo de documento": c.tipoDocumento,
+      "Número de documento": c.documento,
+      "Nombre": c.nombre,
+      "Apellido": c.apellido,
+      "Email": c.email,
+      "Teléfono": c.telefono,
+      "Estado": c.estado,
+      "NIT Empresa": c.nitEmpresa,
+      "Nombre Empresa": c.nombreEmpresa,
+      "Marca": c.marca
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(datosExcel, { header: encabezados });
+    worksheet["!cols"] = [
+      { wch: 12 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 18 }
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Clientes");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "clientes.xlsx");
   };
 
   return (
@@ -143,20 +170,14 @@ const GestionClientes = () => {
           </div>
         </div>
 
-        {mostrarModalVer && (
-          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-50">
-            <div className="absolute inset-0 backdrop-blur-sm"></div>
-            <div className="relative">
-              <VerDetalleCliente
-                cliente={selectedCliente}
-                onClose={() => {
-                  setMostrarModalVer(false);
-                  setDeshabilitarAcciones(false);
-                }}
-              />
-            </div>
-          </div>
-        )}
+        <VerDetalleCliente
+          cliente={selectedCliente}
+          isOpen={mostrarModalVer}
+          onClose={() => {
+            setMostrarModalVer(false);
+            setDeshabilitarAcciones(false);
+          }}
+        />
       </div>
     </div>
   );

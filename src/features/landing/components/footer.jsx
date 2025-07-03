@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer id="footer" className="bg-[#275FAA] mt-20 py-12 px-6 flex justify-center">
+    <footer id="footer" className="bg-[#275FAA] mt-15 py-12 px-6 flex justify-center">
       <div className="w-full max-w-screen-xl bg-white rounded-xl shadow-md hover:shadow-xl transition flex flex-col md:flex-row overflow-hidden">
         {/* Columna izquierda */}
         <div className="w-full md:w-1/2 px-8 py-6 space-y-4">

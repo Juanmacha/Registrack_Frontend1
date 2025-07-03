@@ -7,6 +7,7 @@ import Register from '../features/auth/pages/register';
 import Profile from '../features/auth/pages/profile';
 import ForgotPassword from '../features/auth/pages/forgotPassword';
 import ResetPassword from '../features/auth/pages/resetPassword';
+import CodigoRecuperacion from '../features/auth/pages/codigoRecuperacion';
 
 import Dashboard from '../features/dashboard/pages/dashAdmin/dashboard';
 import Pagos from '../features/dashboard/pages/pagos/pagos';
@@ -17,6 +18,8 @@ import GestionVentasServiciosProceso from '../features/dashboard/pages/gestionVe
 import GestionVentasServiciosFin from '../features/dashboard/pages/gestionVentasServicios/ventasServiciosFin';
 import Roles from '../features/dashboard/pages/gestionRoles/roles';
 import Empleados from '../features/dashboard/pages/gestionEmpleados/empleados';
+import Servicios from '../features/dashboard/pages/gestionVentasServicios/gestionServicios';
+import MisProcesos from '../features/dashboard/pages/misProcesos/MisProcesos'
 
 import AuthLayout from '../features/auth/components/authLayout';
 import AdminRoute from '../features/auth/components/admnRoute';
@@ -32,6 +35,18 @@ import Ampliacion from '../features/landing/pages/ampliacion';
 import Cesion from '../features/landing/pages/cesionMarca';
 import Oposicion from '../features/landing/pages/presentacionOposicion';
 
+//Formularios
+import FormularioBase from '../shared/layouts/FormularioBase'
+import FormularioNuevoPropietario from '../shared/components/formularioCesiondeMarca';
+import FormularioBusqueda from '../shared/components/formularioBusqueda';
+import FormularioAmpliacion from '../shared/components/formularioAmpliacion';
+import FormularioCertificacion from '../shared/components/formularioCertificacion';
+import FormularioOposicion from '../shared/components/formularioOposicion';
+import FormularioRespuestaOposicion from '../shared/components/formularioRespuesta';
+import FormularioRenovacion from '../shared/components/formularioRenovacion';
+import CrearSolicitudPage from '../features/landing/pages/CrearSolicitudPage';
+
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -46,6 +61,7 @@ const AppRoutes = () => {
       <Route path="/pages/busqueda" element={<Busqueda />} />
       <Route path="/pages/certificacion" element={<Certificacion />} />
       <Route path="/pages/ampliacion" element={<Ampliacion />} />
+      <Route path="/misprocesos" element={<MisProcesos/>}/>
 
       {/* Layout para autenticación */}
       <Route element={<AuthLayout />}>
@@ -53,6 +69,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
+         <Route path="/codigoRecuperacion" element={<CodigoRecuperacion />} />
       </Route>
 
       {/* Rutas protegidas para admin con layout común */}
@@ -73,11 +90,28 @@ const AppRoutes = () => {
         <Route path="gestionUsuarios" element={<GestionUsuarios />} />
         <Route path="roles" element={<Roles />} />
         <Route path="empleados" element={<Empleados />} />
+        <Route path='servicios' element={<Servicios/>}/>
       </Route>
 
       {/* ✅ Redirección temporal por compatibilidad */}
       <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+
+      {/* Formularios anidados bajo un layout base */}
+      <Route path="/formulario" element={<FormularioBase />}>
+        <Route path="cesion" element={<FormularioNuevoPropietario />} />
+        <Route path="busqueda" element={<FormularioBusqueda/>} />
+        <Route path="ampliacion" element={<FormularioAmpliacion/>} />
+        <Route path="renovacion" element={<FormularioRenovacion/>} />
+        <Route path="certificacion" element={<FormularioCertificacion/>} />
+        <Route path="oposicion" element={<FormularioOposicion/>} />
+        <Route path="respuesta" element={<FormularioRespuestaOposicion/>} />
+        
+      </Route>
+
+      <Route path="/crear-solicitud/:servicioId" element={<CrearSolicitudPage />} />
+
     </Routes>
+
   );
 };
 

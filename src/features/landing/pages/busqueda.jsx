@@ -1,45 +1,43 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import NavBarLanding from "../components/landingNavbar";
 import Footer from "../components/Footer";
+import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
+import FormularioBusqueda from "../../../shared/components/formularioBusqueda";
 import authData from "../../auth/services/authData";
 
 const BusquedaAntecedentes = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const handleAdquirirServicio = () => {
     if (!user) {
       alert("Debes iniciar sesión para adquirir este servicio.");
       navigate("/login");
     } else {
-      navigate("/formulario-busqueda"); // ✅ Asegúrate de tener esta ruta
+      setMostrarModal(true);
     }
   };
 
   return (
-    <div className="font-sans bg-white min-h-screen">
+    <div className="font-sans bg-white pt-28">
       <NavBarLanding />
 
-      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-8 bg-white">
-        {/* TEXTO */}
-        <div className="w-full md:w-1/2 px-4 md:px-10">
-          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+      <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">
+        <div className="w-full md:w-1/2 pr-0 md:pr-12">
+          <p className="text-sm md:text-base text-[#275FAA] uppercase font-semibold tracking-wide mb-2 text-left">
             ¿Qué es la búsqueda de antecedentes?
-          </h4>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
-            Verifica si tu marca ya existe antes de registrarla.
-          </h2>
-          <p className="text-gray-600 text-lg mb-6 text-left">
-            La búsqueda de antecedentes permite saber si una marca, nombre comercial, logotipo o elemento distintivo ya está registrado o en trámite ante la Superintendencia de Industria y Comercio (SIC), evitando problemas legales.
           </p>
-          <p className="text-gray-600 text-lg mb-6 text-left">
-            En <span className="font-semibold">Registrack</span> realizamos este proceso de forma <span className="font-semibold">fácil, rápida y sin enredos legales</span> para que protejas tu marca con seguridad.
+          <h1 className="text-3xl md:text-4xl font-bold text-[#083874] mb-4 text-left">
+            Protege tu marca antes de registrarla
+          </h1>
+          <p className="text-base text-gray-700 mb-4 text-left">
+            La búsqueda de antecedentes permite saber si una marca, nombre comercial, logotipo o elemento distintivo ya está registrado o en trámite ante la SIC.
           </p>
 
-          {/* LISTA DE BENEFICIOS */}
-          <ul className="space-y-4 text-gray-700 text-base mb-8">
+          <ul className="space-y-3 text-base text-gray-700 mb-6">
             {[
               "Evita registrar una marca que ya existe.",
               "Identifica similitudes que puedan generar conflictos.",
@@ -48,36 +46,41 @@ const BusquedaAntecedentes = () => {
               "Asesoría legal completa durante el proceso.",
             ].map((item, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
-                  <FaCheck className="text-lg" />
+                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-sm" />
                 </div>
                 <span>{item}</span>
               </li>
             ))}
           </ul>
 
-          {/* BOTÓN */}
-          <div className="w-full text-left pt-2">
+          <div className="text-left">
             <button
               onClick={handleAdquirirServicio}
-              className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
+              className="bg-blue-700 text-white font-semibold px-6 py-3 rounded-md text-base hover:bg-blue-800 transition"
             >
               Adquirir Servicio
             </button>
           </div>
         </div>
 
-        {/* IMAGEN */}
-        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center items-center">
           <img
-            src="/images/servicioBusqueda.jpg" // ✅ Asegúrate de tener esta imagen en /public/images/
-            alt="Búsqueda de antecedentes de marca"
-            className="w-full h-full object-contain animate-float max-h-[500px]"
+            src="/images/servicioBusqueda.jpg"
+            alt="Búsqueda de antecedentes"
+            className="w-full max-w-md h-auto object-contain animate-float"
           />
         </div>
       </section>
 
       <Footer />
+
+      {/* MODAL */}
+      {mostrarModal && (
+        <FormularioBaseModal onClose={() => setMostrarModal(false)}>
+          <FormularioBusqueda />
+        </FormularioBaseModal>
+      )}
     </div>
   );
 };

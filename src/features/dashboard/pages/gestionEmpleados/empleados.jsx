@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import TablaEmpleados from "./components/tablaEmpleados";
 import empleadosMock from "./services/dataEmpleados";
+import CrearEmpleadoModal from "./components/crearEmpleado";
+import EditarEmpleadoModal from "./components/editarEmpleado";
+import VerEmpleadoModal from "./components/verEmpleado";
+import EliminarEmpleado from "./components/eliminarEmpleado";
+import DescargarExcelEmpleados from "./components/descargarEmpleadosExcel";
+
 
 const Empleados = () => {
   const [datosEmpleados, setDatosEmpleados] = useState([]);
@@ -8,7 +14,38 @@ const Empleados = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const empleadosPorPagina = 5;
 
-  // Cargar empleados desde localStorage o mock
+  const [nuevoEmpleado, setNuevoEmpleado] = useState({
+    nombre: "",
+    apellidos: "",
+    documento: "",
+    tipoDocumento: "", // agregado
+    rol: "",
+    email: "", // cambiado de correo a email
+    estado: "activo",
+  });
+
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  const [mostrarEditar, setMostrarEditar] = useState(false);
+  const [empleadoEditando, setEmpleadoEditando] = useState(null);
+
+  const handleEditar = (empleado) => {
+    setEmpleadoEditando(empleado);
+    setMostrarEditar(true);
+  };
+
+  const handleActualizarEmpleado = (empleadoActualizado) => {
+    const actualizados = datosEmpleados.map((e) =>
+      e.id === empleadoActualizado.id ? empleadoActualizado : e
+    );
+    setDatosEmpleados(actualizados);
+    localStorage.setItem("empleados", JSON.stringify(actualizados));
+    setMostrarEditar(false);
+  };
+
+  const [mostrarVer, setMostrarVer] = useState(false);
+  const [empleadoViendo, setEmpleadoViendo] = useState(null);
+
   useEffect(() => {
     const guardados = localStorage.getItem("empleados");
     if (guardados) {
@@ -19,32 +56,68 @@ const Empleados = () => {
     }
   }, []);
 
-  // Filtrar empleados por búsqueda
+  const handleAbrirCrear = () => {
+    setNuevoEmpleado({
+      nombre: "",
+      apellidos: "",
+      documento: "",
+      tipoDocumento: "", // aquí lo agregas
+      rol: "",
+      email: "",
+      estado: "activo",
+    });
+    setMostrarFormulario(true);
+  };
+
+  const handleGuardarEmpleado = (empleado) => {
+    const nuevoEmpleadoConId = {
+      ...empleado,
+      id: Date.now(), // ID único
+    };
+    const nuevos = [...datosEmpleados, nuevoEmpleadoConId];
+    setDatosEmpleados(nuevos);
+    localStorage.setItem("empleados", JSON.stringify(nuevos));
+    setMostrarFormulario(false);
+  };
+
+  const handleCancelar = () => {
+    setMostrarFormulario(false);
+  };
+
+  const normalizarTexto = (texto) =>
+    texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+
+
+
+
+
+
   const empleadosFiltrados = datosEmpleados.filter((empleado) =>
-    `${empleado.nombre} ${empleado.apellidos} ${empleado.documento} ${empleado.rol}`
-      .toLowerCase()
-      .includes(busqueda.toLowerCase())
+    normalizarTexto(
+      `${empleado.nombre} ${empleado.apellidos} ${empleado.documento} ${empleado.rol}`
+    ).includes(normalizarTexto(busqueda))
   );
 
-  // Calcular paginación
-  const totalPaginas = Math.ceil(empleadosFiltrados.length / empleadosPorPagina);
+  const totalPaginas = Math.ceil(
+    empleadosFiltrados.length / empleadosPorPagina
+  );
   const indiceInicio = (paginaActual - 1) * empleadosPorPagina;
   const indiceFin = indiceInicio + empleadosPorPagina;
   const empleadosPaginados = empleadosFiltrados.slice(indiceInicio, indiceFin);
 
-  // Funciones de acción
   const handleVer = (empleado) => {
-    alert(`Ver: ${empleado.nombre} ${empleado.apellidos}`);
-  };
-
-  const handleEditar = (empleado) => {
-    alert(`Editar: ${empleado.nombre} ${empleado.apellidos}`);
+    setEmpleadoViendo(empleado);
+    setMostrarVer(true);
   };
 
   const handleEliminar = (empleado) => {
     const confirmacion = confirm(`¿Eliminar a ${empleado.nombre}?`);
     if (confirmacion) {
-      const actualizados = datosEmpleados.filter(e => e.id !== empleado.id);
+      const actualizados = datosEmpleados.filter((e) => e.id !== empleado.id);
       setDatosEmpleados(actualizados);
       localStorage.setItem("empleados", JSON.stringify(actualizados));
     }
@@ -56,18 +129,12 @@ const Empleados = () => {
     }
   };
 
-  // 🔧 Función para abrir modal o acción de creación
-  const handleAbrirCrear = () => {
-    alert("Abrir formulario para crear nuevo empleado");
-  };
-
   return (
     <div className="w-full max-w-8xl mx-auto px-4 bg-[#eceded] min-h-screen">
       <div className="flex-1 flex flex-col overflow-y-auto">
         <div className="flex-1 flex mt-12 justify-center">
           <div className="w-full px-4">
-
-            {/* === Barra superior: búsqueda + botones === */}
+            {/* === Barra superior === */}
             <div className="flex items-center justify-between px-4 mb-4 w-full">
               <input
                 type="text"
@@ -81,12 +148,33 @@ const Empleados = () => {
               />
 
               <div className="flex gap-3">
-                <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
-                  <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+                <button
+                  className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
+                  onClick={handleAbrirCrear}
+                >
+                  <i className="bi bi-plus-square"></i> Crear Empleado
                 </button>
+                <DescargarExcelEmpleados empleados={datosEmpleados} />
               </div>
             </div>
-
+            {mostrarFormulario && (
+              <CrearEmpleadoModal
+                showModal={mostrarFormulario}
+                setShowModal={setMostrarFormulario}
+                nuevoEmpleado={nuevoEmpleado}
+                setNuevoEmpleado={setNuevoEmpleado}
+                handleSubmit={handleGuardarEmpleado}
+              />
+            )}
+            {mostrarEditar && empleadoEditando && (
+              <EditarEmpleadoModal
+                showModal={mostrarEditar}
+                setShowModal={setMostrarEditar}
+                empleadoEditando={empleadoEditando}
+                setEmpleadoEditando={setEmpleadoEditando}
+                handleActualizarEmpleado={handleActualizarEmpleado}
+              />
+            )}
             {/* === Tabla de empleados === */}
             <TablaEmpleados
               empleados={empleadosPaginados}
@@ -94,6 +182,13 @@ const Empleados = () => {
               onEditar={handleEditar}
               onEliminar={handleEliminar}
             />
+            {mostrarVer && empleadoViendo && (
+              <VerEmpleadoModal
+                showModal={mostrarVer}
+                setShowModal={setMostrarVer}
+                empleado={empleadoViendo}
+              />
+            )}
 
             {/* === Paginación === */}
             <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
@@ -107,7 +202,8 @@ const Empleados = () => {
                   {Math.min(indiceFin, empleadosFiltrados.length)}
                 </span>{" "}
                 de{" "}
-                <span className="font-medium">{empleadosFiltrados.length}</span> resultados
+                <span className="font-medium">{empleadosFiltrados.length}</span>{" "}
+                resultados
               </div>
 
               <div className="flex gap-2">
@@ -122,11 +218,10 @@ const Empleados = () => {
                 {Array.from({ length: totalPaginas }, (_, i) => (
                   <button
                     key={i}
-                    className={`h-8 w-8 rounded-full flex items-center justify-center ${
-                      paginaActual === i + 1
+                    className={`h-8 w-8 rounded-full flex items-center justify-center ${paginaActual === i + 1
                         ? "bg-blue-600 text-white"
                         : "bg-white text-blue-600 border border-blue-200"
-                    }`}
+                      }`}
                     onClick={() => irAPagina(i + 1)}
                   >
                     {i + 1}
@@ -142,7 +237,6 @@ const Empleados = () => {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </div>

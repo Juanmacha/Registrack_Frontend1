@@ -1,16 +1,55 @@
 // LandingPage.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaBalanceScale, FaMedal, FaRocket, FaCheck } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import servicesData from "../services/servicesData";
+import { getServicios } from "../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService";
+import authData from '../../auth/services/authData';
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [servicios, setServicios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cargar = () => {
+      const todos = getServicios();
+      setServicios(todos.filter(s => s.visible_en_landing));
+      setLoading(false);
+    };
+    cargar();
+    // Recargar al volver a la página (focus)
+    window.addEventListener('focus', cargar);
+    // Recargar si cambia localStorage desde otro tab/ventana
+    const onStorage = (e) => {
+      if (e.key === 'servicios_management') cargar();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('focus', cargar);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  // Simulación de autenticación (ajusta según tu lógica real)
+  const isAuthenticated = Boolean(localStorage.getItem('user'));
+
+  const handleAdquirir = (servicio) => {
+    const user = authData.getUser && typeof authData.getUser === 'function' ? authData.getUser() : JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      // Guardar intención de adquisición para redirección post-login
+      localStorage.setItem('postLoginRedirect', `/crear-solicitud/${servicio.id}`);
+      navigate('/login');
+    } else if (user.rol && user.rol.toLowerCase() === 'admin') {
+      alert('Esta acción solo está disponible para clientes.');
+    } else {
+      navigate(`/crear-solicitud/${servicio.id}`);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-white overflow-y-scroll no-scrollbar font-sans">
       {/* Hero Section */}
-      <header className="pt-32 pb-20 px-6 md:px-12 lg:px-24 bg-white">
+      <header className="pt-26 pb-20 px-6 md:px-12 lg:px-24 bg-white">
         <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-24">
           <div className="flex-1">
             <h1 className="text-6xl text-left font-bold bg-gradient-to-r mt-2 from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
@@ -101,32 +140,48 @@ const Hero = () => {
           <h2 className="text-4xl font-bold text-center mb-12 text-[#275FAA]">
             Nuestros Servicios
           </h2>
-          <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {servicesData.map((service, index) => (
-              <div
-                key={index}
-                className="bg-gray-100 rounded-xl shadow-md transition-transform duration-300 transform hover:-translate-y-2 hover:shadow-xl text-center overflow-hidden"
-              >
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-[#275FAA] mb-2">
-                    {service.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                  <button
-                    onClick={() => navigate(service.path)}
-                    className="mt-6 bg-blue-600 text-white px-5 py-2 rounded font-semibold hover:bg-[#163366] transition-all"
-                  >
-                    Saber más
-                  </button>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {servicios.map((servicio) => (
+                <div
+                  key={servicio.id}
+                  className="bg-gray-100 rounded-xl shadow-md transition-transform duration-300 transform hover:-translate-y-2 hover:shadow-xl text-center overflow-hidden"
+                >
+                  <img
+                    src={servicio.landing_data?.imagen || "/images/certificacion.jpg"}
+                    alt={servicio.landing_data?.titulo || servicio.nombre}
+                    className="w-full h-48 object-cover"
+                    onError={e => { e.target.src = "/images/certificacion.jpg"; }}
+                  />
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-[#275FAA] mb-2">
+                      {servicio.landing_data?.titulo || servicio.nombre}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">{servicio.landing_data?.resumen || servicio.descripcion_corta}</p>
+                    <div className="flex flex-row gap-2 justify-center mt-2">
+                      <button
+                        onClick={() => navigate(servicio.route_path)}
+                        className="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md font-medium shadow-sm hover:bg-[#163366] transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        Saber más
+                      </button>
+                      <button
+                        onClick={() => handleAdquirir(servicio)}
+                        className={`px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${servicio.nombre === 'Certificación de Marca' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                        disabled={servicio.nombre !== 'Certificación de Marca'}
+                      >
+                        Adquirir Servicio
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

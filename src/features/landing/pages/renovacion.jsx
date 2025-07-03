@@ -1,47 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import LandingNavbar from "../components/landingNavbar";
 import Footer from "../components/Footer";
 import authData from "../../auth/services/authData";
+import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
+import FormularioRenovacion from "../../../shared/components/formularioRenovacion";
 
 const RenovacionMarca = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const handleAdquirirServicio = () => {
     if (!user) {
       alert("Debes iniciar sesión para adquirir este servicio.");
       navigate("/login");
     } else {
-      navigate("/checkout/renovacion"); // Ajusta esta ruta según tu flujo real
+      setMostrarModal(true);
     }
   };
 
   return (
-    <div className="font-sans bg-white min-h-screen">
+    <div className="font-sans bg-white pt-28">
       <LandingNavbar />
 
-      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-12 bg-white">
+      <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">
         {/* TEXTO */}
-        <div className="w-full md:w-1/2 px-4 md:px-10">
-          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+        <div className="w-full md:w-1/2 md:pr-12">
+          <p className="text-sm md:text-base text-[#275FAA] uppercase font-semibold tracking-wide mb-2 text-left">
             Protección continua
-          </h4>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#083874] mb-4 text-left">
             Renovación de Marca
-          </h2>
-          <p className="text-gray-600 text-lg mb-6 text-left">
-            Renovar tu marca a tiempo garantiza que sigas disfrutando de su protección legal. En <span className="font-semibold">Registrack</span>, hacemos el proceso rápido y sin estrés.
+          </h1>
+          <p className="text-base text-gray-700 mb-4 text-left">
+            Renovar tu marca a tiempo garantiza que sigas disfrutando de su protección legal. En{" "}
+            <span className="font-semibold">Registrack</span>, hacemos el proceso rápido y sin estrés.
           </p>
-          <p className="text-gray-600 text-lg mb-6 text-left">
-            Verificamos los tiempos, gestionamos la documentación y presentamos la solicitud ante la <span className="font-semibold">Superintendencia de Industria y Comercio</span> (SIC).
+          <p className="text-base text-gray-700 mb-4 text-left">
+            Verificamos los tiempos, gestionamos la documentación y presentamos la solicitud ante la{" "}
+            <span className="font-semibold">Superintendencia de Industria y Comercio</span> (SIC).
           </p>
-          <p className="text-gray-600 text-lg mb-6 text-left">
+          <p className="text-base text-gray-700 mb-6 text-left">
             No dejes vencer tu registro. Una marca vencida puede ser reclamada por terceros.
           </p>
 
-          <ul className="space-y-4 text-gray-700 text-base mb-8">
+          {/* LISTA DE BENEFICIOS */}
+          <ul className="space-y-3 text-base text-gray-700 mb-6">
             {[
               "Asesoría sobre vencimientos y requisitos.",
               "Preparación y envío de la documentación.",
@@ -49,8 +55,8 @@ const RenovacionMarca = () => {
               "Seguimiento del trámite y entrega de constancia.",
             ].map((item, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-8 h-8 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full mt-1">
-                  <FaCheck className="text-lg" />
+                <div className="w-6 h-6 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full mt-1">
+                  <FaCheck className="text-sm" />
                 </div>
                 <span>{item}</span>
               </li>
@@ -59,23 +65,30 @@ const RenovacionMarca = () => {
 
           <button
             onClick={handleAdquirirServicio}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-md text-lg transition"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-md text-base transition"
           >
             Adquirir Servicio
           </button>
         </div>
 
         {/* IMAGEN */}
-        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center items-center">
           <img
-            src="/images/servicioRenovacion.jpeg" // Asegúrate de tener esta imagen en /public/images/
+            src="/images/servicioRenovacion.jpeg"
             alt="Renovación de Marca"
-            className="w-full h-full object-contain animate-float max-h-[500px]"
+            className="w-full max-w-md h-auto object-contain animate-float"
           />
         </div>
       </section>
 
       <Footer />
+
+      {/* MODAL */}
+      {mostrarModal && (
+        <FormularioBaseModal onClose={() => setMostrarModal(false)}>
+          <FormularioRenovacion />
+        </FormularioBaseModal>
+      )}
     </div>
   );
 };

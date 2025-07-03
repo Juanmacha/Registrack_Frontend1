@@ -1,30 +1,21 @@
 const getEstadoPagoBadge = (estado) => {
-  const estadoLower = estado.toLowerCase();
-
-  if (estadoLower === "completado") {
+  if (estado === true) {
     return {
-      colorClass: "text-green-700 bg-green-100",
-      label: "Completado",
+      color: "#16a34a", // verde
+      texto: "Completado",
     };
   }
 
-  if (estadoLower === "pendiente") {
+  if (estado === false) {
     return {
-      colorClass: "text-yellow-800 bg-yellow-100",
-      label: "Pendiente",
-    };
-  }
-
-  if (estadoLower === "fallido") {
-    return {
-      colorClass: "text-red-700 bg-red-100",
-      label: "Fallido",
+      color: "#dc2626", // rojo
+      texto: "Fallido",
     };
   }
 
   return {
-    colorClass: "text-gray-700 bg-gray-100",
-    label: "Desconocido",
+    color: "#6b7280", // gris
+    texto: "Desconocido",
   };
 };
 

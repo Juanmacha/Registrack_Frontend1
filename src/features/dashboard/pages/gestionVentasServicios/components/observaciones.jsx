@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Observaciones = ({ isOpen, onClose, onGuardar }) => {
   const [texto, setTexto] = useState("");
+
+  useEffect(() => {
+    if (isOpen) setTexto("");
+  }, [isOpen]);
 
   const handleGuardar = () => {
     if (texto.trim() !== "") {

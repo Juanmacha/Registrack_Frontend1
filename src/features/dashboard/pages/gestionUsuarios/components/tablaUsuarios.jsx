@@ -82,7 +82,7 @@ const TablaUsuarios = ({
                         className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
                         style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
                         title="Editar"
-                        onClick={() => onEditar(u)}
+                        onClick={() => onEditar(u, inicio + idx)}
                         disabled={deshabilitarAcciones}
                       >
                         <i className="bi bi-pencil"></i>
@@ -113,7 +113,7 @@ const TablaUsuarios = ({
       </div>
 
       {/* Hover animado */}
-      <style jsx>{`
+      <style>{`
         .custom-hover:hover {
           opacity: 0.8;
           transform: scale(1.05);

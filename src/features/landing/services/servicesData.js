@@ -32,7 +32,7 @@ const servicesData = [
   {
     title: "Presentación de oposición",
     description: "¿Necesitas presentar una demanda de oposición porque crees que alguien está solicitando un nombre parecido, gramático o igual a tu marca? ¡Ingresa aquí!",
-    image: "/images/cesion.jpg",
+    image: "/images/opocision.jpeg",
     path:"/pages/presentacionOposicion"
   },
 ];

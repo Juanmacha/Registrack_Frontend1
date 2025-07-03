@@ -1,0 +1,80 @@
+import React from 'react';
+
+const labelClass = "text-xs text-blue-700 font-semibold mb-1 uppercase tracking-wide";
+const valueClass = "text-sm text-gray-800 mb-2 break-all";
+
+const renderObj = (obj) => {
+  if (!obj) return <span className="italic text-gray-400">No disponible</span>;
+  if (typeof obj === 'string' || typeof obj === 'number') return obj;
+  if (Array.isArray(obj)) return obj.length ? obj.join(', ') : <span className="italic text-gray-400">Vacío</span>;
+  return Object.entries(obj).map(([k, v]) => (
+    <div key={k}><b>{k}:</b> {typeof v === 'object' ? renderObj(v) : v?.toString() || 'No disponible'}</div>
+  ));
+};
+
+export default function ModalVerDetalleServicio({ servicio, isOpen, onClose }) {
+  if (!isOpen || !servicio) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-all">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl p-0 overflow-y-auto max-h-[90vh] relative border border-gray-200">
+        {/* Header sticky */}
+        <div className="sticky top-0 z-20 bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-4 border-b border-blue-200 flex items-center justify-between rounded-t-2xl shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-100 p-2 rounded-full shadow">
+              <i className="bi bi-eye text-blue-600 text-2xl"></i>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-blue-800">Detalle del Servicio</h2>
+              <p className="text-sm text-gray-500">ID: {servicio.id}</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="text-gray-900 hover:text-red-700 bg-white border border-gray-300 text-2xl px-2 py-1 rounded-full focus:outline-none shadow sticky top-0"
+            style={{ position: 'sticky', top: 0 }}
+            aria-label="Cerrar"
+          >
+            <i className="bi bi-x-lg"></i>
+          </button>
+        </div>
+        {/* Content: grid 3 columnas en desktop, 1 en móvil */}
+        <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gradient-to-br from-white to-blue-50">
+          {/* Panel 1: Datos básicos */}
+          <div className="bg-white rounded-xl p-6 flex flex-col gap-2 border border-blue-100 shadow-sm">
+            <div className={labelClass}>Nombre</div>
+            <div className={valueClass}>{servicio.nombre}</div>
+            <div className={labelClass}>Descripción corta</div>
+            <div className={valueClass}>{servicio.descripcion_corta}</div>
+            <div className={labelClass}>Visible en landing</div>
+            <div className={valueClass}>{servicio.visible_en_landing ? 'Sí' : 'No'}</div>
+            <div className={labelClass}>Ruta</div>
+            <div className={valueClass}>{servicio.route_path}</div>
+          </div>
+          {/* Panel 2: Datos para Landing Page */}
+          <div className="bg-white rounded-xl p-6 flex flex-col gap-2 border border-blue-100 shadow-sm">
+            <div className={labelClass}>Landing Page</div>
+            <div className="text-xs text-gray-500 mb-1">(Título, resumen, imagen...)</div>
+            <div className="bg-blue-50 rounded p-2 border border-blue-100 text-xs overflow-x-auto mt-1">
+              {renderObj(servicio.landing_data)}
+            </div>
+          </div>
+          {/* Panel 3: Página de Información y Estados */}
+          <div className="bg-white rounded-xl p-6 flex flex-col gap-2 border border-blue-100 shadow-sm">
+            <div className={labelClass}>Página de Información</div>
+            <div className="bg-blue-50 rounded p-2 border border-blue-100 text-xs overflow-x-auto mt-1 mb-2">
+              {renderObj(servicio.info_page_data)}
+            </div>
+            <div className={labelClass}>Estados del Proceso</div>
+            <ol className="list-decimal ml-6 mt-1">
+              {servicio.process_states && servicio.process_states.length > 0 ? servicio.process_states.map((ps) => (
+                <li key={ps.id} className="text-sm font-semibold text-blue-700">
+                  <b>{ps.name}</b>
+                </li>
+              )) : <span className="italic text-gray-400">Sin estados</span>}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+} 

@@ -1,45 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import NavBarLanding from "../components/landingNavbar";
 import Footer from "../components/Footer";
 import authData from "../../auth/services/authData";
+import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
+import FormularioAmpliacion from "../../../shared/components/formularioAmpliacion"; // ✅ Asegúrate de que este componente exista
 
 const AmpliacionServicios = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const handleAdquirirServicio = () => {
     if (!user) {
       alert("Debes iniciar sesión para adquirir este servicio.");
       navigate("/login");
     } else {
-      navigate("/formulario-ampliacion"); // ✅ Cambia esta ruta a la correcta
+      setMostrarModal(true);
     }
   };
 
   return (
-    <div className="font-sans bg-white min-h-screen">
+    <div className="font-sans bg-white pt-28">
       <NavBarLanding />
 
-      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-8 bg-white">
+      <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">
         {/* TEXTO */}
-        <div className="w-full md:w-1/2 px-4 md:px-10">
-          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+        <div className="w-full md:w-1/2 pr-0 md:pr-12">
+          <p className="text-sm md:text-base text-[#275FAA] uppercase font-semibold tracking-wide mb-2 text-left">
             ¿Qué es la ampliación de servicios?
-          </h4>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
-            Expande el alcance de tu marca registrada.
-          </h2>
-          <p className="text-gray-600 text-lg mb-6 text-left">
-            La ampliación de servicios es un trámite ante la Superintendencia de Industria y Comercio (SIC) que permite incluir nuevas clases de productos o servicios en una marca ya registrada. Así, tu protección legal se extiende a más áreas de negocio.
           </p>
-          <p className="text-gray-600 text-lg mb-6 text-left">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#083874] mb-4 text-left">
+            Expande el alcance de tu marca registrada
+          </h1>
+          <p className="text-base text-gray-700 mb-4 text-left">
+            La ampliación de servicios permite incluir nuevas clases de productos o servicios en una marca ya registrada, extendiendo tu protección legal a más áreas de negocio.
+          </p>
+          <p className="text-base text-gray-700 mb-4 text-left">
             Por ejemplo, si tu marca cubre ropa y ahora quieres vender perfumes, necesitas ampliar la cobertura para garantizar tu exclusividad comercial.
           </p>
 
-          {/* LISTA DE BENEFICIOS */}
-          <ul className="space-y-4 text-gray-700 text-base mb-8">
+          <ul className="space-y-3 text-base text-gray-700 mb-6">
             {[
               "Evita conflictos legales al expandir tu marca.",
               "Protección en nuevas clases de productos o servicios.",
@@ -48,19 +50,18 @@ const AmpliacionServicios = () => {
               "Acompañamiento legal durante todo el proceso.",
             ].map((item, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
-                  <FaCheck className="text-lg" />
+                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-sm" />
                 </div>
                 <span>{item}</span>
               </li>
             ))}
           </ul>
 
-          {/* BOTÓN DE ACCIÓN */}
-          <div className="w-full text-left pt-2">
+          <div className="text-left">
             <button
               onClick={handleAdquirirServicio}
-              className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
+              className="bg-blue-700 text-white font-semibold px-6 py-3 rounded-md text-base hover:bg-blue-800 transition"
             >
               Adquirir Servicio
             </button>
@@ -68,16 +69,23 @@ const AmpliacionServicios = () => {
         </div>
 
         {/* IMAGEN */}
-        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center items-center">
           <img
-            src="/images/servicioAmpliacion.jpg" // ✅ Asegúrate de tener esta imagen en tu carpeta pública
+            src="/images/servicioAmpliacion.jpg"
             alt="Ampliación de servicios"
-            className="w-full h-full object-contain animate-float max-h-[500px]"
+            className="w-full max-w-md h-auto object-contain animate-float"
           />
         </div>
       </section>
 
       <Footer />
+
+      {/* MODAL */}
+      {mostrarModal && (
+        <FormularioBaseModal onClose={() => setMostrarModal(false)}>
+          <FormularioAmpliacion />
+        </FormularioBaseModal>
+      )}
     </div>
   );
 };

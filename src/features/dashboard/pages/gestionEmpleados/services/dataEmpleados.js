@@ -30,6 +30,16 @@ const empleadosMock = [
     rol: "Empleado",
     estado: "Eliminado",
   },
+    {
+    id: 4,
+    tipoDocumento: "NIT",
+    documento: "987654321",
+    nombre: "Ana",
+    apellidos: "Gómez",
+    email: "ana@example.com",
+    rol: "Empleado",
+    estado: "Activo",
+  },
 ];
 
 export default empleadosMock;

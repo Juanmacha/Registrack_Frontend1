@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import pagos from "../services/dataPagos"; // mock de pagos
+import pagos from "../services/dataPagos";
 import getEstadoPagoBadge from "../services/getEstadoPagoBadge";
+import VerDetallePago from "../components/verDetallePagos";
+import DescargarExcelPagos from "../components/descargarExcelPagos";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Tablapagos = () => {
@@ -12,11 +14,24 @@ const Tablapagos = () => {
   const [totalRegistros, setTotalRegistros] = useState(0);
   const registrosPorPagina = 5;
 
+  const [detalleSeleccionado, setDetalleSeleccionado] = useState(null);
+  const [modalAbierto, setModalAbierto] = useState(false);
+
+  const abrirDetalle = (pago) => {
+    setDetalleSeleccionado(pago);
+    setModalAbierto(true);
+  };
+
+  const cerrarDetalle = () => {
+    setDetalleSeleccionado(null);
+    setModalAbierto(false);
+  };
+
   useEffect(() => {
     const filtrar = pagos.filter(
       (p) =>
-        p.clienteId.toLowerCase().includes(busqueda.toLowerCase()) ||
-        p.servicioId.toLowerCase().includes(busqueda.toLowerCase())
+        p.id_pago.toString().includes(busqueda) ||
+        p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase())
     );
     const total = filtrar.length;
     const paginas = Math.ceil(total / registrosPorPagina);
@@ -37,14 +52,12 @@ const Tablapagos = () => {
       <div className="flex items-center justify-between px-4 mb-4 w-full">
         <input
           type="text"
-          placeholder="Buscar por cliente o servicio"
+          placeholder="Buscar por ID o método"
           className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
           value={busqueda}
           onChange={handleBusquedaChange}
         />
-        <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
-          <i className="bi bi-file-earmark-excel-fill"></i>Descargar Excel
-        </button>
+        <DescargarExcelPagos pagos={pagos} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
@@ -52,12 +65,11 @@ const Tablapagos = () => {
           <table className="table-auto w-full divide-y divide-gray-100">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-center">ID</th>
-                <th className="px-6 py-4 text-center">Cliente</th>
-                <th className="px-6 py-4 text-center">Servicio</th>
+                <th className="px-6 py-4 text-center">ID Pago</th>
                 <th className="px-6 py-4 text-center">Monto</th>
                 <th className="px-6 py-4 text-center">Fecha</th>
                 <th className="px-6 py-4 text-center">Método</th>
+                <th className="px-6 py-4 text-center">Orden de Servicio</th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
@@ -66,17 +78,17 @@ const Tablapagos = () => {
               {datos.map((item) => {
                 const { color, texto } = getEstadoPagoBadge(item.estado);
                 return (
-                  <tr key={item.id}>
-                    <td className="px-6 py-4">{item.id}</td>
-                    <td className="px-6 py-4">{item.clienteId}</td>
-                    <td className="px-6 py-4">{item.servicioId}</td>
+                  <tr key={item.id_pago}>
+                    <td className="px-6 py-4">{item.id_pago}</td>
                     <td className="px-6 py-4">${item.monto.toLocaleString()}</td>
-                    <td className="px-6 py-4">{new Date(item.fecha).toLocaleDateString()}</td>
-                    <td className="px-6 py-4">{item.metodoPago}</td>
                     <td className="px-6 py-4">
+                      {new Date(item.fecha_pago).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">{item.metodo_pago}</td>
+                    <td className="px-6 py-4">{item.id_orden_servicio}</td>
+                    <td className="px-6 py-4 text-center">
                       <span
-                        style={{ backgroundColor: color }}
-                        className="px-3 py-1 rounded-full text-xs font-semibold text-white"
+                        style={{ color, fontWeight: 600, fontSize: "14px" }}
                       >
                         {texto}
                       </span>
@@ -84,22 +96,32 @@ const Tablapagos = () => {
                     <td className="px-6 py-4">
                       <div className="flex gap-2 justify-center flex-wrap">
                         <button
+                          onClick={() => abrirDetalle(item)}
                           className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderColor: "#1E4A85",
+                            color: "#1E4A85",
+                          }}
                           title="Ver detalle"
                         >
                           <i className="bi bi-eye-fill"></i>
                         </button>
-                        {item.comprobante && (
+                        {item.comprobante_url && (
                           <a
-                            href={item.comprobante}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href={item.comprobante_url}
+                            download={`comprobante_pago_${item.id_pago}.pdf`}
                             className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                            style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
-                            title="Ver comprobante"
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderColor: "#6C757D",
+                              color: "#6C757D",
+                            }}
+                            title="Descargar comprobante"
                           >
-                            <i className="bi bi-file-earmark-text"></i>
+                            <i className="bi bi-download"></i>
                           </a>
                         )}
                       </div>
@@ -111,7 +133,7 @@ const Tablapagos = () => {
           </table>
         </div>
 
-        {/* Paginación moderna */}
+        {/* Paginación */}
         <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
           <div className="text-sm text-gray-700">
             Mostrando{" "}
@@ -136,10 +158,11 @@ const Tablapagos = () => {
               <button
                 key={pagina}
                 onClick={() => setPaginaActual(pagina)}
-                className={`h-8 w-8 rounded-full flex items-center justify-center ${paginaActual === pagina
+                className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                  paginaActual === pagina
                     ? "bg-blue-600 text-white"
                     : "bg-white text-blue-600 border border-blue-200"
-                  }`}
+                }`}
               >
                 {pagina}
               </button>
@@ -154,6 +177,12 @@ const Tablapagos = () => {
           </div>
         </div>
       </div>
+
+      <VerDetallePago
+        datos={detalleSeleccionado}
+        isOpen={modalAbierto}
+        onClose={cerrarDetalle}
+      />
 
       <style jsx>{`
         .custom-hover:hover {

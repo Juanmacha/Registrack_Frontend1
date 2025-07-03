@@ -1,45 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import NavBarLanding from "../components/landingNavbar";
 import Footer from "../components/Footer";
 import authData from "../../auth/services/authData";
+import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
+import FormularioCesionMarca from "../../../shared/components/formularioCesiondeMarca"; // ✅ Asegúrate de que este componente exista
 
 const CesionMarca = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
+  const [mostrarModal, setMostrarModal] = useState(false);
 
   const handleAdquirirServicio = () => {
     if (!user) {
       alert("Debes iniciar sesión para adquirir este servicio.");
       navigate("/login");
     } else {
-      navigate("/formulario-cesion"); // ✅ Asegúrate de tener esta ruta en tu app
+      setMostrarModal(true);
     }
   };
 
   return (
-    <div className="font-sans bg-white min-h-screen">
+    <div className="font-sans bg-white pt-28">
       <NavBarLanding />
 
-      <section className="w-full flex flex-col md:flex-row items-center justify-between px-6 py-8 bg-white">
+      <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">
         {/* TEXTO */}
-        <div className="w-full md:w-1/2 px-4 md:px-10">
-          <h4 className="text-gray-500 uppercase tracking-wide mb-2 text-sm font-semibold text-left">
+        <div className="w-full md:w-1/2 md:pr-12">
+          <p className="text-sm md:text-base text-[#275FAA] uppercase font-semibold tracking-wide mb-2 text-left">
             ¿Qué es la cesión de marca?
-          </h4>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight text-left">
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#083874] mb-4 text-left">
             Transfiere legalmente tu marca a otra persona o empresa.
-          </h2>
-          <p className="text-gray-600 text-lg mb-6 text-left">
+          </h1>
+          <p className="text-base text-gray-700 mb-4 text-left">
             La cesión de marca es el proceso legal mediante el cual el titular actual de una marca transfiere los derechos de propiedad a un tercero. Esta operación debe registrarse ante la Superintendencia de Industria y Comercio (SIC) para tener validez jurídica.
           </p>
-          <p className="text-gray-600 text-lg mb-6 text-left">
+          <p className="text-base text-gray-700 mb-6 text-left">
             En <span className="font-semibold">Registrack</span>, te acompañamos en todo el proceso de forma <span className="font-semibold">clara, segura y sin complicaciones</span>, asegurando que la cesión cumpla con todos los requisitos legales.
           </p>
 
-          {/* LISTA DE BENEFICIOS */}
-          <ul className="space-y-4 text-gray-700 text-base mb-8">
+          <ul className="space-y-3 text-base text-gray-700 mb-6">
             {[
               "Asesoría legal experta durante todo el proceso.",
               "Redacción y validación del contrato de cesión.",
@@ -48,19 +50,18 @@ const CesionMarca = () => {
               "Respaldo jurídico para ambas partes involucradas.",
             ].map((item, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
-                  <FaCheck className="text-lg" />
+                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
+                  <FaCheck className="text-sm" />
                 </div>
                 <span>{item}</span>
               </li>
             ))}
           </ul>
 
-          {/* BOTÓN */}
-          <div className="w-full text-left pt-2">
+          <div className="text-left">
             <button
               onClick={handleAdquirirServicio}
-              className="bg-blue-700 text-white px-8 py-3 rounded-md text-lg hover:bg-blue-800 transition"
+              className="bg-blue-700 text-white font-semibold px-6 py-3 rounded-md text-base hover:bg-blue-800 transition"
             >
               Adquirir Servicio
             </button>
@@ -68,16 +69,23 @@ const CesionMarca = () => {
         </div>
 
         {/* IMAGEN */}
-        <div className="w-full md:w-1/2 px-4 mt-10 md:mt-0">
+        <div className="w-full md:w-1/2 mt-10 md:mt-0 flex justify-center items-center">
           <img
-            src="/images/servicioCesionMarca.jpeg" // ✅ Asegúrate de tener esta imagen
+            src="/images/servicioCesionMarca.jpeg"
             alt="Cesión de Marca"
-            className="w-full h-full object-contain animate-float max-h-[500px]"
+            className="w-full max-w-md h-auto object-contain animate-float"
           />
         </div>
       </section>
 
       <Footer />
+
+      {/* MODAL */}
+      {mostrarModal && (
+        <FormularioBaseModal onClose={() => setMostrarModal(false)}>
+          <FormularioCesionMarca />
+        </FormularioBaseModal>
+      )}
     </div>
   );
 };

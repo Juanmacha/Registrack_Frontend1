@@ -117,12 +117,12 @@ const dataUsuarios = [
     role: "usuario"
   },
   {
-    firstName: "Mariana",
-    lastName: "Patiño",
+    firstName: "Yuver",
+    lastName: "Martinez",
     documentType: "CC",
-    documentNumber: "1213141516",
-    email: "mariana.patino@example.com",
-    password: "mariana007",
+    documentNumber: "1077998509",
+    email: "antoniodjromana@gmail.com",
+    password: "Yuver",
     role: "usuario"
   },
   {

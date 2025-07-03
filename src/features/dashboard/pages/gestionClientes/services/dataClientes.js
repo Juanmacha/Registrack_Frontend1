@@ -1,5 +1,6 @@
 const dataClientes = [
   {
+    tipoDocumento: "CC",
     documento: "1001234567",
     nombre: "Carlos",
     apellido: "Pérez",
@@ -11,6 +12,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CE",
     documento: "1009876543",
     nombre: "Luisa",
     apellido: "Gómez",
@@ -22,6 +24,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1012345678",
     nombre: "Ana",
     apellido: "Martínez",
@@ -33,6 +36,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "TI",
     documento: "1023456789",
     nombre: "Julián",
     apellido: "Ramírez",
@@ -44,6 +48,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1034567890",
     nombre: "Diana",
     apellido: "Rodríguez",
@@ -55,6 +60,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "NIT",
     documento: "1045678901",
     nombre: "Esteban",
     apellido: "Moreno",
@@ -66,6 +72,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1056789012",
     nombre: "Marcela",
     apellido: "López",
@@ -77,6 +84,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "NIT",
     documento: "1067890123",
     nombre: "Andrés",
     apellido: "García",
@@ -88,6 +96,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "PEP",
     documento: "1078901234",
     nombre: "Camila",
     apellido: "Ríos",
@@ -99,6 +108,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1089012345",
     nombre: "Jorge",
     apellido: "Salazar",
@@ -110,6 +120,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1090123456",
     nombre: "Valentina",
     apellido: "Castro",
@@ -121,6 +132,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "TI",
     documento: "1101234567",
     nombre: "Sebastián",
     apellido: "Mejía",
@@ -132,6 +144,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CE",
     documento: "1112345678",
     nombre: "Paola",
     apellido: "Ortiz",
@@ -143,6 +156,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1123456789",
     nombre: "Juan",
     apellido: "Navarro",
@@ -154,6 +168,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "PAS",
     documento: "1134567890",
     nombre: "Karen",
     apellido: "Hernández",
@@ -165,6 +180,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1145678901",
     nombre: "Mateo",
     apellido: "Lara",
@@ -176,6 +192,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "NIT",
     documento: "1156789012",
     nombre: "Tatiana",
     apellido: "Mendoza",
@@ -187,6 +204,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1167890123",
     nombre: "Felipe",
     apellido: "Reyes",
@@ -198,6 +216,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "PEP",
     documento: "1178901234",
     nombre: "Lorena",
     apellido: "Cano",
@@ -209,6 +228,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1189012345",
     nombre: "Ricardo",
     apellido: "Silva",
@@ -220,6 +240,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1190123456",
     nombre: "Juliana",
     apellido: "Arango",
@@ -231,6 +252,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1201234567",
     nombre: "Tomás",
     apellido: "Osorio",
@@ -242,6 +264,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "TI",
     documento: "1212345678",
     nombre: "Isabela",
     apellido: "Guerra",
@@ -253,6 +276,7 @@ const dataClientes = [
     tipoPersona: "Natural"
   },
   {
+    tipoDocumento: "CC",
     documento: "1223456789",
     nombre: "Mario",
     apellido: "Jiménez",
@@ -264,6 +288,7 @@ const dataClientes = [
     tipoPersona: "Jurídica"
   },
   {
+    tipoDocumento: "CC",
     documento: "1234567890",
     nombre: "Natalia",
     apellido: "Vergara",

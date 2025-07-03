@@ -3,111 +3,245 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import VerDetalleVenta from "./verDetalleVenta";
 import Observaciones from "./observaciones";
 import EditarVenta from "./editarVenta";
-import { getVentasEnProceso } from "../services/ventasService";
-import { editarVenta } from "../services/editarVentaService";
-import { anularVenta } from "../services/eliminarVentaService";
+import SeleccionarTipoSolicitud from "./SeleccionarTipoSolicitud";
+import { getVentasEnProceso, crearVenta, agregarComentario, anularVenta, initDatosPrueba } from "../services/ventasService";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import getEstadoBadge from "../services/getEstadoBadge";
+import CrearSolicitud from "./CrearSolicitud";
+import { getServicios } from '../services/serviciosManagementService';
 
-const TablaVentasProceso = () => {
+const TablaVentasProceso = ({ adquirir }) => {
   const [datos, setDatos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
-  const [totalPaginas, setTotalPaginas] = useState(0);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const registrosPorPagina = 5;
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
   const [modalObservacionOpen, setModalObservacionOpen] = useState(false);
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [datoSeleccionado, setDatoSeleccionado] = useState(null);
+  const [modoCrear, setModoCrear] = useState(false);
+  const [modalTipoOpen, setModalTipoOpen] = useState(false);
+  const [modalCrearOpen, setModalCrearOpen] = useState(false);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("");
+  const [modalAnularOpen, setModalAnularOpen] = useState(false);
+  const [motivoAnular, setMotivoAnular] = useState("");
+  const [servicioFiltro, setServicioFiltro] = useState('Todos');
+  const [estadoFiltro, setEstadoFiltro] = useState('Todos');
+  const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
+  const [estadosDisponibles, setEstadosDisponibles] = useState([]);
+
+  // Obtener todos los datos sin paginar
+  const allDatos = getVentasEnProceso(1, 9999, '');
+
+  // Filtrar por texto, servicio y estado
+  const texto = busqueda.trim().toLowerCase();
+  const datosFiltrados = allDatos.datos.filter(item => {
+    const coincideServicio = servicioFiltro === 'Todos' || item.tipoSolicitud === servicioFiltro;
+    const coincideEstado = estadoFiltro === 'Todos' || item.estado === estadoFiltro;
+    const coincideTexto =
+      !texto ||
+      (item.titular && item.titular.toLowerCase().includes(texto)) ||
+      (item.marca && item.marca.toLowerCase().includes(texto));
+    return coincideServicio && coincideEstado && coincideTexto;
+  });
+
+  // Paginado manual
+  const total = datosFiltrados.length;
+  const inicio = (paginaActual - 1) * registrosPorPagina;
+  const fin = inicio + registrosPorPagina;
+  const datosPagina = datosFiltrados.slice(inicio, fin);
+
+  // Refrescar datos
+  const refrescar = () => {
+    try {
+      const resultado = getVentasEnProceso(paginaActual, registrosPorPagina, busqueda);
+      setDatos(resultado.datos || []);
+      setTotalRegistros(resultado.total || 0);
+    } catch (error) {
+      console.error('Error al refrescar datos:', error);
+      setDatos([]);
+      setTotalRegistros(0);
+    }
+  };
 
   useEffect(() => {
-    const resultado = getVentasEnProceso(paginaActual, registrosPorPagina, busqueda);
-    setDatos(resultado.datos);
-    setTotalPaginas(resultado.totalPaginas);
-    setTotalRegistros(resultado.total);
+    // Inicializar datos de prueba si no hay datos
+    initDatosPrueba();
+    refrescar();
+    // Obtener servicios y estados únicos
+    const servicios = getServicios();
+    setServiciosDisponibles(['Todos', ...servicios.map(s => s.nombre)]);
+    // Estados correctos solo para Certificación de Marca
+    const cert = servicios.find(s => s.nombre === 'Certificación de Marca');
+    const estadosCert = cert && cert.process_states ? cert.process_states.map(e => e.name) : [];
+    setEstadosDisponibles(['Todos', ...estadosCert]);
+    // eslint-disable-next-line
   }, [paginaActual, busqueda]);
 
-  const handleEliminar = async (id) => {
-    const confirm = window.confirm("¿Seguro que deseas anular esta solicitud?");
-    if (!confirm) return;
-
-    try {
-      const resultado = anularVenta(id);
-      if (resultado) {
-        setDatos(getVentasEnProceso());
-      }
-    } catch (error) {
-      console.error("Error anulando:", error);
-      alert("Ocurrió un error al anular la solicitud.");
+  // Refrescar cuando se cierre el modal de creación
+  useEffect(() => {
+    if (!modalCrearOpen) {
+      refrescar();
     }
-  };
+  }, [modalCrearOpen]);
+
+  // Abrir modal de creación si viene adquirir
+  useEffect(() => {
+    if (adquirir) {
+      setTipoSeleccionado('');
+      setModalTipoOpen(false);
+      setModalCrearOpen(true);
+      setModoCrear(true);
+      // Si tienes un mapeo de id a nombre de servicio, puedes hacerlo aquí
+      // setTipoSeleccionado(nombreServicioPorId[adquirir] || '')
+    }
+  }, [adquirir]);
 
   const handleGuardarEdicion = (datosActualizados) => {
-    try {
-      const resultado = editarVenta(datosActualizados.id, datosActualizados);
-      if (resultado) {
-        setDatos(getVentasEnProceso());
-      }
-      setModalEditarOpen(false);
-    } catch (error) {
-      console.error("Error al guardar la edición:", error);
-      alert("Ocurrió un error al guardar los cambios.");
-    }
+    setModalEditarOpen(false);
+    setModoCrear(false);
+    setTimeout(() => {
+      refrescar();
+    }, 100);
   };
 
-  const handleBusquedaChange = (e) => {
-    setBusqueda(e.target.value);
-    setPaginaActual(1);
+  // Nuevo flujo: abrir modal de tipo
+  const handleCrear = () => {
+    setModalTipoOpen(true);
+  };
+
+  // Al seleccionar tipo de solicitud
+  const handleSeleccionarTipo = (tipo) => {
+    setModalTipoOpen(false);
+    setTipoSeleccionado(tipo);
+    setModalCrearOpen(true);
+  };
+
+  const handleGuardarNuevaVenta = (nuevaVenta) => {
+    setModalCrearOpen(false);
+    setModoCrear(false);
+    setPaginaActual(1); // Forzar a la primera página
+    setTimeout(() => {
+      refrescar();
+    }, 100);
+  };
+
+  const handleGuardarComentario = (texto) => {
+    if (datoSeleccionado && datoSeleccionado.id) {
+      agregarComentario(datoSeleccionado.id, texto);
+      // Refrescar inmediatamente y luego de un pequeño delay para asegurar consistencia
+      refrescar();
+      setTimeout(() => {
+        refrescar();
+      }, 200);
+    }
+    setModalObservacionOpen(false);
+  };
+
+  const handleAnular = () => {
+    if (datoSeleccionado && motivoAnular.trim()) {
+      anularVenta(datoSeleccionado.id, motivoAnular.trim());
+      setModalAnularOpen(false);
+      setMotivoAnular("");
+      // Refrescar inmediatamente y luego de un pequeño delay para asegurar consistencia
+      refrescar();
+      setTimeout(() => {
+        refrescar();
+      }, 200);
+    }
   };
 
   return (
     <div className="w-full max-w-full">
-      <div className="flex items-center justify-between px-4 mb-4 w-full">
-        <input
-          type="text"
-          placeholder="Buscar por titular, marca o tipo de solicitud"
-          className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
-          value={busqueda}
-          onChange={handleBusquedaChange}
-        />
-
-        <div className="flex gap-3">
-          <button className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap">
-            <i className="bi bi-plus-square"></i> Crear Solicitud
-          </button>
-          <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
-            <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-          </button>
+      <SeleccionarTipoSolicitud
+        isOpen={modalTipoOpen}
+        onClose={() => setModalTipoOpen(false)}
+        onSeleccionar={handleSeleccionarTipo}
+      />
+      <CrearSolicitud
+        isOpen={modalCrearOpen}
+        onClose={() => setModalCrearOpen(false)}
+        onGuardar={handleGuardarNuevaVenta}
+        tipoSolicitud={tipoSeleccionado}
+        servicioId={adquirir}
+      />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-4 mb-6 w-full">
+        {/* Buscador, Selects y Botón en una sola fila */}
+        <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
+          {/* Buscador */}
+          <div className="relative w-full md:w-80 flex-shrink-0">
+            <span className="absolute left-3 top-2.5 text-gray-400"><i className="bi bi-search"></i></span>
+            <input
+              type="text"
+              placeholder="Buscar por titular o marca"
+              className="pl-9 pr-3 py-3 w-full text-base border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 bg-white shadow-md"
+              value={busqueda}
+              onChange={e => { setBusqueda(e.target.value); setPaginaActual(1); }}
+            />
+          </div>
+          {/* Select Servicio */}
+          <div className="flex items-center gap-2 min-w-[180px]">
+            <label className="text-sm text-gray-500" htmlFor="select-servicio">Servicio:</label>
+            <select
+              id="select-servicio"
+              value={servicioFiltro}
+              onChange={e => { setServicioFiltro(e.target.value); setPaginaActual(1); }}
+              className="px-4 py-2 rounded-lg border border-blue-300 text-base font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+            >
+              {serviciosDisponibles.map(servicio => (
+                <option key={servicio} value={servicio}>{servicio}</option>
+              ))}
+            </select>
+          </div>
+          {/* Select Estado */}
+          <div className="flex items-center gap-2 min-w-[180px]">
+            <label className="text-sm text-gray-500" htmlFor="select-estado">Estado:</label>
+            <select
+              id="select-estado"
+              value={estadoFiltro}
+              onChange={e => { setEstadoFiltro(e.target.value); setPaginaActual(1); }}
+              className="px-4 py-2 rounded-lg border border-green-300 text-base font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
+            >
+              {estadosDisponibles.map(estado => (
+                <option key={estado} value={estado}>{estado}</option>
+              ))}
+            </select>
+          </div>
+          {/* Botón Crear Solicitud */}
+          <div className="flex gap-3 ml-auto">
+            <button className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-5 py-2 text-sm rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition flex items-center gap-2" onClick={handleCrear}>
+              <i className="bi bi-plus-square"></i> Crear Solicitud
+            </button>
+          </div>
         </div>
       </div>
-
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300 z-40">
         <div className="overflow-x-auto w-full">
           <table className="table-auto w-full divide-y divide-gray-100">
-            <thead className="text-left text-sm text-gray-500 bg-gray-50">
+            <thead className="text-left text-sm text-white bg-gradient-to-r from-blue-700 to-blue-500">
               <tr>
-                <th className="px-6 py-4 font-medium text-center">Titular</th>
-                <th className="px-6 py-4 font-medium text-center">Expediente</th>
-                <th className="px-6 py-4 font-medium text-center">Solicitud</th>
-                <th className="px-6 py-4 font-medium text-center">Marca</th>
-                <th className="px-6 py-4 font-medium text-center">Encargado</th>
-                <th className="px-6 py-4 font-medium text-center">Cita</th>
-                <th className="px-6 py-4 font-medium text-center">Estado</th>
-                <th className="px-6 py-4 font-medium text-center">Acciones</th>
+                <th className="px-6 py-4 font-semibold text-center">Titular</th>
+                <th className="px-6 py-4 font-semibold text-center">Expediente</th>
+                <th className="px-6 py-4 font-semibold text-center">Solicitud</th>
+                <th className="px-6 py-4 font-semibold text-center">Marca</th>
+                <th className="px-6 py-4 font-semibold text-center">Encargado</th>
+                <th className="px-6 py-4 font-semibold text-center">Cita</th>
+                <th className="px-6 py-4 font-semibold text-center">Estado</th>
+                <th className="px-6 py-4 font-semibold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-              {datos.map((item) => {
+              {datosPagina.map((item) => {
                 const { color, texto } = getEstadoBadge(item.estado);
                 return (
-                  <tr key={item.id}>
+                  <tr key={item.id} className="hover:bg-blue-50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
                           src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.titular}`}
                           alt={item.titular}
-                          className="w-10 h-10 rounded-full"
+                          className="w-10 h-10 rounded-full border-2 border-blue-200 shadow-sm"
                         />
                         <div>
                           <div className="font-semibold text-gray-800">{item.titular}</div>
@@ -130,31 +264,26 @@ const TablaVentasProceso = () => {
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-2 justify-center flex-wrap">
                         <button
-                          className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
+                          className="rounded-full p-0 flex items-center justify-center bg-white border border-blue-400 text-blue-600 hover:bg-blue-50 hover:shadow-md transition h-9 w-9"
                           onClick={() => {
                             setDatoSeleccionado(item);
                             setModalEditarOpen(true);
+                            setModoCrear(false);
                           }}
                         >
                           <i className="bi bi-pencil"></i>
                         </button>
                         <button
-                          className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
-                          onClick={() => setModalObservacionOpen(true)}
+                          className="rounded-full p-0 flex items-center justify-center bg-white border border-yellow-400 text-yellow-600 hover:bg-yellow-50 hover:shadow-md transition h-9 w-9"
+                          onClick={() => {
+                            setDatoSeleccionado(item);
+                            setModalObservacionOpen(true);
+                          }}
                         >
-                          <i className="bi bi-chat-left-text-fill"></i>
+                          <i className="bi bi-chat-dots"></i>
                         </button>
                         <button
-                          className="btn btn-outline-dark rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#2C3E50", color: "#2C3E50" }}
-                        >
-                          <i className="bi bi-calendar-event-fill"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
+                          className="rounded-full p-0 flex items-center justify-center bg-white border border-green-400 text-green-600 hover:bg-green-50 hover:shadow-md transition h-9 w-9"
                           onClick={() => {
                             setDatoSeleccionado(item);
                             setModalDetalleOpen(true);
@@ -163,11 +292,14 @@ const TablaVentasProceso = () => {
                           <i className="bi bi-eye-fill"></i>
                         </button>
                         <button
-                          className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#DC3545", color: "#DC3545" }}
-                          onClick={() => handleEliminar(item.id)}
+                          className="rounded-full p-0 flex items-center justify-center bg-white border border-red-400 text-red-600 hover:bg-red-50 hover:shadow-md transition h-9 w-9"
+                          onClick={() => {
+                            setDatoSeleccionado(item);
+                            setModalAnularOpen(true);
+                            setMotivoAnular("");
+                          }}
                         >
-                          <i className="bi bi-dash-circle"></i>
+                          <i className="bi bi-x-circle"></i>
                         </button>
                       </div>
                     </td>
@@ -178,13 +310,12 @@ const TablaVentasProceso = () => {
           </table>
         </div>
       </div>
-
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="text-sm text-gray-700">
           Mostrando{" "}
           <span className="font-medium">{(paginaActual - 1) * registrosPorPagina + 1}</span> a{" "}
           <span className="font-medium">
-            {Math.min(paginaActual * registrosPorPagina, totalRegistros)}
+            {Math.min(paginaActual * registrosPorPagina, total)}
           </span>{" "}
           de <span className="font-medium">{totalRegistros}</span> resultados
         </div>
@@ -192,18 +323,18 @@ const TablaVentasProceso = () => {
           <button
             onClick={() => setPaginaActual(paginaActual - 1)}
             disabled={paginaActual === 1}
-            className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center h-8 w-8"
+            className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
           >
-            <FaChevronLeft className="text-sm" />
+            <FaChevronLeft className="text-base" />
           </button>
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
+          {Array.from({ length: Math.ceil(total / registrosPorPagina) }, (_, i) => i + 1).map((pagina) => (
             <button
               key={pagina}
               onClick={() => setPaginaActual(pagina)}
-              className={`h-8 w-8 rounded-full flex items-center justify-center ${
+              className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
                 paginaActual === pagina
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-blue-600 border border-blue-200"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                  : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
               }`}
             >
               {pagina}
@@ -211,14 +342,13 @@ const TablaVentasProceso = () => {
           ))}
           <button
             onClick={() => setPaginaActual(paginaActual + 1)}
-            disabled={paginaActual === totalPaginas}
-            className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center h-8 w-8"
+            disabled={paginaActual === Math.ceil(total / registrosPorPagina)}
+            className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
           >
-            <FaChevronRight className="text-sm" />
+            <FaChevronRight className="text-base" />
           </button>
         </div>
       </div>
-
       <VerDetalleVenta
         datos={datoSeleccionado}
         isOpen={modalDetalleOpen}
@@ -227,15 +357,44 @@ const TablaVentasProceso = () => {
       <Observaciones
         isOpen={modalObservacionOpen}
         onClose={() => setModalObservacionOpen(false)}
-        onGuardar={() => {}}
+        onGuardar={handleGuardarComentario}
       />
       <EditarVenta
         datos={datoSeleccionado}
         isOpen={modalEditarOpen}
-        onClose={() => setModalEditarOpen(false)}
-        onGuardar={handleGuardarEdicion}
+        onClose={() => { setModalEditarOpen(false); setModoCrear(false); }}
+        onGuardar={modoCrear ? handleGuardarNuevaVenta : handleGuardarEdicion}
       />
-
+      {modalAnularOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+            <h2 className="text-xl font-semibold mb-4 text-center">Anular Venta de Servicio</h2>
+            <p className="mb-2 text-gray-700 text-center">¿Estás seguro que deseas anular esta venta? Esta acción no se puede deshacer.<br/>Debes indicar el motivo de anulación.</p>
+            <textarea
+              className="w-full border border-gray-300 rounded-md p-2 text-sm mb-4"
+              placeholder="Motivo de anulación..."
+              value={motivoAnular}
+              onChange={e => setMotivoAnular(e.target.value)}
+              rows={3}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setModalAnularOpen(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAnular}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                disabled={!motivoAnular.trim()}
+              >
+                Anular
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         .custom-hover:hover {
           opacity: 0.8;

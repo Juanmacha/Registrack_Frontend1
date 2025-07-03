@@ -1,14 +1,17 @@
 import React from 'react';
 import LandingNavbar from '../landing/components/landingNavbar';
 import Hero from './components/hero';
-import Footer from './components/Footer';
+import Footer from './components/footer';
 
 const Landing = () => {
   return (
     <div>
       <LandingNavbar />
-      <Hero/>
-      <Footer/>
+      <div className="pt-28">
+        <Hero />
+        <Footer />
+      </div>
+
     </div>
   );
 };

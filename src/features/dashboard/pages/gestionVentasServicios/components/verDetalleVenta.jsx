@@ -1,10 +1,21 @@
 import React from "react";
+import { getComentarios } from '../services/ventasService';
+
+const labelClass = "text-xs text-gray-500 font-semibold mb-1";
+const valueClass = "text-xs text-gray-800 mb-2 break-all";
+
+const renderFileDisplayName = (file) => {
+  if (!file) return <span className="italic text-gray-400">No disponible</span>;
+  if (typeof file === 'string') return file;
+  if (file.name) return file.name;
+  return <span className="italic text-gray-400">No disponible</span>;
+};
 
 const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
   if (!isOpen || !datos) return null;
 
   const getEstadoBadge = (estado) => {
-    const estadoLower = estado.toLowerCase();
+    const estadoLower = estado?.toLowerCase() || '';
     if (estadoLower === "finalizado") {
       return (
         <span className="px-3 py-1 text-blue-700 bg-blue-100 rounded-full text-xs font-semibold">
@@ -40,90 +51,177 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
     );
   };
 
+  // Obtener comentarios de la venta
+  const comentarios = getComentarios(datos.id);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl p-0 overflow-y-auto max-h-[90vh] relative border border-gray-200">
+        {/* Header sticky */}
+        <div className="sticky top-0 z-10 bg-gray-50 px-8 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 p-2 rounded-full">
               <i className="bi bi-eye text-blue-600 text-xl"></i>
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-800">Detalle del Servicio</h2>
-              <p className="text-sm text-gray-500">Expediente: {datos.expediente}</p>
+              <p className="text-sm text-gray-500">Expediente: {datos.expediente || <span className="italic text-gray-400">No especificado</span>}</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="text-gray-900 hover:text-red-700 bg-gray-50"
+            className="text-gray-900 hover:text-red-700 bg-gray-50 text-2xl px-2 py-1 rounded-full focus:outline-none sticky top-0"
+            style={{ position: 'sticky', top: 0 }}
           >
             <i className="bi bi-x-lg"></i>
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Información del Cliente */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Información del Cliente</h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${datos.titular}`}
-                    alt={datos.titular}
-                    className="w-12 h-12 rounded-full"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-800">{datos.titular}</div>
-                    <div className="text-sm text-gray-500">{datos.tipoPersona}</div>
-                  </div>
+        {/* Content: grid 4 columnas en desktop, 1 en móvil */}
+        <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Columna 1: Cliente y Representante */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Titular / Representante</h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center space-x-3 mb-2">
+                <img
+                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${datos.titular || datos.nombreCompleto || ''}`}
+                  alt={datos.titular || datos.nombreCompleto || ''}
+                  className="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <div className="font-medium text-gray-800">{datos.titular || datos.nombreCompleto || <span className="italic text-gray-400">No especificado</span>}</div>
+                  <div className="text-xs text-gray-500">{datos.tipoPersona || datos.tipoSolicitante || <span className="italic text-gray-400">No especificado</span>}</div>
                 </div>
-                <div className="pt-2 border-t border-gray-200">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <i className="bi bi-building text-gray-400"></i>
-                    <span className="text-gray-600">Marca:</span>
-                    <span className="font-medium text-gray-800">{datos.marca}</span>
+              </div>
+              <div className={labelClass}>Tipo de Solicitante:</div>
+              <div className={valueClass}>{datos.tipoSolicitante || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Tipo de Persona:</div>
+              <div className={valueClass}>{datos.tipoPersona || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Tipo de Documento:</div>
+              <div className={valueClass}>{datos.tipoDocumento || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>N° Documento:</div>
+              <div className={valueClass}>{datos.numeroDocumento || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Email:</div>
+              <div className={valueClass}>{datos.email || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Teléfono:</div>
+              <div className={valueClass}>{datos.telefono || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Dirección:</div>
+              <div className={valueClass}>{datos.direccion || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Tipo de Entidad:</div>
+              <div className={valueClass}>{datos.tipoEntidad || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Razón Social:</div>
+              <div className={valueClass}>{datos.razonSocial || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Nombre Empresa:</div>
+              <div className={valueClass}>{datos.nombreEmpresa || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>NIT:</div>
+              <div className={valueClass}>{datos.nit || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Poder Representante:</div>
+              <div className={valueClass}>{renderFileDisplayName(datos.poderRepresentante)}</div>
+              <div className={labelClass}>Poder Autorización:</div>
+              <div className={valueClass}>{renderFileDisplayName(datos.poderAutorizacion)}</div>
+            </div>
+          </div>
+
+          {/* Columna 2: Detalles de la Solicitud y Marca */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Detalles y Marca</h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-600">Estado:</span>
+                {getEstadoBadge(datos.estado)}
+              </div>
+              <div className={labelClass}>Tipo de Solicitud:</div>
+              <div className={valueClass}>{datos.tipoSolicitud || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Encargado:</div>
+              <div className={valueClass}>{datos.encargado || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Fecha Solicitud:</div>
+              <div className={valueClass}>{datos.fechaSolicitud || <span className="italic text-gray-400">No especificado</span>}</div>
+              <div className={labelClass}>Próxima Cita:</div>
+              <div className={valueClass}>{datos.proximaCita || <span className="italic text-gray-400">Sin citas</span>}</div>
+              {datos.motivoAnulacion && (
+                <div className="flex items-center space-x-2 text-xs bg-red-50 p-2 rounded mt-2">
+                  <i className="bi bi-exclamation-triangle text-red-400"></i>
+                  <span className="text-gray-600">Motivo de Anulación:</span>
+                  <span className="font-medium text-red-700">{datos.motivoAnulacion}</span>
+                </div>
+              )}
+              <div className="mt-2 border-t pt-2">
+                <div className={labelClass}>País:</div>
+                <div className={valueClass}>{datos.pais || <span className="italic text-gray-400">No especificado</span>}</div>
+                <div className={labelClass}>NIT Marca:</div>
+                <div className={valueClass}>{datos.nitMarca || <span className="italic text-gray-400">No especificado</span>}</div>
+                <div className={labelClass}>Nombre Marca:</div>
+                <div className={valueClass}>{datos.nombreMarca || <span className="italic text-gray-400">No especificado</span>}</div>
+                <div className="flex items-center justify-between">
+                  <span className={labelClass}>Categoría:</span>
+                  <div className="flex items-center gap-1">
+                    <i className={`bi ${
+                      datos.categoria === 'Productos' 
+                        ? 'bi-box text-blue-600' 
+                        : 'bi-gear text-green-600'
+                    } text-xs`}></i>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      datos.categoria === 'Productos' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {datos.categoria || 'No especificada'}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
+            {/* Archivos Adjuntos */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-xs font-semibold text-gray-600 mb-1">Archivos Adjuntos</h4>
+              <div className={labelClass}>Certificado Cámara:</div>
+              <div className={valueClass}>{renderFileDisplayName(datos.certificadoCamara)}</div>
+              <div className={labelClass}>Logotipo Marca:</div>
+              <div className={valueClass}>{renderFileDisplayName(datos.logotipoMarca)}</div>
+            </div>
+          </div>
 
-            {/* Detalles de la Solicitud */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Detalles de la Solicitud</h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-600">Estado:</div>
-                  {getEstadoBadge(datos.estado)}
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <i className="bi bi-file-text text-gray-400"></i>
-                  <span className="text-gray-600">Tipo:</span>
-                  <span className="font-medium text-gray-800">{datos.tipoSolicitud}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <i className="bi bi-person text-gray-400"></i>
-                  <span className="text-gray-600">Encargado:</span>
-                  <span className="font-medium text-gray-800">{datos.encargado}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <i className="bi bi-calendar-event text-gray-400"></i>
-                  <span className="text-gray-600">Próxima Cita:</span>
-                  <span className="font-medium text-gray-800">
-                    {datos.proximaCita || (
-                      <span className="italic text-gray-400">Sin citas asignadas</span>
-                    )}
-                  </span>
-                </div>
-              </div>
+          {/* Columna 3: Clases de la Marca */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Clases de la Marca</h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              {Array.isArray(datos.clases) && datos.clases.length > 0 ? (
+                <ul className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                  {datos.clases.map((c, idx) => (
+                    <li key={idx} className="text-xs text-gray-700 flex flex-col md:flex-row md:items-center md:gap-2">
+                      <span>N° Clase: <span className="font-medium">{c.numero || <span className="italic text-gray-400">No especificado</span>}</span></span>
+                      <span>Descripción: <span className="font-medium">{c.descripcion || <span className="italic text-gray-400">No especificado</span>}</span></span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-gray-400 text-xs italic">Sin clases</div>
+              )}
+            </div>
+          </div>
+
+          {/* Columna 4: Comentarios */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Comentarios</h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              {comentarios && comentarios.length > 0 ? (
+                <ul className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                  {comentarios.map((c, idx) => (
+                    <li key={idx} className="text-xs text-gray-700">
+                      <span className="font-semibold text-blue-700">{c.autor || 'Sistema'}:</span> {c.texto}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-gray-400 text-xs italic">Sin comentarios</div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+        {/* Footer compacto */}
+        <div className="bg-gray-50 px-8 py-3 border-t border-gray-200 flex justify-end sticky bottom-0 z-10">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"

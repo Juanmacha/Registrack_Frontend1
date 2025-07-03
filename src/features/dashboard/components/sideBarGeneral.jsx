@@ -11,6 +11,7 @@ import { BsBullseye, BsCreditCard } from "react-icons/bs";
 import { FiChevronRight } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
 import { LuBriefcase, LuUsers } from "react-icons/lu";
+import { BiCog } from "react-icons/bi";
 
 const SideBarGeneral = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -29,6 +30,7 @@ const SideBarGeneral = () => {
     { label: "Citas", icon: CiCalendar, to: "/admin/calendario" },
     { label: "Pagos", icon: BsCreditCard, to: "/admin/pagos" },
     { label: "Clientes", icon: LuUsers, to: "/admin/gestionClientes" },
+    { label: "Servicios", icon: BiCog, to: "/admin/servicios" },
     { label: "Configuración", icon: CiSettings, to: "/admin/roles" },
   ];
 

@@ -5,6 +5,8 @@ import FormularioUsuario from "../gestionUsuarios/components/FormularioUsuario";
 import VerDetalleUsuario from "../gestionUsuarios/components/verDetalleUsuario";
 import dataUsuarios from "../gestionUsuarios/services/dataUsuarios";
 import { validarUsuario } from "../gestionUsuarios/services/validarUsuario";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const CAMPOS_REQUERIDOS = [
   "firstName", "lastName", "documentType", "documentNumber", "email", "password", "role"
@@ -30,15 +32,23 @@ const GestionUsuarios = () => {
   const usuariosPorPagina = 5;
 
   useEffect(() => {
+    // Cargar usuarios desde localStorage o usar dataUsuarios si no existen
     let stored = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const datosIncompletos =
+    
+    // Verificar si los datos almacenados son válidos y completos
+    const datosIncompletos = 
       stored.length === 0 ||
       stored.length !== dataUsuarios.length ||
       stored.some(usuario => CAMPOS_REQUERIDOS.some(campo => !(campo in usuario)));
+    
     if (datosIncompletos) {
+      // Si los datos están incompletos, usar dataUsuarios y guardarlos en localStorage
+      console.log("Cargando datos de dataUsuarios.js...");
       localStorage.setItem("usuarios", JSON.stringify(dataUsuarios));
       setUsuarios(dataUsuarios);
     } else {
+      // Si los datos están completos, usar los del localStorage
+      console.log("Usando datos del localStorage...");
       setUsuarios(stored);
     }
   }, []);
@@ -53,14 +63,23 @@ const GestionUsuarios = () => {
 
   const handleGuardarUsuario = (e) => {
     e.preventDefault();
+    console.log("Guardando usuario:", nuevoUsuario);
+    console.log("Modo edición:", modoEdicion);
+    console.log("Índice editar:", indiceEditar);
+    console.log("Usuario seleccionado:", usuarioSeleccionado);
+    
     const esValido = validarUsuario(nuevoUsuario);
     if (!esValido) return;
+    
     if (modoEdicion && usuarioSeleccionado !== null && indiceEditar !== null) {
+      console.log("Actualizando usuario en índice:", indiceEditar);
       const actualizados = [...usuarios];
-      actualizados[indiceEditar] = { ...nuevoUsuario };
+      actualizados[indiceEditar] = { ...usuarios[indiceEditar], ...nuevoUsuario };
       setUsuarios(actualizados);
       localStorage.setItem("usuarios", JSON.stringify(actualizados));
+      console.log("Usuario actualizado exitosamente");
     } else {
+      console.log("Creando nuevo usuario");
       const actualizados = [...usuarios, nuevoUsuario];
       setUsuarios(actualizados);
       localStorage.setItem("usuarios", JSON.stringify(actualizados));
@@ -84,7 +103,7 @@ const GestionUsuarios = () => {
     });
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = (usuario) => {
     Swal.fire({
       title: "¿Estás seguro?",
       text: "No podrás revertir esta acción",
@@ -96,10 +115,18 @@ const GestionUsuarios = () => {
       cancelButtonText: "Cancelar"
     }).then((result) => {
       if (result.isConfirmed) {
-        const usuariosActualizados = usuarios.filter((_, i) => i !== index);
-        setUsuarios(usuariosActualizados);
-        localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
-        Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+        // Encontrar el índice real del usuario en el array completo
+        const indiceReal = usuarios.findIndex(u => 
+          u.documentNumber === usuario.documentNumber && 
+          u.email === usuario.email
+        );
+        
+        if (indiceReal !== -1) {
+          const usuariosActualizados = usuarios.filter((_, i) => i !== indiceReal);
+          setUsuarios(usuariosActualizados);
+          localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
+          Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+        }
       }
     });
   };
@@ -128,10 +155,19 @@ const GestionUsuarios = () => {
   };
 
   const handleEditar = (usuario, idx) => {
+    // Encontrar el índice real del usuario en el array completo de usuarios
+    const indiceReal = usuarios.findIndex(u => 
+      u.documentNumber === usuario.documentNumber && 
+      u.email === usuario.email
+    );
+    
+    console.log("Editando usuario:", usuario);
+    console.log("Índice real encontrado:", indiceReal);
+    
     setNuevoUsuario(usuario);
     setModoEdicion(true);
     setUsuarioSeleccionado(usuario);
-    setIndiceEditar(idx);
+    setIndiceEditar(indiceReal);
     setMostrarModal(true);
   };
 
@@ -168,9 +204,6 @@ const GestionUsuarios = () => {
           <div className="flex gap-3">
             <button className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap" onClick={handleAbrirCrear}>
               <i className="bi bi-plus-square"></i> Crear Usuario
-            </button>
-            <button className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap">
-              <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
             </button>
           </div>
         </div>
@@ -239,19 +272,17 @@ const GestionUsuarios = () => {
                 handleGuardarUsuario={handleGuardarUsuario}
                 modoEdicion={modoEdicion}
                 usuarioEditar={usuarioSeleccionado}
+                onClose={() => setMostrarModal(false)}
               />
             </div>
           </div>
         )}
 
-        {mostrarModalVer && (
-          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-50">
-            <div className="absolute inset-0 backdrop-blur-sm"></div>
-            <div className="relative">
-              <VerDetalleUsuario usuario={usuarioSeleccionado} onClose={() => setMostrarModalVer(false)} />
-            </div>
-          </div>
-        )}
+        <VerDetalleUsuario
+          usuario={usuarioSeleccionado}
+          isOpen={mostrarModalVer}
+          onClose={() => setMostrarModalVer(false)}
+        />
       </div>
     </div>
   );
