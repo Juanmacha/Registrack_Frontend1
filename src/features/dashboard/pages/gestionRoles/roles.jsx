@@ -9,7 +9,7 @@ import {
   mostrarMensajeExito,
   mostrarMensajeError,
 } from "../../../../utils/alerts";
-import { modelosDisponibles, guardarRoles } from "../gestionRoles/services/rolesG";
+import { modelosDisponibles, guardarRoles } from "./services/rolesG";
 
 const GestionRoles = () => {
   const [roles, setRoles] = useState([]);

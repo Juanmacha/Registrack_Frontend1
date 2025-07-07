@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TablaEmpleados from "./components/tablaEmpleados";
-import empleadosMock from "./services/dataEmpleados";
+import { EmployeeService, initializeMockData } from "../../../../utils/mockDataService.js";
 import CrearEmpleadoModal from "./components/crearEmpleado";
 import EditarEmpleadoModal from "./components/editarEmpleado";
 import VerEmpleadoModal from "./components/verEmpleado";
@@ -35,11 +35,11 @@ const Empleados = () => {
   };
 
   const handleActualizarEmpleado = (empleadoActualizado) => {
-    const actualizados = datosEmpleados.map((e) =>
-      e.id === empleadoActualizado.id ? empleadoActualizado : e
-    );
-    setDatosEmpleados(actualizados);
-    localStorage.setItem("empleados", JSON.stringify(actualizados));
+    const empleadoActualizadoResult = EmployeeService.update(empleadoActualizado.id, empleadoActualizado);
+    if (empleadoActualizadoResult) {
+      const empleadosActualizados = EmployeeService.getAll();
+      setDatosEmpleados(empleadosActualizados);
+    }
     setMostrarEditar(false);
   };
 
@@ -47,13 +47,9 @@ const Empleados = () => {
   const [empleadoViendo, setEmpleadoViendo] = useState(null);
 
   useEffect(() => {
-    const guardados = localStorage.getItem("empleados");
-    if (guardados) {
-      setDatosEmpleados(JSON.parse(guardados));
-    } else {
-      localStorage.setItem("empleados", JSON.stringify(empleadosMock));
-      setDatosEmpleados(empleadosMock);
-    }
+    initializeMockData();
+    const empleadosData = EmployeeService.getAll();
+    setDatosEmpleados(empleadosData);
   }, []);
 
   const handleAbrirCrear = () => {
@@ -70,13 +66,11 @@ const Empleados = () => {
   };
 
   const handleGuardarEmpleado = (empleado) => {
-    const nuevoEmpleadoConId = {
-      ...empleado,
-      id: Date.now(), // ID único
-    };
-    const nuevos = [...datosEmpleados, nuevoEmpleadoConId];
-    setDatosEmpleados(nuevos);
-    localStorage.setItem("empleados", JSON.stringify(nuevos));
+    const nuevoEmpleadoCreado = EmployeeService.create(empleado);
+    if (nuevoEmpleadoCreado) {
+      const empleadosActualizados = EmployeeService.getAll();
+      setDatosEmpleados(empleadosActualizados);
+    }
     setMostrarFormulario(false);
   };
 
@@ -117,9 +111,11 @@ const Empleados = () => {
   const handleEliminar = (empleado) => {
     const confirmacion = confirm(`¿Eliminar a ${empleado.nombre}?`);
     if (confirmacion) {
-      const actualizados = datosEmpleados.filter((e) => e.id !== empleado.id);
-      setDatosEmpleados(actualizados);
-      localStorage.setItem("empleados", JSON.stringify(actualizados));
+      const eliminado = EmployeeService.delete(empleado.id);
+      if (eliminado) {
+        const empleadosActualizados = EmployeeService.getAll();
+        setDatosEmpleados(empleadosActualizados);
+      }
     }
   };
 

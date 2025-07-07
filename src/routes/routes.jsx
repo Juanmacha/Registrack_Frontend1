@@ -22,7 +22,8 @@ import Servicios from '../features/dashboard/pages/gestionVentasServicios/gestio
 import MisProcesos from '../features/dashboard/pages/misProcesos/MisProcesos'
 
 import AuthLayout from '../features/auth/components/authLayout';
-import AdminRoute from '../features/auth/components/admnRoute';
+import AdminRoute from '../features/auth/components/adminRoute';
+import EmployeeRoute from '../features/auth/components/employeeRoute';
 
 // Layout general para admin
 import AdminLayout from '../features/dashboard/layouts/adminLayouts';
@@ -55,8 +56,8 @@ const AppRoutes = () => {
       <Route path="/profile" element={<Profile />} />
 
       {/* Páginas individuales de servicios */}
-      <Route path="/pages/cesionMarca" element={<Cesion />} />
-      <Route path="/pages/presentacionOposicion" element={<Oposicion />} />
+      <Route path="/pages/cesion-marca" element={<Cesion />} />
+      <Route path="/pages/presentacion-oposicion" element={<Oposicion />} />
       <Route path="/pages/renovacion" element={<Renovacion />} />
       <Route path="/pages/busqueda" element={<Busqueda />} />
       <Route path="/pages/certificacion" element={<Certificacion />} />
@@ -72,13 +73,13 @@ const AppRoutes = () => {
          <Route path="/codigoRecuperacion" element={<CodigoRecuperacion />} />
       </Route>
 
-      {/* Rutas protegidas para admin con layout común */}
+      {/* Rutas protegidas para admin y empleados con layout común */}
       <Route
         path="/admin"
         element={
-          <AdminRoute>
+          <EmployeeRoute>
             <AdminLayout />
-          </AdminRoute>
+          </EmployeeRoute>
         }
       >
         <Route path="dashboard" element={<Dashboard />} />
@@ -109,6 +110,13 @@ const AppRoutes = () => {
       </Route>
 
       <Route path="/crear-solicitud/:servicioId" element={<CrearSolicitudPage />} />
+
+      {/* Redirecciones para compatibilidad con URLs antiguas */}
+      <Route path="/pages/cesionMarca" element={<Navigate to="/pages/cesion-marca" replace />} />
+      <Route path="/pages/presentacionOposicion" element={<Navigate to="/pages/presentacion-oposicion" replace />} />
+
+      {/* Ruta catch-all para URLs no encontradas */}
+      <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>
 

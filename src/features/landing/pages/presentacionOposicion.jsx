@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import LandingNavbar from "../components/landingNavbar";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import authData from "../../auth/services/authData";
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
 import FormularioPresentacionOposicion from "../../../shared/components/formularioOposicion";

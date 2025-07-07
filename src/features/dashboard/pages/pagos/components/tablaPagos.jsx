@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import pagos from "../services/dataPagos";
+import { PaymentService, initializeMockData } from "../../../../../utils/mockDataService.js";
 import getEstadoPagoBadge from "../services/getEstadoPagoBadge";
 import VerDetallePago from "../components/verDetallePagos";
 import DescargarExcelPagos from "../components/descargarExcelPagos";
@@ -28,7 +28,9 @@ const Tablapagos = () => {
   };
 
   useEffect(() => {
-    const filtrar = pagos.filter(
+    initializeMockData();
+    const pagosData = PaymentService.getAll();
+    const filtrar = pagosData.filter(
       (p) =>
         p.id_pago.toString().includes(busqueda) ||
         p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase())
@@ -57,7 +59,7 @@ const Tablapagos = () => {
           value={busqueda}
           onChange={handleBusquedaChange}
         />
-        <DescargarExcelPagos pagos={pagos} />
+        <DescargarExcelPagos pagos={datos} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">

@@ -6,9 +6,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from "@fullcalendar/core/locales/es";
-import VerDetalleCita from "../gestionCitas/components/verDetallecita";
-import dataEmpleados from "../gestionEmpleados/services/dataEmpleados";
-import Swal from "sweetalert2";
+import VerDetalleCita from "./components/verDetallecita";
+import { EmployeeService, initializeMockData } from "../../../../utils/mockDataService.js";
+import alertService from "../../../../utils/alertService.js";
+import citaAlertService from "../../../../utils/citaAlertService.js";
 
 const Calendario = () => {
   const [events, setEvents] = useState([]);
@@ -68,7 +69,7 @@ const Calendario = () => {
     const fechaSeleccionada = new Date(selectInfo.startStr);
     fechaSeleccionada.setHours(0, 0, 0, 0);
     if (fechaSeleccionada < hoy) {
-      alert("No puedes agendar citas en fechas anteriores a hoy.");
+      citaAlertService.fechaNoValida();
       return;
     }
     setSelectedDate(selectInfo);
@@ -83,34 +84,48 @@ const Calendario = () => {
     return { backgroundColor: "#FFD700", borderColor: "#1E3A8A", textColor: "#1E3A8A" };
   };
 
-  const handleSave = (values) => {
-    const cleanedValues = Object.fromEntries(
-      Object.entries(values).map(([key, value]) =>
-        [key, typeof value === 'string' ? value.trim() : value]
-      )
-    );
-    const estado = modoReprogramar ? "Reprogramada" : "Programada";
-    const eventColors = getEventColors(estado);
-    const idUnico = generarIdUnico(cleanedValues.cedula, selectedDate.startStr, cleanedValues.horaInicio);
+  const handleSave = async (values) => {
+    try {
+      // Mostrar alerta de carga
+      const loadingAlert = modoReprogramar ? citaAlertService.cargandoReprogramar() : citaAlertService.cargandoAgendar();
+      
+      const cleanedValues = Object.fromEntries(
+        Object.entries(values).map(([key, value]) =>
+          [key, typeof value === 'string' ? value.trim() : value]
+        )
+      );
+      const estado = modoReprogramar ? "Reprogramada" : "Programada";
+      const eventColors = getEventColors(estado);
+      const idUnico = generarIdUnico(cleanedValues.cedula, selectedDate.startStr, cleanedValues.horaInicio);
 
-    const newEvent = {
-      id: idUnico,
-      title: `Asesor: ${cleanedValues.asesor}`,
-      start: `${selectedDate.startStr}T${cleanedValues.horaInicio}`,
-      end: `${selectedDate.startStr}T${cleanedValues.horaFin}`,
-      extendedProps: { ...cleanedValues, estado },
-      ...eventColors,
-    };
+      const newEvent = {
+        id: idUnico,
+        title: `Asesor: ${cleanedValues.asesor}`,
+        start: `${selectedDate.startStr}T${cleanedValues.horaInicio}`,
+        end: `${selectedDate.startStr}T${cleanedValues.horaFin}`,
+        extendedProps: { ...cleanedValues, estado },
+        ...eventColors,
+      };
 
-    if (modoReprogramar && citaAReprogramar) {
-      setEvents((prev) => prev.map(ev => ev.id === citaAReprogramar.id ? newEvent : ev));
-      setModoReprogramar(false);
-      setCitaAReprogramar(null);
-      Swal.fire({ icon: 'success', title: 'Cita reprogramada', text: 'La cita ha sido reprogramada correctamente.', timer: 1800, showConfirmButton: false });
-    } else {
-      setEvents((prev) => [...prev, newEvent]);
+      // Simular operación asíncrona
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (modoReprogramar && citaAReprogramar) {
+        setEvents((prev) => prev.map(ev => ev.id === citaAReprogramar.id ? newEvent : ev));
+        setModoReprogramar(false);
+        setCitaAReprogramar(null);
+        alertService.close();
+        await citaAlertService.citaReprogramada();
+      } else {
+        setEvents((prev) => [...prev, newEvent]);
+        alertService.close();
+        await citaAlertService.citaAgendada();
+      }
+      setShowModal(false);
+    } catch (error) {
+      alertService.close();
+      citaAlertService.errorProcesarCita();
     }
-    setShowModal(false);
   };
 
   const generarOpcionesHora = () => {
@@ -130,7 +145,7 @@ const Calendario = () => {
   };
   const opcionesHora = generarOpcionesHora();
 
-const empleadosActivos = dataEmpleados.filter(e => e.estado === "Activo");
+    const empleadosActivos = EmployeeService.getAll().filter(e => e.estado === "Activo");
 
 
   const initialValues = {
@@ -155,24 +170,20 @@ const empleadosActivos = dataEmpleados.filter(e => e.estado === "Activo");
     setShowDetalle(true);
   };
 
-  const handleAnularCita = () => {
-    Swal.fire({
-      title: "Observación obligatoria",
-      input: "textarea",
-      inputLabel: "Por favor, ingresa la razón de la anulación:",
-      inputPlaceholder: "Escribe aquí la observación...",
-      inputValidator: (value) => {
-        if (!value || value.trim().length === 0) return 'La observación es obligatoria';
-        return null;
-      },
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Anular cita",
-      cancelButtonText: "Cancelar"
-    }).then((result) => {
+  const handleAnularCita = async () => {
+    try {
+      const result = await citaAlertService.confirmarAnulacion();
+
       if (result.isConfirmed && citaAReprogramar) {
-        const observacion = result.value;
+        // Mostrar alerta de carga
+        const loadingAlert = citaAlertService.cargandoAnular();
+        
+        // Simular operación asíncrona
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Aquí podrías agregar un modal para la observación si es necesario
+        const observacion = "Cita anulada por el administrador";
+        
         setEvents((prev) => prev.map(ev =>
           ev.id === citaAReprogramar.id
             ? {
@@ -182,11 +193,17 @@ const empleadosActivos = dataEmpleados.filter(e => e.estado === "Activo");
               }
             : ev
         ));
+        
+        alertService.close();
+        await citaAlertService.citaAnulada();
+        
         setShowDetalle(false);
         setCitaAReprogramar(null);
-        Swal.fire({ icon: 'success', title: 'Cita anulada', text: 'La cita ha sido anulada correctamente.', timer: 1800, showConfirmButton: false });
       }
-    });
+    } catch (error) {
+      alertService.close();
+      citaAlertService.errorAnularCita();
+    }
   };
 
   const cambiarVista = (vista) => {
@@ -202,6 +219,27 @@ const empleadosActivos = dataEmpleados.filter(e => e.estado === "Activo");
     }
   };
 
+  const limpiarCalendario = async () => {
+    try {
+      const result = await citaAlertService.confirmarLimpiarCalendario();
+      
+      if (result.isConfirmed) {
+        const loadingAlert = alertService.loading("Limpiando calendario...");
+        
+        // Simular operación asíncrona
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setEvents([]);
+        
+        alertService.close();
+        await citaAlertService.calendarioLimpio();
+      }
+    } catch (error) {
+      alertService.close();
+      alertService.error("Error", "Error al limpiar el calendario.");
+    }
+  };
+
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 bg-gray-100 min-h-screen pb-4">
@@ -214,9 +252,23 @@ const empleadosActivos = dataEmpleados.filter(e => e.estado === "Activo");
           <div className="flex gap-2">
             <button
               className="bg-[#1f2937] hover:bg-[#374151] px-4 py-1 rounded-md text-sm"
+              onClick={() => citaAlertService.infoCalendario()}
+              title="Información del calendario"
+            >
+              <i className="bi bi-info-circle"></i>
+            </button>
+            <button
+              className="bg-[#1f2937] hover:bg-[#374151] px-4 py-1 rounded-md text-sm"
               onClick={irAHoy}
             >
               Hoy
+            </button>
+            <button
+              className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-md text-sm"
+              onClick={limpiarCalendario}
+              title="Limpiar calendario"
+            >
+              <i className="bi bi-trash"></i>
             </button>
             <button
               className={`px-4 py-1 rounded-md text-sm ${currentView === 'dayGridMonth' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}

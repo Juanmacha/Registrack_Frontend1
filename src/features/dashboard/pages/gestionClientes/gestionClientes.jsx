@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TablaClientes from "./components/tablaClientes";
 import VerDetalleCliente from "./components/verDetalleCliente";
-import dataClientes from "./services/dataClientes";
+import { ClientService, initializeMockData } from "../../../../utils/mockDataService.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -22,19 +22,9 @@ const GestionClientes = () => {
   const clientesPorPagina = 5;
 
   useEffect(() => {
-    let stored = JSON.parse(localStorage.getItem("clientes")) || [];
-    const datosIncompletos =
-      stored.length === 0 ||
-      stored.length !== dataClientes.length ||
-      stored.some(cliente =>
-        CAMPOS_REQUERIDOS.some(campo => !(campo in cliente))
-      );
-    if (datosIncompletos) {
-      localStorage.setItem("clientes", JSON.stringify(dataClientes));
-      setClientes(dataClientes);
-    } else {
-      setClientes(stored);
-    }
+    initializeMockData();
+    const clientesData = ClientService.getAll();
+    setClientes(clientesData);
   }, []);
 
   function normalizarTexto(texto) {
@@ -62,14 +52,12 @@ const GestionClientes = () => {
   };
 
   const handleToggleEstado = (idx) => {
-    const actualizados = [...clientesPagina];
-    const globalIdx = clientes.findIndex(c => c.documento === actualizados[idx].documento);
-    if (globalIdx !== -1) {
-      actualizados[idx].estado = actualizados[idx].estado === "Activo" ? "Inactivo" : "Activo";
-      const nuevosClientes = [...clientes];
-      nuevosClientes[globalIdx] = { ...actualizados[idx] };
-      setClientes(nuevosClientes);
-      localStorage.setItem("clientes", JSON.stringify(nuevosClientes));
+    const cliente = clientesPagina[idx];
+    const nuevoEstado = cliente.estado === "Activo" ? "Inactivo" : "Activo";
+    const clienteActualizado = ClientService.update(cliente.id, { estado: nuevoEstado });
+    if (clienteActualizado) {
+      const clientesActualizados = ClientService.getAll();
+      setClientes(clientesActualizados);
     }
   };
 

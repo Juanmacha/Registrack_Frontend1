@@ -27,13 +27,13 @@ const servicesData = [
     title: "Cesión de marca",
     description: "¿Necesitas cambiar el titular de la marca que está registrada a tu nombre o colocar una marca que no va tuya a tu nombre? ¡Ingresa aquí!",
     image: "/images/cesion.jpg",
-    path:"/pages/cesionMarca"
+    path:"/pages/cesion-marca"
   },
   {
     title: "Presentación de oposición",
     description: "¿Necesitas presentar una demanda de oposición porque crees que alguien está solicitando un nombre parecido, gramático o igual a tu marca? ¡Ingresa aquí!",
     image: "/images/opocision.jpeg",
-    path:"/pages/presentacionOposicion"
+    path:"/pages/presentacion-oposicion"
   },
 ];
 

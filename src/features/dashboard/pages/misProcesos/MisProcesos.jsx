@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getFromStorage } from '../../../dashboard/pages/gestionVentasServicios/services/ventasService.js';
-import { getServicios } from '../../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService.js';
+import { getFromStorage } from '../gestionVentasServicios/services/ventasService.js';
+import { getServicios, clearServicesCache } from '../gestionVentasServicios/services/serviciosManagementService.js';
 import NavBarLanding from '../../../landing/components/landingNavbar.jsx';
 import authData from '../../../auth/services/authData.js';
 
@@ -95,7 +95,9 @@ const MisProcesos = () => {
       } else {
         setProcesos([]);
       }
-      const servs = getServicios();
+      // Limpiar caché para asegurar rutas actualizadas
+    clearServicesCache();
+    const servs = getServicios();
       setServicios(Array.isArray(servs) ? servs : []);
     } catch (err) {
       setError('Ocurrió un error al cargar tus procesos.');

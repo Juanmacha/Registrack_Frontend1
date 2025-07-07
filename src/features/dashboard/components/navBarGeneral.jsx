@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CgProfile } from "react-icons/cg";
 import authData from "../../auth/services/authData";
+import alertService from "../../../utils/alertService.js";
 
 const NavBar = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -16,10 +17,20 @@ const NavBar = () => {
     navigate("/profile");
   };
 
-  const handleCerrarSesion = () => {
+  const handleCerrarSesion = async () => {
     setMenuAbierto(false);
-    authData.removeToken?.();
-    navigate("/login");
+    
+    const result = await alertService.logoutConfirm();
+    
+    if (result.isConfirmed) {
+      // Limpiar token usando el servicio authData
+      authData.removeToken();
+      
+      // Mostrar alerta de éxito
+      await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.");
+      
+      navigate("/login");
+    }
   };
 
   // Cierre del menú al hacer clic fuera

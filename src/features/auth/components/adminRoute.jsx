@@ -3,8 +3,11 @@ import { Navigate } from "react-router-dom";
 import authData from "../services/authData";
 
 const AdminRoute = ({ children }) => {
-  const user = authData.getUser();
+  if (!authData.isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
 
+  const user = authData.getUser();
   if (!user || user.role !== "admin") {
     return <Navigate to="/" replace />;
   }

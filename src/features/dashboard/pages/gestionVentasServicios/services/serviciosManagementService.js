@@ -127,19 +127,19 @@ function initStorage() {
       },
       {
         id: "4",
-        nombre: "Oposición",
+        nombre: "Presentación de Oposición",
         descripcion_corta:
           "¿Necesitas presentar una demanda de oposición porque crees que alguien está solicitando un nombre parecido, gramático o igual a tu marca?",
         visible_en_landing: true,
         landing_data: {
-          titulo: "Oposición",
+          titulo: "Presentación de Oposición",
           resumen: "Defiende tus derechos de marca presentando una oposición.",
         },
         info_page_data: {
           descripcion:
             "Protegemos tus derechos de marca presentando oposiciones estratégicas contra solicitudes de registro que puedan generar confusión o afectar tu propiedad intelectual.",
         },
-        route_path: "/pages/presentacionOposicion",
+        route_path: "/pages/presentacion-oposicion",
         process_states: [
           {
             id: "1",
@@ -171,7 +171,7 @@ function initStorage() {
           descripcion:
             "Facilitamos la transferencia de derechos de marca, asesorando en todos los aspectos legales y administrativos del proceso de cesión para garantizar una transacción segura y legal.",
         },
-        route_path: "/pages/cesionMarca",
+        route_path: "/pages/cesion-marca",
         process_states: [
           {
             id: "1",
@@ -230,6 +230,12 @@ initStorage();
 // CRUD y métodos de gestión modular
 export function getServicios() {
   return getFromStorage(STORAGE_KEY);
+}
+
+// Función para limpiar el caché y forzar la reinicialización
+export function clearServicesCache() {
+  localStorage.removeItem(STORAGE_KEY);
+  initStorage();
 }
 
 export function getServicioById(id) {

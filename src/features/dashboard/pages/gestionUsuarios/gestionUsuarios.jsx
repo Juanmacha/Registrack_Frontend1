@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import TablaUsuarios from "../gestionUsuarios/components/tablaUsuarios";
-import FormularioUsuario from "../gestionUsuarios/components/FormularioUsuario";
-import VerDetalleUsuario from "../gestionUsuarios/components/verDetalleUsuario";
-import dataUsuarios from "../gestionUsuarios/services/dataUsuarios";
-import { validarUsuario } from "../gestionUsuarios/services/validarUsuario";
+import TablaUsuarios from "./components/tablaUsuarios";
+import FormularioUsuario from "./components/FormularioUsuario";
+import VerDetalleUsuario from "./components/verDetalleUsuario";
+import { UserService, initializeMockData } from "../../../../utils/mockDataService.js";
+import { validarUsuario } from "./services/validarUsuario";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -32,25 +32,9 @@ const GestionUsuarios = () => {
   const usuariosPorPagina = 5;
 
   useEffect(() => {
-    // Cargar usuarios desde localStorage o usar dataUsuarios si no existen
-    let stored = JSON.parse(localStorage.getItem("usuarios")) || [];
-    
-    // Verificar si los datos almacenados son válidos y completos
-    const datosIncompletos = 
-      stored.length === 0 ||
-      stored.length !== dataUsuarios.length ||
-      stored.some(usuario => CAMPOS_REQUERIDOS.some(campo => !(campo in usuario)));
-    
-    if (datosIncompletos) {
-      // Si los datos están incompletos, usar dataUsuarios y guardarlos en localStorage
-      console.log("Cargando datos de dataUsuarios.js...");
-      localStorage.setItem("usuarios", JSON.stringify(dataUsuarios));
-      setUsuarios(dataUsuarios);
-    } else {
-      // Si los datos están completos, usar los del localStorage
-      console.log("Usando datos del localStorage...");
-      setUsuarios(stored);
-    }
+    initializeMockData();
+    const usuariosData = UserService.getAll();
+    setUsuarios(usuariosData);
   }, []);
 
   const handleInputChange = (e) => {
@@ -73,16 +57,19 @@ const GestionUsuarios = () => {
     
     if (modoEdicion && usuarioSeleccionado !== null && indiceEditar !== null) {
       console.log("Actualizando usuario en índice:", indiceEditar);
-      const actualizados = [...usuarios];
-      actualizados[indiceEditar] = { ...usuarios[indiceEditar], ...nuevoUsuario };
-      setUsuarios(actualizados);
-      localStorage.setItem("usuarios", JSON.stringify(actualizados));
-      console.log("Usuario actualizado exitosamente");
+      const usuarioActualizado = UserService.update(usuarioSeleccionado.id, nuevoUsuario);
+      if (usuarioActualizado) {
+        const usuariosActualizados = UserService.getAll();
+        setUsuarios(usuariosActualizados);
+        console.log("Usuario actualizado exitosamente");
+      }
     } else {
       console.log("Creando nuevo usuario");
-      const actualizados = [...usuarios, nuevoUsuario];
-      setUsuarios(actualizados);
-      localStorage.setItem("usuarios", JSON.stringify(actualizados));
+      const nuevoUsuarioCreado = UserService.create(nuevoUsuario);
+      if (nuevoUsuarioCreado) {
+        const usuariosActualizados = UserService.getAll();
+        setUsuarios(usuariosActualizados);
+      }
     }
     Swal.fire({
       icon: "success",
@@ -115,16 +102,10 @@ const GestionUsuarios = () => {
       cancelButtonText: "Cancelar"
     }).then((result) => {
       if (result.isConfirmed) {
-        // Encontrar el índice real del usuario en el array completo
-        const indiceReal = usuarios.findIndex(u => 
-          u.documentNumber === usuario.documentNumber && 
-          u.email === usuario.email
-        );
-        
-        if (indiceReal !== -1) {
-          const usuariosActualizados = usuarios.filter((_, i) => i !== indiceReal);
+        const eliminado = UserService.delete(usuario.id);
+        if (eliminado) {
+          const usuariosActualizados = UserService.getAll();
           setUsuarios(usuariosActualizados);
-          localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
           Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
         }
       }

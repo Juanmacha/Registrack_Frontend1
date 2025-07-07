@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck } from "react-icons/bi";
-import authService from "../services/authService";
+import { UserService, initializeMockData } from "../../../utils/mockDataService.js";
+import alertService from "../../../utils/alertService.js";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -24,16 +25,63 @@ const Register = () => {
   };
 
   const handleRegister = async () => {
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+    // Validar campos requeridos
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.documentType || !formData.documentNumber) {
+      alertService.validationError("Por favor, completa todos los campos requeridos.");
       return;
     }
 
-    const result = authService.register(formData);
-    if (result.success) {
-      navigate("/login");
-    } else {
-      alert(result.message);
+    if (formData.password !== formData.confirmPassword) {
+      alertService.validationError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      alertService.validationError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    try {
+      // Mostrar alerta de carga
+      const loadingAlert = alertService.loading("Registrando usuario...");
+      
+      initializeMockData();
+      
+      // Validar que el email no exista
+      const existingUser = UserService.getByEmail(formData.email);
+      if (existingUser) {
+        alertService.close();
+        alertService.registerError("El email ya está registrado. Por favor, usa otro email.");
+        return;
+      }
+
+      // Crear nuevo usuario
+      const newUser = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        documentType: formData.documentType,
+        documentNumber: formData.documentNumber,
+        email: formData.email,
+        password: formData.password,
+        role: "Cliente", // Por defecto, los nuevos usuarios son clientes
+        estado: "activo"
+      };
+
+      const createdUser = UserService.create(newUser);
+      
+      // Cerrar alerta de carga
+      alertService.close();
+      
+      if (createdUser) {
+        await alertService.registerSuccess();
+        navigate("/login");
+      } else {
+        alertService.registerError();
+      }
+    } catch (error) {
+      console.error("Error en registro:", error);
+      alertService.close();
+      alertService.registerError();
     }
   };
 

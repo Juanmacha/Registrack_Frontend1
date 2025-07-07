@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { crearVenta } from '../services/ventasService';
-import { getServicios } from '../services/serviciosManagementService';
+import { crearVenta } from '../services/ventasService.js';
+import { getServicios } from '../services/serviciosManagementService.js';
 import authData from '../../../../auth/services/authData.js';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];

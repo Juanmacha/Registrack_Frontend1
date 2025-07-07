@@ -1,18 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Link as ScrollLink } from "react-scroll";
-import { FaUserCircle } from "react-icons/fa";
+import { CgProfile } from "react-icons/cg";
 import authData from "../../auth/services/authData";
+import alertService from "../../../utils/alertService.js";
 
 const NavBarLanding = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [userMenuAbierto, setUserMenuAbierto] = useState(false);
+  const userMenuRef = useRef(null);
   const navigate = useNavigate();
+  
+  // Obtener usuario usando el servicio authData
   const user = authData.getUser();
 
-  const handleLogout = () => {
-    authData.removeToken();
-    navigate("/");
+  const handleLogout = async () => {
+    setUserMenuAbierto(false);
+    
+    const result = await alertService.logoutConfirm();
+    
+    if (result.isConfirmed) {
+      // Limpiar token usando el servicio authData
+      authData.removeToken();
+      
+      // Mostrar alerta de éxito
+      await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.");
+      
+      navigate("/login");
+    }
   };
+
+  const handleVerPerfil = () => {
+    setUserMenuAbierto(false);
+    navigate("/profile");
+  };
+
+  // Cierre del menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuAbierto(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="w-full bg-white fixed top-0 left-0 z-50">
@@ -123,21 +155,35 @@ const NavBarLanding = () => {
               </Link>
             </>
           ) : (
-            <>
-              <Link
-                to="/profile"
-                className="inline-flex items-center no-underline text-[#1E3A8A] hover:text-[#1D4ED8] transition text-2xl"
-                title="Perfil"
-              >
-                <FaUserCircle />
-              </Link>
+            <div className="relative" ref={userMenuRef}>
               <button
-                onClick={handleLogout}
-                className="px-6 py-2 text-sm bg-red-400 hover:bg-red-600 text-white rounded-md shadow-sm transition duration-200"
+                onClick={() => setUserMenuAbierto(!userMenuAbierto)}
+                aria-expanded={userMenuAbierto}
+                className="bg-gray-200 rounded-full p-2 hover:bg-gray-300 transition duration-200"
               >
-                Cerrar Sesión
+                <CgProfile className="w-7 h-7 text-gray-700" />
               </button>
-            </>
+
+              {userMenuAbierto && (
+                <div
+                  className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden"
+                  role="menu"
+                >
+                  <button
+                    onClick={handleVerPerfil}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition"
+                  >
+                    Ver perfil
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-100 transition"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

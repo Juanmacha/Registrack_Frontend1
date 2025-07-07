@@ -2,24 +2,44 @@
 import React, { useState, useEffect } from "react";
 import { FaBalanceScale, FaMedal, FaRocket, FaCheck } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { getServicios } from "../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService";
+import { getServicios, clearServicesCache } from "../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService";
 import authData from '../../auth/services/authData';
+
+// Formularios y Modal
+import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
+import FormularioBusqueda from "../../../shared/components/formularioBusqueda";
+import FormularioCertificacion from "../../../shared/components/formularioCertificacion";
+import FormularioRenovacion from "../../../shared/components/formularioCesiondeMarca";
+import FormularioOposicion from "../../../shared/components/formularioOposicion";
+import FormularioCesion from "../../../shared/components/formularioCesiondeMarca";
+import FormularioAmpliacion from "../../../shared/components/formularioAmpliacion";
 
 const Hero = () => {
   const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [formularioActivo, setFormularioActivo] = useState(null);
+
+  const formulariosPorServicio = {
+    "Búsqueda de Antecedentes": FormularioBusqueda,
+    "Certificación de Marca": FormularioCertificacion,
+    "Renovación de Marca": FormularioRenovacion,
+    "Presentación de Oposición": FormularioOposicion,
+    "Cesión de Marca": FormularioCesion,
+    "Ampliación de Alcance": FormularioAmpliacion
+  };
 
   useEffect(() => {
     const cargar = () => {
+      // Limpiar caché para asegurar rutas actualizadas
+      clearServicesCache();
       const todos = getServicios();
       setServicios(todos.filter(s => s.visible_en_landing));
       setLoading(false);
     };
     cargar();
-    // Recargar al volver a la página (focus)
     window.addEventListener('focus', cargar);
-    // Recargar si cambia localStorage desde otro tab/ventana
     const onStorage = (e) => {
       if (e.key === 'servicios_management') cargar();
     };
@@ -30,19 +50,27 @@ const Hero = () => {
     };
   }, []);
 
-  // Simulación de autenticación (ajusta según tu lógica real)
-  const isAuthenticated = Boolean(localStorage.getItem('user'));
-
   const handleAdquirir = (servicio) => {
-    const user = authData.getUser && typeof authData.getUser === 'function' ? authData.getUser() : JSON.parse(localStorage.getItem('user'));
+    const user = authData.getUser && typeof authData.getUser === 'function'
+      ? authData.getUser()
+      : JSON.parse(localStorage.getItem('user'));
+
+    const FormularioComponente = formulariosPorServicio[servicio.nombre];
+
+    if (!FormularioComponente) {
+      alert("Este servicio aún no tiene un formulario habilitado.");
+      return;
+    }
+
     if (!user) {
-      // Guardar intención de adquisición para redirección post-login
-      localStorage.setItem('postLoginRedirect', `/crear-solicitud/${servicio.id}`);
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
       navigate('/login');
+      alert('Debes estar logueado para realizar esta opción');
     } else if (user.rol && user.rol.toLowerCase() === 'admin') {
       alert('Esta acción solo está disponible para clientes.');
     } else {
-      navigate(`/crear-solicitud/${servicio.id}`);
+      setFormularioActivo(<FormularioComponente />);
+      setModalAbierto(true);
     }
   };
 
@@ -56,9 +84,9 @@ const Hero = () => {
               Certimarcas
             </h1>
             <p className="text-lg text-gray-700 mb-6 text-left">
-                ¿Tienes una gran idea? Nosotros la protegemos. En Registrack te
-                ayudamos a registrar tu marca de forma fácil, rápida y sin
-                enredos legales. ¡Haz que tu marca sea solo tuya, hoy!
+              ¿Tienes una gran idea? Nosotros la protegemos. En Registrack te
+              ayudamos a registrar tu marca de forma fácil, rápida y sin
+              enredos legales. ¡Haz que tu marca sea solo tuya, hoy!
             </p>
             <ul className="space-y-4 text-base text-gray-700 mb-6">
               <li className="flex items-start gap-3">
@@ -171,8 +199,8 @@ const Hero = () => {
                       </button>
                       <button
                         onClick={() => handleAdquirir(servicio)}
-                        className={`px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${servicio.nombre === 'Certificación de Marca' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-                        disabled={servicio.nombre !== 'Certificación de Marca'}
+                        className={`px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${formulariosPorServicio[servicio.nombre] ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                        disabled={!formulariosPorServicio[servicio.nombre]}
                       >
                         Adquirir Servicio
                       </button>
@@ -184,6 +212,13 @@ const Hero = () => {
           )}
         </div>
       </section>
+
+      {/* MODAL */}
+      {modalAbierto && (
+        <FormularioBaseModal onClose={() => setModalAbierto(false)}>
+          {formularioActivo}
+        </FormularioBaseModal>
+      )}
     </div>
   );
 };

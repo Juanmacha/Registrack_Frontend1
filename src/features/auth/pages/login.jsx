@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiEnvelope, BiLock, BiShow, BiHide } from "react-icons/bi";
-import authService from "../services/authService";
-import authData from "../services/authData"; // <--- Importa authData
+import authService from "../services/authService.js";
+import alertService from "../../../utils/alertService.js";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -21,19 +21,35 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-    const result = authService.login(formData);
+    try {
+      // Mostrar alerta de carga
+      const loadingAlert = alertService.loading("Iniciando sesión...");
+      
+      // Autenticar usuario usando authService
+      const result = authService.login(formData);
 
-    if (result.success) {
-      const user = authData.getUser();
+      // Cerrar alerta de carga
+      alertService.close();
 
-      // Redirigir según el rol
-      if (user?.role === "admin") {
-        navigate("/admin/dashboard");
+      if (result.success) {
+        // Mostrar alerta de éxito
+        await alertService.loginSuccess(`${result.user.name}`);
+
+        // Redirigir según el rol
+        if (result.user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (result.user.role === "empleado") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/");
+        }
       } else {
-        navigate("/");
+        alertService.loginError();
       }
-    } else {
-      alert(result.message);
+    } catch (error) {
+      console.error("Error en login:", error);
+      alertService.close();
+      alertService.error("Error", "Error al iniciar sesión. Por favor, intenta de nuevo.");
     }
   };
 
