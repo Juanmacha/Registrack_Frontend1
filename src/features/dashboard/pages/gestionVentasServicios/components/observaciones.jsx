@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Swal from 'sweetalert2';
 
 const Observaciones = ({ isOpen, onClose, onGuardar }) => {
   const [texto, setTexto] = useState("");
@@ -8,10 +9,21 @@ const Observaciones = ({ isOpen, onClose, onGuardar }) => {
   }, [isOpen]);
 
   const handleGuardar = () => {
-    if (texto.trim() !== "") {
-      onGuardar(texto.trim());
-      setTexto("");
+    if (texto.trim() === "") {
+      Swal.fire({
+        icon: 'error',
+        title: 'Observación vacía',
+        text: 'Por favor, escribe una observación antes de guardar.'
+      });
+      return;
     }
+    onGuardar(texto.trim());
+    setTexto("");
+    Swal.fire({
+      icon: 'success',
+      title: 'Observación guardada',
+      text: 'La observación se ha guardado correctamente.'
+    });
   };
 
   if (!isOpen) return null;

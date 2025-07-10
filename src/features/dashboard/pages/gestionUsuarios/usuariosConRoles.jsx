@@ -4,6 +4,7 @@ import {
   RoleService, 
   initializeMockData 
 } from '../../../../utils/mockDataService.js';
+import { tienePermiso } from '../../../../utils/permisos.js';
 
 const UsuariosConRoles = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -60,10 +61,6 @@ const UsuariosConRoles = () => {
       cargarDatos(); // Recargar datos
       alert(`Rol de ${usuarioActualizado.firstName} ${usuarioActualizado.lastName} cambiado a ${nuevoRol}`);
     }
-  };
-
-  const verificarPermisos = (rolId, recurso, accion) => {
-    return RoleService.hasPermission(rolId, recurso, accion);
   };
 
   if (loading) {
@@ -259,33 +256,33 @@ const UsuariosConRoles = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Puede crear usuarios:</span>
                   <span className={`text-sm font-semibold ${
-                    verificarPermisos(rol.id, 'usuarios', 'crear') ? 'text-green-600' : 'text-red-600'
+                    tienePermiso(rol.id, 'usuarios', 'crear') ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {verificarPermisos(rol.id, 'usuarios', 'crear') ? 'Sí' : 'No'}
+                    {tienePermiso(rol.id, 'usuarios', 'crear') ? 'Sí' : 'No'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Puede eliminar ventas:</span>
                   <span className={`text-sm font-semibold ${
-                    verificarPermisos(rol.id, 'ventas', 'eliminar') ? 'text-green-600' : 'text-red-600'
+                    tienePermiso(rol.id, 'ventas', 'eliminar') ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {verificarPermisos(rol.id, 'ventas', 'eliminar') ? 'Sí' : 'No'}
+                    {tienePermiso(rol.id, 'ventas', 'eliminar') ? 'Sí' : 'No'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Puede gestionar roles:</span>
                   <span className={`text-sm font-semibold ${
-                    verificarPermisos(rol.id, 'roles', 'crear') ? 'text-green-600' : 'text-red-600'
+                    tienePermiso(rol.id, 'roles', 'crear') ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {verificarPermisos(rol.id, 'roles', 'crear') ? 'Sí' : 'No'}
+                    {tienePermiso(rol.id, 'roles', 'crear') ? 'Sí' : 'No'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Puede crear citas:</span>
                   <span className={`text-sm font-semibold ${
-                    verificarPermisos(rol.id, 'citas', 'crear') ? 'text-green-600' : 'text-red-600'
+                    tienePermiso(rol.id, 'citas', 'crear') ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {verificarPermisos(rol.id, 'citas', 'crear') ? 'Sí' : 'No'}
+                    {tienePermiso(rol.id, 'citas', 'crear') ? 'Sí' : 'No'}
                   </span>
                 </div>
               </div>

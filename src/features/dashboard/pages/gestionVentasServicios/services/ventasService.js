@@ -171,6 +171,11 @@ export function actualizarVenta(id, datosActualizados) {
       mapeados.tipoPersona = datos.tipoPersona || datos.tipoSolicitante;
     }
 
+    // Guardar fecha de finalización si el estado es finalizado/anulado/rechazado
+    if (["Finalizado", "Anulado", "Rechazado"].includes(datos.estado)) {
+      mapeados.fechaFin = new Date().toISOString();
+    }
+
     return mapeados;
   };
 
@@ -219,21 +224,21 @@ export function anularVenta(id, motivo) {
 }
 
 // Añadir comentario
-export function agregarComentario(id, texto) {
+export function agregarComentario(id, texto, especial = false) {
   let ventas = getFromStorage(STORAGE_KEY);
   let ventasFin = getFromStorage(STORAGE_KEY_FIN);
   const fecha = new Date().toLocaleString();
   let venta = ventas.find((v) => v.id === id);
   if (venta) {
     venta.comentarios = venta.comentarios || [];
-    venta.comentarios.push({ texto, fecha });
+    venta.comentarios.push({ texto, fecha, especial });
     setToStorage(STORAGE_KEY, ventas);
     return true;
   }
   venta = ventasFin.find((v) => v.id === id);
   if (venta) {
     venta.comentarios = venta.comentarios || [];
-    venta.comentarios.push({ texto, fecha });
+    venta.comentarios.push({ texto, fecha, especial });
     setToStorage(STORAGE_KEY_FIN, ventasFin);
     return true;
   }

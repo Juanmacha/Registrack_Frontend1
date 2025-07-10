@@ -17,6 +17,14 @@ const FormularioUsuario = ({
   const [errores, setErrores] = useState({});
   const [touched, setTouched] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [rolesDisponibles, setRolesDisponibles] = useState([]);
+
+  // Cargar roles activos del sistema
+  useEffect(() => {
+    const roles = JSON.parse(localStorage.getItem("roles_mock")) || [];
+    const rolesActivos = roles.filter(rol => rol.estado === "Activo");
+    setRolesDisponibles(rolesActivos);
+  }, []);
 
   useEffect(() => {
     if (modoEdicion && usuarioEditar) {
@@ -244,8 +252,12 @@ const FormularioUsuario = ({
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 bg-white ${mostrarError('role') ? 'border-red-500' : 'border-gray-300'}`}
       required
     >
-      <option value="usuario">Usuario</option>
-      <option value="administrador">Administrador</option>
+      <option value="">Seleccionar rol...</option>
+      {rolesDisponibles.map(rol => (
+        <option key={rol.id} value={rol.nombre}>
+          {rol.nombre}
+        </option>
+      ))}
     </select>
               {mostrarError('role') && <p className="text-red-600 text-sm mt-1">{errores.role}</p>}
   </div>

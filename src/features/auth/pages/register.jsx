@@ -14,14 +14,59 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [errors, setErrors] = useState({});
 
   const navigate = useNavigate();
+
+  const validate = (field, value) => {
+    let e = { ...errors };
+    switch (field) {
+      case "firstName":
+        e.firstName = value ? "" : "El nombre es requerido.";
+        break;
+      case "lastName":
+        e.lastName = value ? "" : "El apellido es requerido.";
+        break;
+      case "documentType":
+        e.documentType = value ? "" : "Selecciona el tipo de documento.";
+        break;
+      case "documentNumber":
+        e.documentNumber = value ? "" : "El número de documento es requerido.";
+        break;
+      case "email":
+        e.email = value ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Correo inválido.") : "El correo es requerido.";
+        break;
+      case "password":
+        e.password = value ? (value.length >= 6 ? "" : "Mínimo 6 caracteres.") : "La contraseña es requerida.";
+        break;
+      case "confirmPassword":
+        e.confirmPassword = value ? (value === formData.password ? "" : "Las contraseñas no coinciden.") : "Confirma la contraseña.";
+        break;
+      default:
+        break;
+    }
+    setErrors(e);
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
+    validate(e.target.name, e.target.value);
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.firstName &&
+      formData.lastName &&
+      formData.documentType &&
+      formData.documentNumber &&
+      formData.email &&
+      formData.password &&
+      formData.confirmPassword &&
+      Object.values(errors).every((err) => !err)
+    );
   };
 
   const handleRegister = async () => {
@@ -100,6 +145,7 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
         </div>
 
         <div className="relative">
@@ -110,6 +156,7 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
         </div>
 
         <div className="relative">
@@ -123,6 +170,7 @@ const Register = () => {
             <option value="CC">Cédula</option>
             <option value="TI">Tarjeta de identidad</option>
           </select>
+          {errors.documentType && <p className="text-xs text-red-600 mt-1">{errors.documentType}</p>}
         </div>
 
         <div className="relative">
@@ -133,6 +181,7 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.documentNumber && <p className="text-xs text-red-600 mt-1">{errors.documentNumber}</p>}
         </div>
 
         <div className="relative">
@@ -143,6 +192,7 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
         </div>
 
         <div className="relative">
@@ -154,6 +204,7 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
         </div>
 
         <div className="relative">
@@ -165,11 +216,13 @@ const Register = () => {
             onChange={handleChange}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
         </div>
 
         <button
           onClick={handleRegister}
           className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold shadow-md hover:bg-blue-700 transition-all duration-300"
+          disabled={!isFormValid()}
         >
           Registrarse
         </button>

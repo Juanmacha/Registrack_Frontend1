@@ -18,6 +18,14 @@ const EditarEmpleadoModal = ({
   });
 
   const [errors, setErrors] = useState({});
+  const [rolesDisponibles, setRolesDisponibles] = useState([]);
+
+  // Cargar roles activos del sistema
+  useEffect(() => {
+    const roles = JSON.parse(localStorage.getItem("roles_mock")) || [];
+    const rolesActivos = roles.filter(rol => rol.estado === "Activo");
+    setRolesDisponibles(rolesActivos);
+  }, []);
 
   useEffect(() => {
     if (empleadoEditando) {
@@ -184,15 +192,21 @@ const EditarEmpleadoModal = ({
                 <i className="bi bi-person-badge text-gray-400 mr-2"></i>
                 Rol *
               </label>
-              <input
-                type="text"
+              <select
                 name="rol"
                 value={formData.rol}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 ${
                   errors.rol ? "border-red-500" : "border-gray-300"
                 }`}
-              />
+              >
+                <option value="">Seleccionar rol...</option>
+                {rolesDisponibles.map(rol => (
+                  <option key={rol.id} value={rol.nombre}>
+                    {rol.nombre}
+                  </option>
+                ))}
+              </select>
               {errors.rol && <p className="text-sm text-red-600">{errors.rol}</p>}
             </div>
 

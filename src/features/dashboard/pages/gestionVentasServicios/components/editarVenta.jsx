@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { actualizarVenta } from '../services/ventasService';
+import { actualizarVenta, agregarComentario } from '../services/ventasService';
 import { getServicios } from '../services/serviciosManagementService.js';
+import Swal from 'sweetalert2';
+import { PAISES } from '../../../../../shared/utils/paises.js';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
 const tiposEntidad = ['Sociedad Anónima', 'SAS', 'LTDA', 'Otra'];
 const categorias = ['Productos', 'Servicios'];
 const estados = ['En revisión', 'Pendiente', 'Pendiente firma', 'Finalizado', 'Anulado'];
-const paisesFallback = ['Colombia', 'Perú', 'México', 'Argentina', 'Chile', 'Otro'];
 
 const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
   const [form, setForm] = useState({});
-  const [paises, setPaises] = useState(paisesFallback);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    fetch('https://restcountries.com/v3.1/all')
-      .then(res => res.json())
-      .then(data => setPaises(data.map(p => p.name.common).sort()))
-      .catch(() => setPaises(paisesFallback));
-  }, []);
+  const [justificacionCambioEstado, setJustificacionCambioEstado] = useState("");
+  const [estadoAnterior, setEstadoAnterior] = useState("");
 
   useEffect(() => {
     if (isOpen && datos) {
+      setEstadoAnterior(datos.estado || "");
+      setJustificacionCambioEstado("");
       setForm({
         ...datos,
         certificadoCamara: '',
@@ -44,44 +41,62 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
   const esNatural = form.tipoPersona === 'Natural';
   const esJuridica = form.tipoPersona === 'Jurídica';
 
-  const validate = () => {
+  const validate = (customForm) => {
+    const f = customForm || form;
     const e = {};
-    if (!form.expediente) e.expediente = 'Requerido';
-    if (!form.tipoSolicitante) e.tipoSolicitante = 'Requerido';
-    if (esTitular) {
-      if (!form.tipoPersona) e.tipoPersona = 'Requerido';
-      if (esNatural) {
-        if (!form.tipoDocumento) e.tipoDocumento = 'Requerido';
-        if (!form.numeroDocumento) e.numeroDocumento = 'Requerido';
-        if (!form.nombreCompleto) e.nombreCompleto = 'Requerido';
-        if (!form.email) e.email = 'Requerido';
-        if (!form.telefono) e.telefono = 'Requerido';
+    if (!f.expediente) e.expediente = 'Requerido';
+    else if (!/^[0-9]{6,15}$/.test(f.expediente)) e.expediente = 'Solo números, 6-15 dígitos';
+    if (!f.tipoSolicitante) e.tipoSolicitante = 'Requerido';
+    if (f.tipoSolicitante === 'Titular') {
+      if (!f.tipoPersona) e.tipoPersona = 'Requerido';
+      if (f.tipoPersona === 'Natural') {
+        if (!f.tipoDocumento) e.tipoDocumento = 'Requerido';
+        if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
+        else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
+        else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
+        if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+        if (!f.email) e.email = 'Requerido';
+        else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
+        if (!f.telefono) e.telefono = 'Requerido';
+        else if (!/^[0-9]{7,15}$/.test(f.telefono)) e.telefono = 'Solo números, 7-15 dígitos';
       }
-      if (esJuridica) {
-        if (!form.tipoEntidad) e.tipoEntidad = 'Requerido';
-        if (!form.razonSocial) e.razonSocial = 'Requerido';
-        if (!form.nombreEmpresa) e.nombreEmpresa = 'Requerido';
-        if (!form.nit) e.nit = 'Requerido';
+      if (f.tipoPersona === 'Jurídica') {
+        if (!f.tipoEntidad) e.tipoEntidad = 'Requerido';
+        if (!f.razonSocial) e.razonSocial = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.razonSocial)) e.razonSocial = 'Solo letras, números y básicos, 2-80 caracteres';
+        if (!f.nombreEmpresa) e.nombreEmpresa = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreEmpresa)) e.nombreEmpresa = 'Solo letras, números y básicos, 2-80 caracteres';
+        if (!f.nit) e.nit = 'Requerido';
+        else if (!/^[0-9]{6,15}$/.test(f.nit)) e.nit = 'Solo números, 6-15 dígitos';
       }
     }
-    if (esRepresentante) {
-      if (!form.tipoDocumento) e.tipoDocumento = 'Requerido';
-      if (!form.numeroDocumento) e.numeroDocumento = 'Requerido';
-      if (!form.nombreCompleto) e.nombreCompleto = 'Requerido';
-      if (!form.email) e.email = 'Requerido';
-      if (!form.telefono) e.telefono = 'Requerido';
-      if (!form.direccion) e.direccion = 'Requerido';
+    if (f.tipoSolicitante === 'Representante Autorizado') {
+      if (!f.tipoDocumento) e.tipoDocumento = 'Requerido';
+      if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
+      else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
+      else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
+      if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+      if (!f.email) e.email = 'Requerido';
+      else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
+      if (!f.telefono) e.telefono = 'Requerido';
+      else if (!/^[0-9]{7,15}$/.test(f.telefono)) e.telefono = 'Solo números, 7-15 dígitos';
+      if (!f.direccion) e.direccion = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) e.direccion = 'Dirección inválida';
     }
-    if (!form.pais) e.pais = 'Requerido';
-    if (!form.nitMarca) e.nitMarca = 'Requerido';
-    if (!form.nombreMarca) e.nombreMarca = 'Requerido';
-    if (!form.categoria) e.categoria = 'Requerido';
-    if (!form.clases || !form.clases.length) e.clases = 'Agrega al menos una clase';
-    (form.clases || []).forEach((c, i) => {
+    if (!f.pais) e.pais = 'Requerido';
+    if (!f.nitMarca) e.nitMarca = 'Requerido';
+    else if (!/^[0-9]{6,15}$/.test(f.nitMarca)) e.nitMarca = 'Solo números, 6-15 dígitos';
+    if (!f.nombreMarca) e.nombreMarca = 'Requerido';
+    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
+    if (!f.categoria) e.categoria = 'Requerido';
+    if (!f.clases || !f.clases.length) e.clases = 'Agrega al menos una clase';
+    (f.clases || []).forEach((c, i) => {
       if (!c.numero) e[`clase_numero_${i}`] = 'Número requerido';
       if (!c.descripcion) e[`clase_desc_${i}`] = 'Descripción requerida';
     });
-    if (form.estado === 'Anulado' && (!form.motivoAnulacion || !form.motivoAnulacion.trim())) {
+    if (f.estado === 'Anulado' && (!f.motivoAnulacion || !f.motivoAnulacion.trim())) {
       e.motivoAnulacion = 'Debes ingresar el motivo de anulación';
     }
     return e;
@@ -89,12 +104,13 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
 
   const handleChange = e => {
     const { name, value, type, files } = e.target;
-    if (type === 'file') {
-      setForm(f => ({ ...f, [name]: files[0] }));
-    } else {
-      setForm(f => ({ ...f, [name]: value }));
-    }
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    let newValue = type === 'file' ? files[0] : value;
+    setForm(f => {
+      const updatedForm = { ...f, [name]: newValue };
+      const newErrors = validate(updatedForm);
+      setErrors(newErrors);
+      return updatedForm;
+    });
   };
 
   const handleClaseChange = (i, field, value) => {
@@ -115,23 +131,32 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
     setForm(f => ({ ...f, clases: (f.clases || []).filter((_, idx) => idx !== i) }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const eValid = validate();
-    setErrors(eValid);
-    if (Object.keys(eValid).length === 0) {
-      // Guardar solo el nombre del archivo si se subió uno nuevo
-      const datos = {
-        ...form,
-        certificadoCamara: form.certificadoCamara && form.certificadoCamara.name ? form.certificadoCamara.name : form.certificadoCamara || '',
-        logotipoMarca: form.logotipoMarca && form.logotipoMarca.name ? form.logotipoMarca.name : form.logotipoMarca || '',
-        poderRepresentante: form.poderRepresentante && form.poderRepresentante.name ? form.poderRepresentante.name : form.poderRepresentante || '',
-        poderAutorizacion: form.poderAutorizacion && form.poderAutorizacion.name ? form.poderAutorizacion.name : form.poderAutorizacion || '',
-        motivoAnulacion: form.estado === 'Anulado' ? (form.motivoAnulacion || '') : '',
-      };
-      actualizarVenta(form.id, datos);
-      if (onGuardar) onGuardar(datos);
+    const newErrors = validate();
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en el formulario',
+        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
+      });
+      return;
+    }
+    try {
+      await onGuardar(form);
+      Swal.fire({
+        icon: 'success',
+        title: 'Solicitud actualizada',
+        text: 'La solicitud se ha actualizado correctamente.'
+      });
       onClose();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al guardar',
+        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
+      });
     }
   };
 
@@ -148,13 +173,24 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-3xl p-8 overflow-y-auto max-h-[90vh]">
-        <h2 className="text-2xl font-bold mb-6 text-center text-blue-800">Editar Solicitud</h2>
+        {/* Encabezado moderno con ícono, título y subtítulo */}
+        <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-t-xl mb-6">
+          <span className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#2563eb" className="w-7 h-7">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487a2.1 2.1 0 1 1 2.97 2.97L7.5 19.79l-4 1 1-4 12.362-12.303ZM19 7l-2-2" />
+            </svg>
+          </span>
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-gray-800">Editar Solicitud</h2>
+            <p className="text-sm text-gray-500">Editando: {form.nombreCompleto || form.nombreEmpresa || form.titular || 'Solicitud'}</p>
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-4">
             {/* Número de Expediente */}
             <div>
               <label className="block text-sm font-medium mb-1">Número de Expediente *</label>
-              <input type="text" name="expediente" value={form.expediente || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+              <input type="text" name="expediente" value={form.expediente || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.expediente ? 'border-red-500' : ''}`} />
               {errors.expediente && <p className="text-xs text-red-600">{errors.expediente}</p>}
             </div>
             {/* Tipo de Solicitante */}
@@ -192,22 +228,22 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Número de Documento *</label>
-                      <input type="text" name="numeroDocumento" value={form.numeroDocumento || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="numeroDocumento" value={form.numeroDocumento || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.numeroDocumento ? 'border-red-500' : ''}`} />
                       {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                      <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
                       {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
-                      <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="email" name="email" value={form.email || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.email ? 'border-red-500' : ''}`} />
                       {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Teléfono *</label>
-                      <input type="text" name="telefono" value={form.telefono || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="telefono" value={form.telefono || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.telefono ? 'border-red-500' : ''}`} />
                       {errors.telefono && <p className="text-xs text-red-600">{errors.telefono}</p>}
                     </div>
                   </>
@@ -225,17 +261,17 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Razón Social *</label>
-                      <input type="text" name="razonSocial" value={form.razonSocial || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="razonSocial" value={form.razonSocial || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.razonSocial ? 'border-red-500' : ''}`} />
                       {errors.razonSocial && <p className="text-xs text-red-600">{errors.razonSocial}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Nombre de la Empresa *</label>
-                      <input type="text" name="nombreEmpresa" value={form.nombreEmpresa || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="nombreEmpresa" value={form.nombreEmpresa || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreEmpresa ? 'border-red-500' : ''}`} />
                       {errors.nombreEmpresa && <p className="text-xs text-red-600">{errors.nombreEmpresa}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">NIT *</label>
-                      <input type="text" name="nit" value={form.nit || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                      <input type="text" name="nit" value={form.nit || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nit ? 'border-red-500' : ''}`} />
                       {errors.nit && <p className="text-xs text-red-600">{errors.nit}</p>}
                     </div>
                   </>
@@ -255,27 +291,27 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Número de Documento *</label>
-                  <input type="text" name="numeroDocumento" value={form.numeroDocumento || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                  <input type="text" name="numeroDocumento" value={form.numeroDocumento || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.numeroDocumento ? 'border-red-500' : ''}`} />
                   {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                  <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                  <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
                   {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
-                  <input type="email" name="email" value={form.email || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                  <input type="email" name="email" value={form.email || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.email ? 'border-red-500' : ''}`} />
                   {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Teléfono *</label>
-                  <input type="text" name="telefono" value={form.telefono || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                  <input type="text" name="telefono" value={form.telefono || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.telefono ? 'border-red-500' : ''}`} />
                   {errors.telefono && <p className="text-xs text-red-600">{errors.telefono}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Dirección *</label>
-                  <input type="text" name="direccion" value={form.direccion || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+                  <input type="text" name="direccion" value={form.direccion || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.direccion ? 'border-red-500' : ''}`} />
                   {errors.direccion && <p className="text-xs text-red-600">{errors.direccion}</p>}
                 </div>
               </>
@@ -283,20 +319,32 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
             {/* Datos de la Marca */}
             <div>
               <label className="block text-sm font-medium mb-1">País *</label>
-              <select name="pais" value={form.pais || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
-                <option value="">Seleccionar</option>
-                {paises.map(p => <option key={p}>{p}</option>)}
-              </select>
+              <div className="flex items-center gap-2">
+                <select name="pais" value={form.pais || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
+                  <option value="">Seleccionar</option>
+                  {PAISES.map(p => (
+                    <option key={p.codigo} value={p.nombre}>{p.nombre}</option>
+                  ))}
+                </select>
+                {form.pais && PAISES.find(p => p.nombre === form.pais) && (
+                  <img
+                    src={PAISES.find(p => p.nombre === form.pais).bandera}
+                    alt={form.pais}
+                    title={form.pais}
+                    className="w-7 h-5 rounded shadow border border-gray-300"
+                  />
+                )}
+              </div>
               {errors.pais && <p className="text-xs text-red-600">{errors.pais}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">NIT de la Marca *</label>
-              <input type="text" name="nitMarca" value={form.nitMarca || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+              <input type="text" name="nitMarca" value={form.nitMarca || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nitMarca ? 'border-red-500' : ''}`} />
               {errors.nitMarca && <p className="text-xs text-red-600">{errors.nitMarca}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nombre de la Marca *</label>
-              <input type="text" name="nombreMarca" value={form.nombreMarca || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
+              <input type="text" name="nombreMarca" value={form.nombreMarca || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreMarca ? 'border-red-500' : ''}`} />
               {errors.nombreMarca && <p className="text-xs text-red-600">{errors.nombreMarca}</p>}
             </div>
             <div>
@@ -357,10 +405,30 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
             <label className="block text-sm font-medium mb-1">Estado *</label>
             <select name="estado" value={form.estado || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
               <option value="">Seleccionar</option>
-              {estadosCert.map(e => <option key={e}>{e}</option>)}
+              {estadosCert.map((e, index) => (
+                <option key={e} value={e}>
+                  {index + 1}. {e}
+                </option>
+              ))}
             </select>
             {errors.estado && <p className="text-xs text-red-600">{errors.estado}</p>}
           </div>
+          {/* Justificación de cambio de estado */}
+          {form.estado !== estadoAnterior && (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-blue-700">Justificación del cambio de estado *</label>
+              <textarea
+                name="justificacionCambioEstado"
+                value={justificacionCambioEstado}
+                onChange={e => setJustificacionCambioEstado(e.target.value)}
+                className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-blue-50 text-blue-800"
+                rows={3}
+                placeholder="Explica el motivo del cambio de estado..."
+                required
+              />
+              {errors.justificacionCambioEstado && <p className="text-xs text-red-600">{errors.justificacionCambioEstado}</p>}
+            </div>
+          )}
           {/* Motivo de Anulación */}
           {form.estado === 'Anulado' && (
             <div>

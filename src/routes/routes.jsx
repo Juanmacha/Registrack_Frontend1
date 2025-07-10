@@ -20,6 +20,7 @@ import Roles from '../features/dashboard/pages/gestionRoles/roles';
 import Empleados from '../features/dashboard/pages/gestionEmpleados/empleados';
 import Servicios from '../features/dashboard/pages/gestionVentasServicios/gestionServicios';
 import MisProcesos from '../features/dashboard/pages/misProcesos/MisProcesos'
+import Ayuda from '../features/landing/pages/ayuda';
 
 import AuthLayout from '../features/auth/components/authLayout';
 import AdminRoute from '../features/auth/components/adminRoute';
@@ -63,6 +64,7 @@ const AppRoutes = () => {
       <Route path="/pages/certificacion" element={<Certificacion />} />
       <Route path="/pages/ampliacion" element={<Ampliacion />} />
       <Route path="/misprocesos" element={<MisProcesos/>}/>
+      <Route path="/ayuda" element={<Ayuda />} />
 
       {/* Layout para autenticación */}
       <Route element={<AuthLayout />}>

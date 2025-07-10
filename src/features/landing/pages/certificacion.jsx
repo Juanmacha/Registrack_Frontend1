@@ -6,11 +6,16 @@ import Footer from "../components/footer";
 import authData from "../../auth/services/authData";
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
 import FormularioCertificacion from "../../../shared/components/formularioCertificacion"; // ✅ Asegúrate de que este componente exista
+import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
+import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 
 const Certificaciones = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
   const [mostrarModal, setMostrarModal] = useState(false);
+  
+  // Forzar scroll al inicio de la página
+  useScrollToTop();
 
   const handleAdquirirCertificacion = () => {
     if (!user) {
@@ -22,7 +27,7 @@ const Certificaciones = () => {
   };
 
   return (
-    <div className="font-sans bg-white pt-28">
+    <div className="font-sans bg-white pt-20">
       <NavBarLanding />
 
       <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">
@@ -79,9 +84,17 @@ const Certificaciones = () => {
 
       {/* MODAL */}
       {mostrarModal && (
-        <FormularioBaseModal onClose={() => setMostrarModal(false)}>
-          <FormularioCertificacion />
-        </FormularioBaseModal>
+        <FormularioCertificacion 
+          isOpen={mostrarModal}
+          onClose={() => setMostrarModal(false)}
+          onGuardar={async (form) => {
+            const user = authData.getUser();
+            if (user && user.email) {
+              await crearVenta({ ...form, email: user.email });
+            }
+            setMostrarModal(false);
+          }}
+        />
       )}
     </div>
   );

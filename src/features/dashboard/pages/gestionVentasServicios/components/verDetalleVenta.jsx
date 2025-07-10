@@ -58,7 +58,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl p-0 overflow-y-auto max-h-[90vh] relative border border-gray-200">
         {/* Header sticky */}
-        <div className="sticky top-0 z-10 bg-gray-50 px-8 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 p-2 rounded-full">
               <i className="bi bi-eye text-blue-600 text-xl"></i>
@@ -78,11 +78,11 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
         </div>
 
         {/* Content: grid 4 columnas en desktop, 1 en móvil */}
-        <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Columna 1: Cliente y Representante */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Titular / Representante</h3>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               <div className="flex items-center space-x-3 mb-2">
                 <img
                   src={`https://api.dicebear.com/7.x/initials/svg?seed=${datos.titular || datos.nombreCompleto || ''}`}
@@ -126,7 +126,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
           {/* Columna 2: Detalles de la Solicitud y Marca */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Detalles y Marca</h3>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-600">Estado:</span>
                 {getEstadoBadge(datos.estado)}
@@ -173,7 +173,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
               </div>
             </div>
             {/* Archivos Adjuntos */}
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               <h4 className="text-xs font-semibold text-gray-600 mb-1">Archivos Adjuntos</h4>
               <div className={labelClass}>Certificado Cámara:</div>
               <div className={valueClass}>{renderFileDisplayName(datos.certificadoCamara)}</div>
@@ -185,7 +185,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
           {/* Columna 3: Clases de la Marca */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Clases de la Marca</h3>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               {Array.isArray(datos.clases) && datos.clases.length > 0 ? (
                 <ul className="space-y-1 max-h-32 overflow-y-auto pr-1">
                   {datos.clases.map((c, idx) => (
@@ -204,12 +204,25 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
           {/* Columna 4: Comentarios */}
           <div className="space-y-2">
             <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Comentarios</h3>
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               {comentarios && comentarios.length > 0 ? (
                 <ul className="space-y-2 max-h-32 overflow-y-auto pr-1">
                   {comentarios.map((c, idx) => (
-                    <li key={idx} className="text-xs text-gray-700">
-                      <span className="font-semibold text-blue-700">{c.autor || 'Sistema'}:</span> {c.texto}
+                    <li key={idx} className={`text-xs text-gray-700 ${c.especial ? 'bg-blue-50 border-l-4 border-blue-400 p-2 rounded' : ''}`}>
+                      {c.especial ? (
+                        <>
+                          <span className="font-semibold text-blue-800 flex items-center gap-1">
+                            <i className="bi bi-arrow-repeat"></i> Justificación de cambio de estado
+                          </span>
+                          <span className="block text-blue-900 font-medium mt-1">{c.texto}</span>
+                          <span className="block text-xs text-blue-500 mt-1">{c.fecha}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold text-blue-700">{c.autor || 'Sistema'}:</span> {c.texto}
+                          <span className="block text-xs text-gray-400">{c.fecha}</span>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -221,7 +234,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
         </div>
 
         {/* Footer compacto */}
-        <div className="bg-gray-50 px-8 py-3 border-t border-gray-200 flex justify-end sticky bottom-0 z-10">
+        <div className="bg-gray-50 px-6 py-2 border-t border-gray-200 flex justify-end sticky bottom-0 z-10">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"

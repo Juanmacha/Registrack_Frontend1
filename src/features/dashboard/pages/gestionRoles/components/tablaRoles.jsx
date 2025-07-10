@@ -3,6 +3,13 @@ import eliminarRol from "./eliminarRol";
 import { getEstadoBadge } from "../services/rolesG";
 
 const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => {
+  // Cambiar estado del rol (activo/inactivo)
+  const toggleEstado = (index) => {
+    const nuevosRoles = [...roles];
+    nuevosRoles[index].estado = nuevosRoles[index].estado === "activo" ? "inactivo" : "activo";
+    setRoles(nuevosRoles);
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 mt-4 w-full">
       <div className="overflow-x-auto w-full">
@@ -30,7 +37,18 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto}</span>
+                    <div className="flex items-center justify-center gap-2 relative">
+                      <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto}</span>
+                      <label className="inline-flex relative items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={rol.estado === "activo"}
+                          onChange={() => toggleEstado(index)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                      </label>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-2 justify-center flex-wrap">

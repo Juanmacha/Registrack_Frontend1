@@ -7,6 +7,8 @@ import authData from "../../auth/services/authData";
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
 import FormularioPresentacionOposicion from "../../../shared/components/formularioOposicion";
 import FormularioRespuestaOposicion from "../../../shared/components/formularioRespuesta";
+import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
+import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 
 const PresentacionOposicion = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const PresentacionOposicion = () => {
 
   const [modalPresentacion, setModalPresentacion] = useState(false);
   const [modalRespuesta, setModalRespuesta] = useState(false);
+
+  // Forzar scroll al inicio de la página
+  useScrollToTop();
 
   const handleAdquirirPresentacion = () => {
     if (!user) {
@@ -34,7 +39,7 @@ const PresentacionOposicion = () => {
   };
 
   return (
-    <div className="font-sans bg-white pt-28">
+    <div className="font-sans bg-white pt-20">
       <LandingNavbar />
 
       {/* Presentación de oposición */}
@@ -135,17 +140,34 @@ const PresentacionOposicion = () => {
 
       <Footer />
 
-      {/* MODALES */}
+      {/* MODAL PRESENTACIÓN */}
       {modalPresentacion && (
-        <FormularioBaseModal onClose={() => setModalPresentacion(false)}>
-          <FormularioPresentacionOposicion />
-        </FormularioBaseModal>
+        <FormularioPresentacionOposicion 
+          isOpen={modalPresentacion}
+          onClose={() => setModalPresentacion(false)}
+          onGuardar={async (form) => {
+            const user = authData.getUser();
+            if (user && user.email) {
+              await crearVenta({ ...form, email: user.email });
+            }
+            setModalPresentacion(false);
+          }}
+        />
       )}
 
+      {/* MODAL RESPUESTA */}
       {modalRespuesta && (
-        <FormularioBaseModal onClose={() => setModalRespuesta(false)}>
-          <FormularioRespuestaOposicion />
-        </FormularioBaseModal>
+        <FormularioRespuestaOposicion 
+          isOpen={modalRespuesta}
+          onClose={() => setModalRespuesta(false)}
+          onGuardar={async (form) => {
+            const user = authData.getUser();
+            if (user && user.email) {
+              await crearVenta({ ...form, email: user.email });
+            }
+            setModalRespuesta(false);
+          }}
+        />
       )}
     </div>
   );

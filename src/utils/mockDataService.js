@@ -148,6 +148,10 @@ export const UserService = {
     };
     usuarios.push(newUser);
     setToStorage(STORAGE_KEYS.USUARIOS, usuarios);
+    
+    // Sincronizar con empleados si el rol es de empleado
+    this.syncWithEmployees(newUser);
+    
     return newUser;
   },
   
@@ -156,8 +160,15 @@ export const UserService = {
     const usuarios = this.getAll();
     const index = usuarios.findIndex(user => user.id === id);
     if (index !== -1) {
+      const oldUser = usuarios[index];
       usuarios[index] = { ...usuarios[index], ...userData };
       setToStorage(STORAGE_KEYS.USUARIOS, usuarios);
+      
+      // Sincronizar con empleados si el rol cambió
+      if (oldUser.role !== userData.role) {
+        this.syncWithEmployees(usuarios[index]);
+      }
+      
       return usuarios[index];
     }
     return null;
@@ -178,6 +189,42 @@ export const UserService = {
       return user;
     }
     return null;
+  },
+  
+  // Sincronizar usuario con empleados
+  syncWithEmployees(user) {
+    const empleados = getFromStorage(STORAGE_KEYS.EMPLEADOS);
+    const existingEmployee = empleados.find(emp => 
+      emp.documento === user.documentNumber && 
+      emp.tipoDocumento === user.documentType
+    );
+    
+    if (existingEmployee) {
+      // Actualizar empleado existente
+      existingEmployee.rol = user.role;
+      existingEmployee.email = user.email;
+      existingEmployee.nombre = user.firstName;
+      existingEmployee.apellidos = user.lastName;
+      setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+    } else if (user.role === 'Empleado' || user.role === 'Administrador') {
+      // Crear nuevo empleado si el rol es de empleado
+      const newEmployee = {
+        id: Date.now().toString(),
+        tipoDocumento: user.documentType,
+        documento: user.documentNumber,
+        nombre: user.firstName,
+        apellidos: user.lastName,
+        email: user.email,
+        rol: user.role,
+        estado: 'Activo',
+        fechaContratacion: new Date().toISOString().split('T')[0],
+        departamento: user.role === 'Administrador' ? 'Administración' : 'General',
+        telefono: '',
+        direccion: ''
+      };
+      empleados.push(newEmployee);
+      setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+    }
   }
 };
 
@@ -215,11 +262,14 @@ export const EmployeeService = {
     const newEmployee = {
       id: Date.now().toString(),
       ...employeeData,
-      estado: 'Activo',
-      fechaContratacion: employeeData.fechaContratacion || new Date().toISOString().split('T')[0]
+      estado: 'Activo'
     };
     empleados.push(newEmployee);
     setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+    
+    // Sincronizar con usuarios
+    this.syncWithUsers(newEmployee);
+    
     return newEmployee;
   },
   
@@ -228,8 +278,15 @@ export const EmployeeService = {
     const empleados = this.getAll();
     const index = empleados.findIndex(emp => emp.id === id);
     if (index !== -1) {
+      const oldEmployee = empleados[index];
       empleados[index] = { ...empleados[index], ...employeeData };
       setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+      
+      // Sincronizar con usuarios si el rol cambió
+      if (oldEmployee.rol !== employeeData.rol) {
+        this.syncWithUsers(empleados[index]);
+      }
+      
       return empleados[index];
     }
     return null;
@@ -245,17 +302,15 @@ export const EmployeeService = {
   
   // Cambiar rol de empleado
   changeRole(id, nuevoRol) {
-    const empleados = this.getAll();
-    const index = empleados.findIndex(emp => emp.id === id);
-    if (index !== -1) {
-      empleados[index].rol = nuevoRol;
-      setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
-      return empleados[index];
+    const empleado = this.update(id, { rol: nuevoRol });
+    if (empleado) {
+      // Sincronizar con usuarios
+      this.syncWithUsers(empleado);
     }
-    return null;
+    return empleado;
   },
   
-  // Obtener estadísticas de empleados
+  // Obtener estadísticas
   getStats() {
     const empleados = this.getAll();
     const total = empleados.length;
@@ -272,6 +327,39 @@ export const EmployeeService = {
       inactivos: total - activos,
       porRol
     };
+  },
+  
+  // Sincronizar empleado con usuarios
+  syncWithUsers(employee) {
+    const usuarios = getFromStorage(STORAGE_KEYS.USUARIOS);
+    const existingUser = usuarios.find(user => 
+      user.documentNumber === employee.documento && 
+      user.documentType === employee.tipoDocumento
+    );
+    
+    if (existingUser) {
+      // Actualizar usuario existente
+      existingUser.role = employee.rol;
+      existingUser.email = employee.email;
+      existingUser.firstName = employee.nombre;
+      existingUser.lastName = employee.apellidos;
+      setToStorage(STORAGE_KEYS.USUARIOS, usuarios);
+    } else {
+      // Crear nuevo usuario si no existe
+      const newUser = {
+        id: Date.now().toString(),
+        firstName: employee.nombre,
+        lastName: employee.apellidos,
+        documentType: employee.tipoDocumento,
+        documentNumber: employee.documento,
+        email: employee.email,
+        password: '123456', // Contraseña por defecto
+        role: employee.rol,
+        estado: 'activo'
+      };
+      usuarios.push(newUser);
+      setToStorage(STORAGE_KEYS.USUARIOS, usuarios);
+    }
   }
 };
 
@@ -280,24 +368,20 @@ export const EmployeeService = {
 // ============================================================================
 
 export const ClientService = {
-  // Obtener todos los clientes
   getAll() {
     return getFromStorage(STORAGE_KEYS.CLIENTES);
   },
   
-  // Obtener cliente por documento
   getByDocument(documento) {
     const clientes = this.getAll();
-    return clientes.find(cliente => cliente.documento === documento);
+    return clientes.find(cli => cli.documento === documento);
   },
   
-  // Obtener cliente por email
   getByEmail(email) {
     const clientes = this.getAll();
-    return clientes.find(cliente => cliente.email === email);
+    return clientes.find(cli => cli.email === email);
   },
   
-  // Crear nuevo cliente
   create(clientData) {
     const clientes = this.getAll();
     const newClient = {
@@ -310,10 +394,9 @@ export const ClientService = {
     return newClient;
   },
   
-  // Actualizar cliente
   update(id, clientData) {
     const clientes = this.getAll();
-    const index = clientes.findIndex(cliente => cliente.id === id);
+    const index = clientes.findIndex(cli => cli.id === id);
     if (index !== -1) {
       clientes[index] = { ...clientes[index], ...clientData };
       setToStorage(STORAGE_KEYS.CLIENTES, clientes);
@@ -322,51 +405,43 @@ export const ClientService = {
     return null;
   },
   
-  // Eliminar cliente
   delete(id) {
     const clientes = this.getAll();
-    const filtered = clientes.filter(cliente => cliente.id !== id);
+    const filtered = clientes.filter(cli => cli.id !== id);
     setToStorage(STORAGE_KEYS.CLIENTES, filtered);
     return true;
   }
 };
 
 // ============================================================================
-// SERVICIOS DE VENTAS/SERVICIOS
+// SERVICIOS DE VENTAS
 // ============================================================================
 
-export const SalesService = {
-  // Obtener ventas en proceso
+export const SaleService = {
   getInProcess() {
     return getFromStorage(STORAGE_KEYS.VENTAS_PROCESO);
   },
   
-  // Obtener ventas finalizadas
   getCompleted() {
     return getFromStorage(STORAGE_KEYS.VENTAS_FINALIZADAS);
   },
   
-  // Obtener todas las ventas
   getAll() {
-    return [
-      ...this.getInProcess(),
-      ...this.getCompleted()
-    ];
+    const enProceso = this.getInProcess();
+    const finalizadas = this.getCompleted();
+    return [...enProceso, ...finalizadas];
   },
   
-  // Obtener ventas por cliente
   getByClient(email) {
-    const allSales = this.getAll();
-    return allSales.filter(venta => venta.email === email);
+    const ventas = this.getAll();
+    return ventas.filter(venta => venta.email === email);
   },
   
-  // Crear nueva venta
   create(saleData) {
     const ventas = this.getInProcess();
     const newSale = {
       id: Date.now().toString(),
       ...saleData,
-      comentarios: [],
       fechaSolicitud: new Date().toISOString().split('T')[0]
     };
     ventas.push(newSale);
@@ -374,88 +449,44 @@ export const SalesService = {
     return newSale;
   },
   
-  // Actualizar venta
   update(id, saleData) {
-    let ventas = this.getInProcess();
-    let ventasFin = this.getCompleted();
-    
-    // Buscar en ventas en proceso
-    let index = ventas.findIndex(venta => venta.id === id);
+    const ventas = this.getInProcess();
+    const index = ventas.findIndex(venta => venta.id === id);
     if (index !== -1) {
-      const venta = ventas[index];
-      const updatedVenta = { ...venta, ...saleData };
-      
-      // Si cambia a finalizado/anulado, mover a finalizadas
-      if (['Finalizado', 'Anulado', 'Rechazado'].includes(saleData.estado)) {
-        ventas.splice(index, 1);
-        ventasFin.push(updatedVenta);
-      } else {
-        ventas[index] = updatedVenta;
-      }
-      
+      ventas[index] = { ...ventas[index], ...saleData };
       setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
-      setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
-      return updatedVenta;
+      return ventas[index];
     }
-    
-    // Buscar en ventas finalizadas
-    index = ventasFin.findIndex(venta => venta.id === id);
-    if (index !== -1) {
-      const venta = ventasFin[index];
-      const updatedVenta = { ...venta, ...saleData };
-      
-      // Si vuelve a proceso
-      if (!['Finalizado', 'Anulado'].includes(saleData.estado)) {
-        ventasFin.splice(index, 1);
-        ventas.push(updatedVenta);
-      } else {
-        ventasFin[index] = updatedVenta;
-      }
-      
-      setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
-      setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
-      return updatedVenta;
-    }
-    
     return null;
   },
   
-  // Anular venta
-  cancel(id, motivo) {
-    return this.update(id, { 
-      estado: 'Anulado', 
-      motivoAnulacion: motivo,
-      fechaAnulacion: new Date().toISOString()
-    });
+  delete(id) {
+    const ventas = this.getInProcess();
+    const filtered = ventas.filter(venta => venta.id !== id);
+    setToStorage(STORAGE_KEYS.VENTAS_PROCESO, filtered);
+    return true;
   },
   
-  // Agregar comentario
+  cancel(id, motivo) {
+    const venta = this.update(id, { 
+      estado: 'Cancelado',
+      comentarios: [...(this.getById(id)?.comentarios || []), {
+        fecha: new Date().toISOString(),
+        texto: `Cancelado: ${motivo}`
+      }]
+    });
+    return venta;
+  },
+  
   addComment(id, comment) {
-    const ventas = this.getInProcess();
-    const ventasFin = this.getCompleted();
-    
-    let venta = ventas.find(v => v.id === id);
+    const venta = this.getById(id);
     if (venta) {
-      venta.comentarios.push({
-        id: Date.now().toString(),
-        texto: comment,
-        fecha: new Date().toISOString()
-      });
-      setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
-      return venta;
+      const comentarios = [...(venta.comentarios || []), {
+        fecha: new Date().toISOString(),
+        texto: comment
+      }];
+      return this.update(id, { comentarios });
     }
-    
-    venta = ventasFin.find(v => v.id === id);
-    if (venta) {
-      venta.comentarios.push({
-        id: Date.now().toString(),
-        texto: comment,
-        fecha: new Date().toISOString()
-      });
-      setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
-      return venta;
-    }
-    
     return null;
   }
 };
@@ -465,18 +496,15 @@ export const SalesService = {
 // ============================================================================
 
 export const PaymentService = {
-  // Obtener todos los pagos
   getAll() {
     return getFromStorage(STORAGE_KEYS.PAGOS);
   },
   
-  // Obtener pagos por orden de servicio
   getByOrder(orderId) {
     const pagos = this.getAll();
     return pagos.filter(pago => pago.id_orden_servicio === orderId);
   },
   
-  // Crear nuevo pago
   create(paymentData) {
     const pagos = this.getAll();
     const newPayment = {
@@ -489,7 +517,6 @@ export const PaymentService = {
     return newPayment;
   },
   
-  // Actualizar pago
   update(id, paymentData) {
     const pagos = this.getAll();
     const index = pagos.findIndex(pago => pago.id_pago === id);
@@ -507,27 +534,32 @@ export const PaymentService = {
 // ============================================================================
 
 export const AppointmentService = {
-  // Obtener todas las citas
   getAll() {
     return getFromStorage(STORAGE_KEYS.CITAS);
   },
   
-  // Obtener citas por cliente
   getByClient(cedula) {
     const citas = this.getAll();
-    return citas.filter(cita => cita.extendedProps.cedula === cedula);
+    return citas.filter(cita => cita.extendedProps?.cedula === cedula);
   },
   
-  // Crear nueva cita
   create(appointmentData) {
     const citas = this.getAll();
     const newAppointment = {
       id: Date.now().toString(),
       title: `Asesor: ${appointmentData.asesor}`,
-      start: `${appointmentData.fecha}T${appointmentData.horaInicio}`,
-      end: `${appointmentData.fecha}T${appointmentData.horaFin}`,
+      start: appointmentData.fecha + 'T' + appointmentData.horaInicio,
+      end: appointmentData.fecha + 'T' + appointmentData.horaFin,
       extendedProps: {
-        ...appointmentData,
+        nombre: appointmentData.nombre,
+        apellido: appointmentData.apellido,
+        cedula: appointmentData.cedula,
+        telefono: appointmentData.telefono,
+        horaInicio: appointmentData.horaInicio,
+        horaFin: appointmentData.horaFin,
+        detalle: appointmentData.detalle,
+        tipoCita: appointmentData.tipoCita,
+        asesor: appointmentData.asesor,
         estado: 'Programada'
       }
     };
@@ -536,7 +568,6 @@ export const AppointmentService = {
     return newAppointment;
   },
   
-  // Actualizar cita
   update(id, appointmentData) {
     const citas = this.getAll();
     const index = citas.findIndex(cita => cita.id === id);
@@ -548,17 +579,15 @@ export const AppointmentService = {
     return null;
   },
   
-  // Cancelar cita
   cancel(id, motivo) {
-    const citas = this.getAll();
-    const index = citas.findIndex(cita => cita.id === id);
-    if (index !== -1) {
-      citas[index].extendedProps.estado = 'Cita anulada';
-      citas[index].extendedProps.observacionAnulacion = motivo;
-      setToStorage(STORAGE_KEYS.CITAS, citas);
-      return citas[index];
-    }
-    return null;
+    const cita = this.update(id, { 
+      extendedProps: {
+        ...this.getById(id)?.extendedProps,
+        estado: 'Cancelada',
+        motivo: motivo
+      }
+    });
+    return cita;
   }
 };
 
@@ -567,27 +596,23 @@ export const AppointmentService = {
 // ============================================================================
 
 export const ServiceService = {
-  // Obtener todos los servicios
   getAll() {
     return getFromStorage(STORAGE_KEYS.SERVICIOS);
   },
   
-  // Obtener servicio por ID
   getById(id) {
     const servicios = this.getAll();
-    return servicios.find(servicio => servicio.id === id);
+    return servicios.find(serv => serv.id === id);
   },
   
-  // Obtener servicios visibles en landing
   getVisible() {
     const servicios = this.getAll();
-    return servicios.filter(servicio => servicio.visible_en_landing);
+    return servicios.filter(serv => serv.visible_en_landing);
   },
   
-  // Actualizar servicio
   update(id, serviceData) {
     const servicios = this.getAll();
-    const index = servicios.findIndex(servicio => servicio.id === id);
+    const index = servicios.findIndex(serv => serv.id === id);
     if (index !== -1) {
       servicios[index] = { ...servicios[index], ...serviceData };
       setToStorage(STORAGE_KEYS.SERVICIOS, servicios);
@@ -596,55 +621,48 @@ export const ServiceService = {
     return null;
   },
   
-  // Toggle visibilidad
   toggleVisibility(id) {
-    const servicios = this.getAll();
-    const index = servicios.findIndex(servicio => servicio.id === id);
-    if (index !== -1) {
-      servicios[index].visible_en_landing = !servicios[index].visible_en_landing;
-      setToStorage(STORAGE_KEYS.SERVICIOS, servicios);
-      return servicios[index];
+    const servicio = this.getById(id);
+    if (servicio) {
+      return this.update(id, { 
+        visible_en_landing: !servicio.visible_en_landing 
+      });
     }
     return null;
   }
 };
 
 // ============================================================================
-// SERVICIOS DE ROLES Y PERMISOS
+// SERVICIOS DE ROLES
 // ============================================================================
 
 export const RoleService = {
-  // Obtener todos los roles
   getAll() {
     return getFromStorage(STORAGE_KEYS.ROLES);
   },
   
-  // Obtener rol por ID
   getById(id) {
     const roles = this.getAll();
     return roles.find(rol => rol.id === id);
   },
   
-  // Obtener rol por nombre
   getByNombre(nombre) {
     const roles = this.getAll();
     return roles.find(rol => rol.nombre === nombre);
   },
   
-  // Crear nuevo rol
   create(rolData) {
     const roles = this.getAll();
-    const newRol = {
+    const newRole = {
       id: Date.now().toString(),
       ...rolData,
-      estado: rolData.estado || 'Activo'
+      estado: 'Activo'
     };
-    roles.push(newRol);
+    roles.push(newRole);
     setToStorage(STORAGE_KEYS.ROLES, roles);
-    return newRol;
+    return newRole;
   },
   
-  // Actualizar rol
   update(id, rolData) {
     const roles = this.getAll();
     const index = roles.findIndex(rol => rol.id === id);
@@ -656,7 +674,6 @@ export const RoleService = {
     return null;
   },
   
-  // Eliminar rol
   delete(id) {
     const roles = this.getAll();
     const filtered = roles.filter(rol => rol.id !== id);
@@ -664,138 +681,82 @@ export const RoleService = {
     return true;
   },
   
-  // Obtener roles disponibles para empleados
   getRolesDisponibles() {
     const roles = this.getAll();
-    return roles.filter(rol => 
-      rol.nombre === 'Administrador' || 
-      rol.nombre === 'Empleado'
-    );
+    return roles.filter(rol => rol.estado === 'Activo');
   },
   
-  // Obtener roles disponibles para usuarios
   getRolesDisponiblesUsuarios() {
     const roles = this.getAll();
-    return roles.filter(rol => 
-      rol.nombre === 'Administrador' || 
-      rol.nombre === 'Empleado' ||
-      rol.nombre === 'Cliente'
-    );
+    return roles.filter(rol => rol.estado === 'Activo' && rol.nombre !== 'Cliente');
   },
   
-  // Obtener empleados por rol
   getEmpleadosByRol(rolNombre) {
-    const empleados = EmployeeService.getAll();
-    return empleados.filter(emp => emp.rol === rolNombre);
+    return EmployeeService.getByRol(rolNombre);
   },
   
-  // Verificar permisos de un rol específico
   hasPermission(rolId, resource, action) {
     const rol = this.getById(rolId);
-    if (!rol || !rol.permisos) return false;
-    
-    const resourcePerms = rol.permisos[resource];
-    if (!resourcePerms) return false;
-    
-    return resourcePerms[action] === true;
+    return rol?.permisos?.[resource]?.[action] === true;
   },
   
-  // Verificar permisos de un usuario
   hasUserPermission(user, resource, action) {
-    const roles = this.getAll();
-    const userRole = roles.find(rol => rol.nombre === user.role);
-    if (!userRole) return false;
-    return userRole.permisos[resource]?.[action] || false;
+    if (user.role === 'Administrador') return true;
+    const rol = this.getByNombre(user.role);
+    return rol?.permisos?.[resource]?.[action] === true;
   }
 };
 
 // ============================================================================
-// SERVICIOS DE BÚSQUEDA Y FILTRADO
+// BÚSQUEDA GLOBAL
 // ============================================================================
 
-export const SearchService = {
-  // Búsqueda global
-  globalSearch(query) {
-    const results = {
-      usuarios: [],
-      empleados: [],
-      clientes: [],
-      ventas: [],
-      pagos: []
-    };
-    
-    const searchTerm = query.toLowerCase();
-    
-    // Buscar en usuarios
-    results.usuarios = UserService.getAll().filter(user =>
-      user.firstName.toLowerCase().includes(searchTerm) ||
-      user.lastName.toLowerCase().includes(searchTerm) ||
-      user.email.toLowerCase().includes(searchTerm) ||
-      user.documentNumber.includes(searchTerm)
-    );
-    
-    // Buscar en empleados
-    results.empleados = EmployeeService.getAll().filter(emp =>
-      emp.nombre.toLowerCase().includes(searchTerm) ||
-      emp.apellidos.toLowerCase().includes(searchTerm) ||
-      emp.email.toLowerCase().includes(searchTerm) ||
-      emp.documento.includes(searchTerm)
-    );
-    
-    // Buscar en clientes
-    results.clientes = ClientService.getAll().filter(cliente =>
-      cliente.nombre.toLowerCase().includes(searchTerm) ||
-      cliente.apellido.toLowerCase().includes(searchTerm) ||
-      cliente.email.toLowerCase().includes(searchTerm) ||
-      cliente.documento.includes(searchTerm) ||
-      cliente.marca.toLowerCase().includes(searchTerm)
-    );
-    
-    // Buscar en ventas
-    results.ventas = SalesService.getAll().filter(venta =>
-      venta.titular.toLowerCase().includes(searchTerm) ||
-      venta.marca.toLowerCase().includes(searchTerm) ||
-      venta.tipoSolicitud.toLowerCase().includes(searchTerm) ||
-      venta.expediente.includes(searchTerm)
-    );
-    
-    return results;
-  }
-};
-
-// ============================================================================
-// EXPORTACIÓN PRINCIPAL
-// ============================================================================
-
-export default {
-  // Configuración
-  MOCK_CONFIG,
-  TIPOS_DOCUMENTO,
-  ROLES,
-  ESTADOS_PROCESO,
-  METODOS_PAGO,
+export function globalSearch(query) {
+  const results = {
+    usuarios: [],
+    empleados: [],
+    clientes: [],
+    ventas: []
+  };
   
-  // Inicialización
-  initializeMockData,
+  if (!query) return results;
   
-  // Servicios
-  UserService,
-  EmployeeService,
-  ClientService,
-  SalesService,
-  PaymentService,
-  AppointmentService,
-  ServiceService,
-  RoleService,
-  SearchService,
+  const searchTerm = query.toLowerCase();
   
-  // Funciones de utilidad
-  getServicioById,
-  getUsuarioByEmail,
-  getClienteByDocumento,
-  getEmpleadoByDocumento,
-  getVentasByCliente,
-  getPagosByOrdenServicio,
-  getCitasByCliente,
-  tienePermiso
-}; 
+  // Buscar en usuarios
+  const usuarios = UserService.getAll();
+  results.usuarios = usuarios.filter(user => 
+    user.firstName.toLowerCase().includes(searchTerm) ||
+    user.lastName.toLowerCase().includes(searchTerm) ||
+    user.email.toLowerCase().includes(searchTerm) ||
+    user.documentNumber.includes(searchTerm)
+  );
+  
+  // Buscar en empleados
+  const empleados = EmployeeService.getAll();
+  results.empleados = empleados.filter(emp => 
+    emp.nombre.toLowerCase().includes(searchTerm) ||
+    emp.apellidos.toLowerCase().includes(searchTerm) ||
+    emp.email.toLowerCase().includes(searchTerm) ||
+    emp.documento.includes(searchTerm)
+  );
+  
+  // Buscar en clientes
+  const clientes = ClientService.getAll();
+  results.clientes = clientes.filter(cli => 
+    cli.nombre.toLowerCase().includes(searchTerm) ||
+    cli.apellido.toLowerCase().includes(searchTerm) ||
+    cli.email.toLowerCase().includes(searchTerm) ||
+    cli.documento.includes(searchTerm)
+  );
+  
+  // Buscar en ventas
+  const ventas = SaleService.getAll();
+  results.ventas = ventas.filter(venta => 
+    venta.titular.toLowerCase().includes(searchTerm) ||
+    venta.marca.toLowerCase().includes(searchTerm) ||
+    venta.email.toLowerCase().includes(searchTerm)
+  );
+  
+  return results;
+} 

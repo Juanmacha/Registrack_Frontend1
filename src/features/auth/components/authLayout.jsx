@@ -13,12 +13,15 @@ const AuthLayout = () => {
 
 {/* Lado Derecho: Branding */}
 <div className="hidden md:flex w-1/2 h-full items-center justify-center">
-  <div className="flex flex-col items-center text-center z-10">
-    {/* Imagen centrada */}
-    <img
-      src="/images/logoMejorado.jpg"
-      alt="Logo de Registrack"
-      className="max-w-[300px] w-full h-auto object-contain animate-float"
+<div className="flex-1 flex justify-center items-center h-[400px] md:h-[500px]">
+    <video
+      src="/images/Whisk_cauajgm4ymzhyjjkltawzjetndazzc1hn2y3lwe.mp4"
+      alt="Video Registrack"
+      className="w-full h-full object-cover"
+      autoPlay
+      loop
+      muted
+      playsInline
     />
   </div>
 </div>

@@ -8,6 +8,7 @@ import {
 } from '../services/serviciosManagementService';
 import ModalVerDetalleServicio from './ModalVerDetalleServicio';
 import ModalEditarServicio from './ModalEditarServicio';
+import Swal from 'sweetalert2';
 
 const Servicios = () => {
   const [servicios, setServicios] = useState([]);
@@ -28,8 +29,34 @@ const Servicios = () => {
   }, []);
 
   const handleToggleVisibilidad = async (id) => {
-    await Promise.resolve(toggleVisibilidadServicio(id));
-    cargarServicios();
+    const servicio = servicios.find(s => s.id === id);
+    if (servicio && servicio.visible_en_landing) {
+      const result = await Swal.fire({
+        title: '¿Ocultar servicio?',
+        text: '¿Estás seguro que deseas ocultar este servicio de la página principal? No será visible para los usuarios.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, ocultar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+      });
+      if (!result.isConfirmed) return;
+    }
+    try {
+      await Promise.resolve(toggleVisibilidadServicio(id));
+      Swal.fire({
+        icon: 'success',
+        title: 'Visibilidad actualizada',
+        text: 'El estado de visibilidad del servicio ha sido actualizado.'
+      });
+      cargarServicios();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un error al actualizar la visibilidad.'
+      });
+    }
   };
 
   const handleEditar = (servicio) => setEditar(servicio);
@@ -37,10 +64,23 @@ const Servicios = () => {
 
   const handleGuardarEdicion = async (tipo, data) => {
     if (!editar) return;
-    if (tipo === 'landing') await Promise.resolve(updateLandingData(editar.id, data));
-    if (tipo === 'info') await Promise.resolve(updateInfoPageData(editar.id, data));
-    if (tipo === 'process') await Promise.resolve(updateProcessStates(editar.id, data));
-    cargarServicios();
+    try {
+      if (tipo === 'landing') await Promise.resolve(updateLandingData(editar.id, data));
+      if (tipo === 'info') await Promise.resolve(updateInfoPageData(editar.id, data));
+      if (tipo === 'process') await Promise.resolve(updateProcessStates(editar.id, data));
+      Swal.fire({
+        icon: 'success',
+        title: 'Servicio actualizado',
+        text: 'El servicio ha sido actualizado correctamente.'
+      });
+      cargarServicios();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err?.message || 'Ocurrió un error al actualizar el servicio.'
+      });
+    }
   };
 
   if (loading) {

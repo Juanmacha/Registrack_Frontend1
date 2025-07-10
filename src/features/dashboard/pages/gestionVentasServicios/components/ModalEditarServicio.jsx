@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 
 function EditarLandingData({ servicio, isOpen, onClose, onSave }) {
   const [form, setForm] = useState(servicio?.landing_data || {});
-  useEffect(() => { if (isOpen) setForm(servicio?.landing_data || {}); }, [isOpen, servicio]);
+  const [preview, setPreview] = useState(servicio?.landing_data?.imagen || '');
+  useEffect(() => { 
+    if (isOpen) {
+      setForm(servicio?.landing_data || {});
+      setPreview(servicio?.landing_data?.imagen || '');
+    }
+  }, [isOpen, servicio]);
   return isOpen ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative border border-gray-200">
@@ -11,6 +17,16 @@ function EditarLandingData({ servicio, isOpen, onClose, onSave }) {
         <input className="w-full border rounded p-2 mb-3" value={form.titulo || ''} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} />
         <label className="block mb-2 text-sm">Resumen</label>
         <textarea className="w-full border rounded p-2 mb-3" value={form.resumen || ''} onChange={e => setForm(f => ({ ...f, resumen: e.target.value }))} />
+        <label className="block mb-2 text-sm">Imagen</label>
+        {preview && <img src={preview} alt="Previsualización" className="w-full h-32 object-contain mb-2 rounded" />}
+        <input type="file" accept="image/*" className="mb-3" onChange={e => {
+          const file = e.target.files[0];
+          if (file) {
+            const url = URL.createObjectURL(file);
+            setPreview(url);
+            setForm(f => ({ ...f, imagen: url, imagenFile: file }));
+          }
+        }} />
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
           <button onClick={() => onSave(form)} className="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button>
@@ -68,16 +84,45 @@ function GestionarProcessStates({ servicio, isOpen, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative border border-gray-200">
         <h3 className="text-lg font-bold mb-4 text-yellow-800">Gestionar Estados del Proceso</h3>
-        <ol className="list-decimal ml-6 mb-4">
-          {states.map((s, idx) => (
-            <li key={s.id} className="flex items-center gap-2 mb-2">
-              <span className="flex-1">{s.name}</span>
-              <button onClick={() => moveState(idx, 'up')} disabled={idx === 0} className="text-xs px-2 py-1 bg-gray-200 rounded">↑</button>
-              <button onClick={() => moveState(idx, 'down')} disabled={idx === states.length - 1} className="text-xs px-2 py-1 bg-gray-200 rounded">↓</button>
-              <button onClick={() => removeState(s.id)} className="text-xs px-2 py-1 bg-red-200 text-red-700 rounded">Eliminar</button>
-            </li>
-          ))}
-        </ol>
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Estados del Proceso (en orden):</h4>
+          <ol className="ml-6 space-y-2">
+            {states.map((s, idx) => (
+              <li key={s.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                <span className="font-bold text-blue-700 mr-1">{idx + 1}.</span>
+                <span className="font-medium text-gray-800 flex-1">{s.name}</span>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => moveState(idx, 'up')} 
+                    disabled={idx === 0} 
+                    className="text-xs px-2 py-1 bg-blue-200 text-blue-700 rounded hover:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Mover arriba"
+                  >
+                    ↑
+                  </button>
+                  <button 
+                    onClick={() => moveState(idx, 'down')} 
+                    disabled={idx === states.length - 1} 
+                    className="text-xs px-2 py-1 bg-blue-200 text-blue-700 rounded hover:bg-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Mover abajo"
+                  >
+                    ↓
+                  </button>
+                  <button 
+                    onClick={() => removeState(s.id)} 
+                    className="text-xs px-2 py-1 bg-red-200 text-red-700 rounded hover:bg-red-300"
+                    title="Eliminar estado"
+                  >
+                    ×
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ol>
+          {states.length === 0 && (
+            <p className="text-gray-500 text-center py-4 italic">No hay estados configurados</p>
+          )}
+        </div>
         <div className="flex gap-2 mb-4">
           <input className="flex-1 border rounded p-2" placeholder="Nuevo estado" value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)} />
           <button onClick={addState} className="px-4 py-2 bg-green-600 text-white rounded">Añadir</button>

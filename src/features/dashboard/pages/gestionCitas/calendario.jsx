@@ -6,10 +6,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from "@fullcalendar/core/locales/es";
-import VerDetalleCita from "./components/verDetallecita";
-import { EmployeeService, initializeMockData } from "../../../../utils/mockDataService.js";
-import alertService from "../../../../utils/alertService.js";
-import citaAlertService from "../../../../utils/citaAlertService.js";
+import dataEmpleados from "../gestionEmpleados/services/dataEmpleados";
+import VerDetalleCita from "../gestionCitas/components/verDetallecita";
+import Swal from "sweetalert2";
+import { FaCalendarAlt, FaUser, FaPhone, FaFileAlt, FaBriefcase, FaDownload, FaSearch, FaEye, FaEdit, FaTrash, FaCalendarDay } from "react-icons/fa";
+import { Dialog } from "@headlessui/react";
+import * as XLSX from "xlsx";
+
 
 const Calendario = () => {
   const [events, setEvents] = useState([]);
@@ -20,48 +23,56 @@ const Calendario = () => {
   const [modoReprogramar, setModoReprogramar] = useState(false);
   const [citaAReprogramar, setCitaAReprogramar] = useState(null);
   const [currentView, setCurrentView] = useState("dayGridMonth");
+  const [busqueda, setBusqueda] = useState("");
   const calendarRef = useRef(null);
-
- // Agregar efecto para evitar scroll al mostrar modal
-  useEffect(() => {
-    const body = document.body;
-    if (showModal || showDetalle) {
-      body.classList.add("overflow-hidden");
-    } else {
-      body.classList.remove("overflow-hidden");
-    }
-    return () => {
-      body.classList.remove("overflow-hidden");
-    };
-  }, [showModal, showDetalle]);
-
-  const generarIdUnico = (cedula, fecha, hora) => `${cedula}_${fecha}_${hora}`;
+  const [formData, setFormData] = useState({
+    nombre: "",
+    apellido: "",
+    cedula: "",
+    telefono: "",
+    tipoCita: "",
+    horaInicio: "",
+    horaFin: "",
+    asesor: "",
+    detalle: "",
+  });
+  const [modalDate, setModalDate] = useState(null);
+  const [modalEventos, setModalEventos] = useState({ open: false, eventos: [], hora: "" });
+  const [errores, setErrores] = useState({});
+  const [touched, setTouched] = useState({});
 
   useEffect(() => {
     try {
       const storedEvents = JSON.parse(localStorage.getItem("citas")) || [];
-      const eventsWithIds = storedEvents.map(event => {
+      let eventosValidos = storedEvents.filter(ev =>
+        ev && ev.start && ev.end && ev.id && ev.extendedProps
+      );
+      eventosValidos = eventosValidos.map(event => {
         if (!event.id && event.extendedProps) {
-          const idUnico = generarIdUnico(
-            event.extendedProps.cedula,
-            event.start.split('T')[0],
-            event.start.split('T')[1]
-          );
+          const idUnico = `${event.extendedProps.cedula}_${event.start.split('T')[0]}_${event.start.split('T')[1]}`;
           return { ...event, id: idUnico };
         }
         return event;
       });
-      setEvents(eventsWithIds);
+      if (eventosValidos.length > 0) {
+        setEvents(eventosValidos);
+      }
+      // Si no hay eventos válidos, no setear events a [] para no borrar localStorage
     } catch (error) {
-      setEvents([]);
+      // No hacer nada, así no se borra el localStorage
     }
   }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem("citas", JSON.stringify(events));
+      if (events.length > 0) {
+        localStorage.setItem("citas", JSON.stringify(events));
+      }
+      // Si events está vacío, no sobreescribir localStorage
     } catch (error) {}
   }, [events]);
+
+  const generarIdUnico = (cedula, fecha, hora) => `${cedula}_${fecha}_${hora}`;
 
   const handleDateSelect = (selectInfo) => {
     const hoy = new Date();
@@ -69,83 +80,124 @@ const Calendario = () => {
     const fechaSeleccionada = new Date(selectInfo.startStr);
     fechaSeleccionada.setHours(0, 0, 0, 0);
     if (fechaSeleccionada < hoy) {
-      citaAlertService.fechaNoValida();
+      Swal.fire({ icon: 'warning', title: 'Fecha inválida', text: 'No puedes agendar citas en días anteriores a hoy.' });
       return;
     }
-    setSelectedDate(selectInfo);
-    setShowModal(true);
+    abrirModal(selectInfo);
   };
 
+  // Función para asignar colores según el estado del evento
   const getEventColors = (estado) => {
-    const estadoLower = (estado || '').toLowerCase();
-    if (estadoLower === "programada") return { backgroundColor: "#22c55e", borderColor: "#15803d", textColor: "#fff" };
-    if (estadoLower === "reprogramada") return { backgroundColor: "#2563eb", borderColor: "#1e40af", textColor: "#fff" };
-    if (estadoLower === "cita anulada") return { backgroundColor: "#d1d5db", borderColor: "#6b7280", textColor: "#6b7280" };
-    return { backgroundColor: "#FFD700", borderColor: "#1E3A8A", textColor: "#1E3A8A" };
+    if (estado === "Programada") return { backgroundColor: "#22c55e" };
+    if (estado === "Reprogramada") return { backgroundColor: "#2563eb" };
+    if (estado === "Cita anulada") return { backgroundColor: "#6b7280" };
+    return { backgroundColor: "#fbbf24" };
   };
 
-  const handleSave = async (values) => {
-    try {
-      // Mostrar alerta de carga
-      const loadingAlert = modoReprogramar ? citaAlertService.cargandoReprogramar() : citaAlertService.cargandoAgendar();
-      
-      const cleanedValues = Object.fromEntries(
-        Object.entries(values).map(([key, value]) =>
-          [key, typeof value === 'string' ? value.trim() : value]
+  const handleGuardarCita = (e) => {
+    e.preventDefault();
+    // Validación básica
+    let camposObligatorios = ["nombre","apellido","cedula","telefono","tipoCita","horaInicio","horaFin","asesor"];
+    if (modoReprogramar) {
+      camposObligatorios = ["tipoCita","horaInicio","horaFin","asesor"];
+    }
+    for (let campo of camposObligatorios) {
+      if (!formData[campo]) {
+        Swal.fire({ icon: 'error', title: 'Campo obligatorio', text: `El campo ${campo} es obligatorio.` });
+        return;
+      }
+    }
+    // Validar que horaFin > horaInicio
+    if (formData.horaFin <= formData.horaInicio) {
+      Swal.fire({ icon: 'error', title: 'Hora inválida', text: 'La hora de fin debe ser mayor que la de inicio.' });
+      return;
+    }
+    // Validar cruce de horarios
+    const fechaBase = modoReprogramar && citaAReprogramar?.start
+      ? new Date(citaAReprogramar.start).toISOString().split("T")[0]
+      : modalDate?.startStr?.split("T")[0] || new Date().toISOString().split("T")[0];
+    const horaInicio = formData.horaInicio;
+    const horaFin = formData.horaFin;
+    const cruza = events.some(ev => {
+      if (modoReprogramar && citaAReprogramar && ev.id === citaAReprogramar.id) return false; // Ignorar la cita actual al reprogramar
+      const fechaEv = ev.start.split('T')[0];
+      if (fechaEv !== fechaBase) return false;
+      const inicioEv = ev.start.split('T')[1].slice(0,5);
+      const finEv = ev.end.split('T')[1].slice(0,5);
+      // Si el nuevo rango se traslapa con uno existente
+      return (horaInicio < finEv && horaFin > inicioEv);
+    });
+    console.log('Intentando guardar cita:', { ...formData, fechaBase });
+    if (cruza) {
+      Swal.fire({ icon: 'error', title: 'Horario ocupado', text: 'Ya existe una cita en ese rango de horas.' });
+      return;
+    }
+
+    if (modoReprogramar && citaAReprogramar) {
+      const nuevaFechaYHoraInicio = `${fechaBase}T${formData.horaInicio}`;
+      const nuevaFechaYHoraFin = `${fechaBase}T${formData.horaFin}`;
+      setEvents(prev =>
+        prev.map(ev =>
+          ev.id === citaAReprogramar.id
+            ? {
+                ...ev,
+                start: nuevaFechaYHoraInicio,
+                end: nuevaFechaYHoraFin,
+                extendedProps: {
+                  ...ev.extendedProps,
+                  ...formData,
+                  estado: "Reprogramada"
+                },
+                ...getEventColors("Reprogramada")
+              }
+            : ev
         )
       );
-      const estado = modoReprogramar ? "Reprogramada" : "Programada";
-      const eventColors = getEventColors(estado);
-      const idUnico = generarIdUnico(cleanedValues.cedula, selectedDate.startStr, cleanedValues.horaInicio);
-
-      const newEvent = {
-        id: idUnico,
-        title: `Asesor: ${cleanedValues.asesor}`,
-        start: `${selectedDate.startStr}T${cleanedValues.horaInicio}`,
-        end: `${selectedDate.startStr}T${cleanedValues.horaFin}`,
-        extendedProps: { ...cleanedValues, estado },
-        ...eventColors,
-      };
-
-      // Simular operación asíncrona
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      if (modoReprogramar && citaAReprogramar) {
-        setEvents((prev) => prev.map(ev => ev.id === citaAReprogramar.id ? newEvent : ev));
-        setModoReprogramar(false);
-        setCitaAReprogramar(null);
-        alertService.close();
-        await citaAlertService.citaReprogramada();
-      } else {
-        setEvents((prev) => [...prev, newEvent]);
-        alertService.close();
-        await citaAlertService.citaAgendada();
-      }
+      setModoReprogramar(false);
+      setCitaAReprogramar(null);
       setShowModal(false);
-    } catch (error) {
-      alertService.close();
-      citaAlertService.errorProcesarCita();
+      Swal.fire({ icon: 'success', title: 'Cita reprogramada', timer: 1800, showConfirmButton: false });
+      return;
     }
+
+    // Guardar cita
+    const idUnico = `${formData.cedula}_${fechaBase}_${formData.horaInicio}`;
+    const estado = "Programada";
+    const colores = getEventColors(estado);
+    const nuevaCita = {
+      id: idUnico,
+      title: `Asesor: ${formData.asesor}`,
+      start: `${fechaBase}T${formData.horaInicio}`,
+      end: `${fechaBase}T${formData.horaFin}`,
+      extendedProps: { ...formData, estado },
+      ...colores,
+    };
+    setEvents(prev => [...prev, nuevaCita]);
+    cerrarModal();
+    Swal.fire({ icon: 'success', title: 'Cita agendada', text: 'La cita ha sido agendada correctamente.', timer: 1800, showConfirmButton: false });
   };
 
+  // Cambiar la generación de opciones de hora a intervalos de 1 hora
   const generarOpcionesHora = () => {
     const opciones = [];
     for (let h = 7; h <= 19; h++) {
-      for (let m = 0; m < 60; m += 10) {
-        const hora24 = h.toString().padStart(2, '0');
-        const min = m.toString().padStart(2, '0');
-        const value = `${hora24}:${min}`;
-        let h12 = h % 12 === 0 ? 12 : h % 12;
-        const ampm = h < 12 ? 'AM' : 'PM';
-        const label = `${h12.toString().padStart(2, '0')}:${min} ${ampm}`;
-        opciones.push({ value, label });
-      }
+      const hora24 = h.toString().padStart(2, '0');
+      const min = '00';
+      const value = `${hora24}:${min}`;
+      let h12 = h % 12 === 0 ? 12 : h % 12;
+      const ampm = h < 12 ? 'AM' : 'PM';
+      const label = `${h12.toString().padStart(2, '0')}:${min} ${ampm}`;
+      opciones.push({ value, label });
     }
     return opciones;
   };
   const opcionesHora = generarOpcionesHora();
 
-    const empleadosActivos = EmployeeService.getAll().filter(e => e.estado === "Activo");
+// Lista fija de 2 empleados por defecto para el select
+const empleadosActivos = [
+  { cedula: '2001', nombre: 'Juan', apellido: 'Pérez', estado: 'Activo' },
+  { cedula: '2002', nombre: 'Lucía', apellido: 'Gómez', estado: 'Activo' },
+];
 
 
   const initialValues = {
@@ -170,20 +222,24 @@ const Calendario = () => {
     setShowDetalle(true);
   };
 
-  const handleAnularCita = async () => {
-    try {
-      const result = await citaAlertService.confirmarAnulacion();
-
+  const handleAnularCita = () => {
+    Swal.fire({
+      title: "Observación obligatoria",
+      input: "textarea",
+      inputLabel: "Por favor, ingresa la razón de la anulación:",
+      inputPlaceholder: "Escribe aquí la observación...",
+      inputValidator: (value) => {
+        if (!value || value.trim().length === 0) return 'La observación es obligatoria';
+        return null;
+      },
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Anular cita",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
       if (result.isConfirmed && citaAReprogramar) {
-        // Mostrar alerta de carga
-        const loadingAlert = citaAlertService.cargandoAnular();
-        
-        // Simular operación asíncrona
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Aquí podrías agregar un modal para la observación si es necesario
-        const observacion = "Cita anulada por el administrador";
-        
+        const observacion = result.value;
         setEvents((prev) => prev.map(ev =>
           ev.id === citaAReprogramar.id
             ? {
@@ -193,17 +249,11 @@ const Calendario = () => {
               }
             : ev
         ));
-        
-        alertService.close();
-        await citaAlertService.citaAnulada();
-        
         setShowDetalle(false);
         setCitaAReprogramar(null);
+        Swal.fire({ icon: 'success', title: 'Cita anulada', text: 'La cita ha sido anulada correctamente.', timer: 1800, showConfirmButton: false });
       }
-    } catch (error) {
-      alertService.close();
-      citaAlertService.errorAnularCita();
-    }
+    });
   };
 
   const cambiarVista = (vista) => {
@@ -219,275 +269,599 @@ const Calendario = () => {
     }
   };
 
-  const limpiarCalendario = async () => {
-    try {
-      const result = await citaAlertService.confirmarLimpiarCalendario();
-      
-      if (result.isConfirmed) {
-        const loadingAlert = alertService.loading("Limpiando calendario...");
-        
-        // Simular operación asíncrona
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setEvents([]);
-        
-        alertService.close();
-        await citaAlertService.calendarioLimpio();
-      }
-    } catch (error) {
-      alertService.close();
-      alertService.error("Error", "Error al limpiar el calendario.");
-    }
+  // Estadísticas
+  const stats = [
+    {
+      label: "Programadas",
+      value: events.filter(e => e.extendedProps?.estado === "Programada").length,
+      color: "bg-green-500",
+      icon: <FaCalendarAlt className="text-white text-2xl" />,
+    },
+    {
+      label: "Reprogramadas",
+      value: events.filter(e => e.extendedProps?.estado === "Reprogramada").length,
+      color: "bg-blue-500",
+      icon: <FaEdit className="text-white text-2xl" />,
+    },
+    {
+      label: "Anuladas",
+      value: events.filter(e => e.extendedProps?.estado === "Cita anulada").length,
+      color: "bg-gray-600",
+      icon: <FaTrash className="text-white text-2xl" />,
+    },
+    {
+      label: "Total",
+      value: events.length,
+      color: "bg-blue-900 text-white",
+      icon: <FaCalendarDay className="text-white text-2xl" />,
+    },
+  ];
+
+  function abrirModal(dateInfo = null) {
+    setShowModal(true);
+    setModalDate(dateInfo); // Aquí se guarda la fecha seleccionada
+    setFormData({
+      nombre: "",
+      apellido: "",
+      cedula: "",
+      telefono: "",
+      tipoCita: "",
+      horaInicio: dateInfo?.startStr ? dateInfo.startStr.split('T')[1]?.slice(0,5) : "",
+      horaFin: "",
+      asesor: "",
+      detalle: "",
+    });
+    setErrores({}); // Limpiar errores al abrir modal
+    setTouched({}); // Limpiar campos tocados al abrir modal
+  }
+
+  function cerrarModal() {
+    setShowModal(false);
+    setModalDate(null);
+    setFormData({
+      nombre: "",
+      apellido: "",
+      cedula: "",
+      telefono: "",
+      tipoCita: "",
+      horaInicio: "",
+      horaFin: "",
+      asesor: "",
+      detalle: "",
+    });
+    setErrores({}); // Limpiar errores al cerrar modal
+    setTouched({}); // Limpiar campos tocados al cerrar modal
+  }
+
+  function horaEstaOcupada(hora, fecha) {
+    if (!fecha) return false;
+    const rangosOcupados = events
+      .filter(ev => {
+        // Si estamos reprogramando, ignorar la cita actual
+        if (modoReprogramar && citaAReprogramar) {
+          return ev.id !== citaAReprogramar.id && ev.start.split('T')[0] === fecha;
+        }
+        return ev.start.split('T')[0] === fecha;
+      })
+      .map(ev => ({
+        inicio: ev.start.split('T')[1].slice(0,5),
+        fin: ev.end.split('T')[1].slice(0,5)
+      }));
+    return rangosOcupados.some(rango => hora >= rango.inicio && hora < rango.fin);
+  }
+
+  // Función para filtrar eventos según la búsqueda
+  const filtrarEventos = (eventos, termino) => {
+    if (!termino) return eventos;
+    const t = termino.toLowerCase();
+    return eventos.filter(ev => {
+      // Buscar en todos los campos de extendedProps y en el título
+      const props = ev.extendedProps || {};
+      const values = [
+        ev.title,
+        ev.id,
+        props.nombre,
+        props.apellido,
+        props.cedula,
+        props.telefono,
+        props.tipoCita,
+        props.asesor,
+        props.detalle,
+        props.estado,
+        props.observacionAnulacion,
+        // Agrega aquí cualquier otro campo relevante
+      ];
+      return values.some(val =>
+        typeof val === 'string' && val.toLowerCase().includes(t)
+      );
+    });
   };
 
+  const validarCampos = (campos = formData) => {
+    const nuevosErrores = {};
+    // Nombre
+    if (!campos.nombre || campos.nombre.trim().length < 2) {
+      nuevosErrores.nombre = "El nombre es obligatorio y debe tener al menos 2 letras.";
+    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(campos.nombre.trim())) {
+      nuevosErrores.nombre = "El nombre solo puede contener letras y espacios.";
+    } else if (/^\s|\s$/.test(campos.nombre) || !campos.nombre.trim()) {
+      nuevosErrores.nombre = "El nombre no debe tener espacios al inicio/final ni solo espacios.";
+    }
+    // Apellido
+    if (!campos.apellido || campos.apellido.trim().length < 2) {
+      nuevosErrores.apellido = "El apellido es obligatorio y debe tener al menos 2 letras.";
+    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(campos.apellido.trim())) {
+      nuevosErrores.apellido = "El apellido solo puede contener letras y espacios.";
+    } else if (/^\s|\s$/.test(campos.apellido) || !campos.apellido.trim()) {
+      nuevosErrores.apellido = "El apellido no debe tener espacios al inicio/final ni solo espacios.";
+    }
+    // Cédula
+    if (!campos.cedula) {
+      nuevosErrores.cedula = "La cédula es obligatoria.";
+    } else if (!/^[0-9]{7,10}$/.test(campos.cedula)) {
+      nuevosErrores.cedula = "La cédula debe tener entre 7 y 10 dígitos numéricos y sin espacios.";
+    }
+    // Teléfono
+    if (!campos.telefono) {
+      nuevosErrores.telefono = "El teléfono es obligatorio.";
+    } else if (!/^[0-9]{7,10}$/.test(campos.telefono)) {
+      nuevosErrores.telefono = "El teléfono debe tener entre 7 y 10 dígitos numéricos y sin espacios.";
+    }
+    // Tipo de cita
+    if (!campos.tipoCita || !campos.tipoCita.trim()) {
+      nuevosErrores.tipoCita = "El tipo de cita es obligatorio.";
+    }
+    // Hora de inicio
+    if (!campos.horaInicio || !campos.horaInicio.trim()) {
+      nuevosErrores.horaInicio = "La hora de inicio es obligatoria.";
+    }
+    // Hora de fin
+    if (!campos.horaFin || !campos.horaFin.trim()) {
+      nuevosErrores.horaFin = "La hora de fin es obligatoria.";
+    }
+    // Asesor
+    if (!campos.asesor || !campos.asesor.trim()) {
+      nuevosErrores.asesor = "El asesor es obligatorio.";
+    }
+    // No validar detalle (opcional)
+    return nuevosErrores;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setTouched(prev => ({ ...prev, [name]: true }));
+    setErrores(validarCampos({ ...formData, [name]: value }));
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    setErrores(validarCampos(formData));
+  };
+
+  // Función para exportar a Excel las citas del mes visible
+  const exportarExcelMesActual = () => {
+    if (!calendarRef.current) return;
+    const calendarApi = calendarRef.current.getApi();
+    const start = calendarApi.view.currentStart;
+    const end = calendarApi.view.currentEnd;
+    // Filtrar eventos del mes visible
+    const eventosMes = events.filter(ev => {
+      const fecha = new Date(ev.start);
+      return fecha >= start && fecha < end;
+    });
+    if (eventosMes.length === 0) {
+      Swal.fire({ icon: 'info', title: 'Sin datos', text: 'No hay citas en el mes actual.' });
+      return;
+    }
+    // Preparar datos para Excel
+    const data = eventosMes.map(ev => ({
+      Nombre: ev.extendedProps?.nombre || '',
+      Apellido: ev.extendedProps?.apellido || '',
+      Cédula: ev.extendedProps?.cedula || '',
+      Teléfono: ev.extendedProps?.telefono || '',
+      "Tipo de Cita": ev.extendedProps?.tipoCita || '',
+      Asesor: ev.extendedProps?.asesor || '',
+      Fecha: ev.start ? new Date(ev.start).toLocaleDateString() : '',
+      "Hora Inicio": ev.start ? new Date(ev.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+      "Hora Fin": ev.end ? new Date(ev.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+      Estado: ev.extendedProps?.estado || '',
+      Detalle: ev.extendedProps?.detalle || '',
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Citas");
+    // Nombre del archivo con mes y año
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const mesNombre = meses[start.getMonth()];
+    const anio = start.getFullYear();
+    XLSX.writeFile(wb, `Citas_${mesNombre}_${anio}.xlsx`);
+  };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 bg-gray-100 min-h-screen pb-4">
-      <div className="bg-white shadow-xl rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between bg-[#111827] text-white rounded-t-xl px-6 py-4">
-          <div className="flex items-center gap-3">
-            <i className="bi bi-calendar3 text-blue-400 text-2xl"></i>
-            <h2 className="text-xl font-bold">Calendario de Citas Administrativas</h2>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className="bg-[#1f2937] hover:bg-[#374151] px-4 py-1 rounded-md text-sm"
-              onClick={() => citaAlertService.infoCalendario()}
-              title="Información del calendario"
-            >
-              <i className="bi bi-info-circle"></i>
-            </button>
-            <button
-              className="bg-[#1f2937] hover:bg-[#374151] px-4 py-1 rounded-md text-sm"
-              onClick={irAHoy}
-            >
-              Hoy
-            </button>
-            <button
-              className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-md text-sm"
-              onClick={limpiarCalendario}
-              title="Limpiar calendario"
-            >
-              <i className="bi bi-trash"></i>
-            </button>
-            <button
-              className={`px-4 py-1 rounded-md text-sm ${currentView === 'dayGridMonth' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
-              onClick={() => cambiarVista('dayGridMonth')}
-            >
-              Mes
-            </button>
-            <button
-              className={`px-4 py-1 rounded-md text-sm ${currentView === 'timeGridWeek' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
-              onClick={() => cambiarVista('timeGridWeek')}
-            >
-              Semana
-            </button>
-            <button
-              className={`px-4 py-1 rounded-md text-sm ${currentView === 'timeGridDay' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
-              onClick={() => cambiarVista('timeGridDay')}
-            >
-              Día
-            </button>
-          </div>
+    <div className="w-full max-w-7xl mx-auto px-2 bg-gray-100 min-h-screen pb-4">
+      {/* Header principal */}
+      <div className="bg-blue-900 rounded-xl shadow-lg p-6 flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <FaCalendarAlt className="text-white text-4xl" />
+            Calendario de Citas
+          </h1>
+          <p className="text-blue-100 text-lg mt-1">Gestiona tus citas administrativas de forma eficiente</p>
         </div>
-        <div className="p-6">
-          <FullCalendar
-            ref={calendarRef}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{ left: "", center: "title", right: "" }}
-            locale={esLocale}
-            selectable
-            editable
-            select={handleDateSelect}
-            events={events}
-            height="auto"
-            eventClick={handleEventClick}
-            dayMaxEventRows={3}
-            eventDisplay="block"
-            eventClassNames={(arg) => {
-              const view = arg.view.type;
-              const estado = arg.event.extendedProps.estado;
-              let base = "font-semibold text-xs border-0 shadow-sm transition-all duration-200 ";
-              if (view === "dayGridMonth") {
-                base += "rounded-full px-2 py-1 ";
-              } else {
-                base += "rounded-md px-1 py-0.5 text-sm ";
+        <button className="bg-white text-[#174B8A] font-semibold px-6 py-2 rounded-full shadow hover:bg-gray-100 transition-all">
+          {events.length} Citas Registradas
+        </button>
+      </div>
+
+      {/* Barra de controles */}
+      <div className="bg-white rounded-xl shadow flex flex-wrap items-center justify-between px-6 py-4 mb-6 gap-4">
+        <div className="flex gap-2 items-center">
+          <button
+            className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
+            onClick={() => {
+              if (calendarRef.current) {
+                calendarRef.current.getApi().prev();
               }
-              if (estado === "Cita anulada") {
-                base += "opacity-60 ";
-              } else {
-                base += "hover:scale-105 ";
-              }
-              return base;
             }}
-          />
+            aria-label="Anterior"
+          >
+            &lt;
+          </button>
+          <button
+            className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
+            onClick={() => {
+              if (calendarRef.current) {
+                calendarRef.current.getApi().next();
+              }
+            }}
+            aria-label="Siguiente"
+          >
+            &gt;
+          </button>
+          <button
+            className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
+            onClick={() => {
+              if (calendarRef.current) {
+                calendarRef.current.getApi().today();
+              }
+            }}
+            aria-label="Hoy"
+          >
+            Hoy
+          </button>
+          <button
+            className={`border px-4 py-1 rounded-md text-base font-medium ${currentView === 'dayGridMonth' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-800 border-blue-600'}`}
+            onClick={() => cambiarVista('dayGridMonth')}
+          >
+            Mes
+          </button>
+          <button
+            className={`border px-4 py-1 rounded-md text-base font-medium ${currentView === 'timeGridWeek' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-800 border-blue-600'}`}
+            onClick={() => cambiarVista('timeGridWeek')}
+          >
+            Semana
+          </button>
+          <button
+            className={`border px-4 py-1 rounded-md text-base font-medium ${currentView === 'timeGridDay' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-800 border-blue-600'}`}
+            onClick={() => cambiarVista('timeGridDay')}
+          >
+            Día
+          </button>
+        </div>
+        <div className="flex gap-2 items-center flex-1 justify-end">
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar citas..."
+              value={busqueda}
+              onChange={e => setBusqueda(e.target.value)}
+              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+            />
+          </div>
+          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center gap-2 font-medium shadow" onClick={exportarExcelMesActual}>
+            <FaDownload /> Exportar Excel
+          </button>
+          <button className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-md flex items-center gap-2 font-semibold shadow" onClick={() => abrirModal()}>
+            <FaCalendarAlt /> Nueva Cita
+          </button>
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* Leyenda de colores y tipos de cita */}
+      <div className="flex flex-wrap gap-4 items-center my-4">
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-5 h-5 rounded bg-green-500 border border-gray-300"></span>
+          <span className="text-sm">Programada</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-5 h-5 rounded bg-blue-600 border border-gray-300"></span>
+          <span className="text-sm">Reprogramada</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-5 h-5 rounded bg-gray-500 border border-gray-300"></span>
+          <span className="text-sm">Anulada</span>
+        </div>
+      </div>
+
+      {/* Tarjetas de estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {stats.map((stat, idx) => (
+          <div key={stat.label} className={`rounded-xl shadow flex items-center justify-between p-4 ${stat.color}`}>
+            <div>
+              <p className="text-white/80 text-sm font-medium mb-1">{stat.label}</p>
+              <p className="text-3xl font-bold text-white">{stat.value}</p>
+            </div>
+            <div>{stat.icon}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Contenedor del calendario */}
+      <div className="bg-white rounded-xl shadow-xl p-4 min-h-[500px]">
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView={currentView}
+          headerToolbar={{
+            left: '',
+            center: 'title',
+            right: ''
+          }}
+          locale={esLocale}
+          events={filtrarEventos(events, busqueda).map((event) => ({
+            ...event,
+            ...getEventColors(event.extendedProps?.estado),
+          }))}
+          selectable={true}
+          selectMirror={true}
+          dayMaxEvents={1}
+          dayMaxEventRows={false}
+          eventDisplay="block"
+          eventClassNames={arg => {
+            let base = "custom-event";
+            if (arg.view.type === "timeGridWeek" || arg.view.type === "timeGridDay") {
+              base += " custom-event-timegrid";
+            }
+            if (arg.view.type === "dayGridMonth") {
+              base += " custom-event-month";
+            }
+            return base;
+          }}
+          eventContent={arg => {
+            const { event } = arg;
+            return (
+              <div>
+                <div style={{ fontWeight: 'bold', fontSize: '1em' }}>
+                  {event.extendedProps?.tipoCita || event.title}
+                </div>
+                {event.extendedProps?.asesor && (
+                  <div style={{ fontSize: '0.92em', opacity: 0.9 }}>
+                    {event.extendedProps.asesor}
+                  </div>
+                )}
+              </div>
+            );
+          }}
+          eventClick={handleEventClick}
+          slotDuration="01:00:00"
+          slotMinTime="07:00:00"
+          slotMaxTime="19:00:00"
+          height="auto"
+          select={handleDateSelect}
+        />
+        {events.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-96 text-gray-300">
+            <FaCalendarAlt className="text-7xl mb-4" />
+            <p className="text-lg">No hay citas registradas</p>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL DE AGENDAR CITA */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl p-6 overflow-hidden">
             {/* Header */}
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="bg-yellow-100 p-2 rounded-full">
-                  <i className="bi bi-calendar-event text-yellow-600 text-xl"></i>
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <FaCalendarAlt className="text-blue-600 text-xl" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800">{modoReprogramar ? "Reprogramar Cita" : "Agendar Cita"}</h2>
-                  <p className="text-sm text-gray-500">Llena los campos para {modoReprogramar ? "reprogramar la cita" : "agendar una nueva cita"}</p>
+                  <h2 className="text-xl font-semibold text-gray-800">{modoReprogramar ? 'Reprogramar Cita' : 'Agendar Nueva Cita'}</h2>
+                  <p className="text-sm text-gray-500">
+                    {modoReprogramar ? 'Modifica solo los campos permitidos para reprogramar la cita' : 'Llena los campos para registrar una cita'}
+                  </p>
                 </div>
               </div>
-              <button onClick={() => { setShowModal(false); setModoReprogramar(false); setCitaAReprogramar(null); }} className="text-gray-900 hover:text-red-700 bg-gray-50">
-                <i className="bi bi-x-lg"></i>
+              <button onClick={cerrarModal} className="text-gray-900 hover:text-red-700 bg-gray-50">
+                <span className="text-2xl">&times;</span>
               </button>
             </div>
-            <Formik
-              initialValues={modoReprogramar && citaSeleccionada ? {
-                ...citaSeleccionada,
-                estado: "Reprogramada"
-              } : initialValues}
-              validationSchema={validationSchema}
-              onSubmit={handleSave}
-              enableReinitialize
-            >
-              {() => (
-                <Form className="pt-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Nombre */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-person text-gray-400 mr-2"></i>
-                        Nombre
-                      </label>
-                      <Field name="nombre" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500" disabled={modoReprogramar} />
-                      <ErrorMessage name="nombre" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Apellido */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-person text-gray-400 mr-2"></i>
-                        Apellido
-                      </label>
-                      <Field name="apellido" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500" disabled={modoReprogramar} />
-                      <ErrorMessage name="apellido" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Cédula */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-card-text text-gray-400 mr-2"></i>
-                        Cédula
-                      </label>
-                      <Field name="cedula" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500" disabled={modoReprogramar} />
-                      <ErrorMessage name="cedula" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Teléfono */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-telephone text-gray-400 mr-2"></i>
-                        Teléfono
-                      </label>
-                      <Field name="telefono" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500" disabled={modoReprogramar} />
-                      <ErrorMessage name="telefono" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Tipo de Cita */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-briefcase text-gray-400 mr-2"></i>
-                        Tipo de Cita
-                      </label>
-                      <Field as="select" name="tipoCita" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500">
-                        <option value="">Seleccionar...</option>
-                        <option value="General">General</option>
-                        <option value="Oposición">Oposición</option>
-                        <option value="Certificación">Certificación</option>
-                        <option value="Búsqueda de antecedentes">Búsqueda de antecedentes</option>
-                        <option value="Cesión de marca">Cesión de marca</option>
-                        <option value="Renovación">Renovación</option>
-                      </Field>
-                      <ErrorMessage name="tipoCita" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Hora de Inicio */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-clock text-gray-400 mr-2"></i>
-                        Hora de Inicio
-                      </label>
-                      <Field as="select" name="horaInicio" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500">
-                        <option value="">Seleccionar...</option>
-                        {opcionesHora.map((hora) => (
-                          <option key={hora.value} value={hora.value}>{hora.label}</option>
-                        ))}
-                      </Field>
-                      <ErrorMessage name="horaInicio" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Hora de Fin */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-clock-history text-gray-400 mr-2"></i>
-                        Hora de Fin
-                      </label>
-                      <Field as="select" name="horaFin" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500">
-                        <option value="">Seleccionar...</option>
-                        {opcionesHora.map((hora) => (
-                          <option key={hora.value} value={hora.value}>{hora.label}</option>
-                        ))}
-                      </Field>
-                      <ErrorMessage name="horaFin" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Asesor */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-person-badge text-gray-400 mr-2"></i>
-                        Asesor
-                      </label>
-                      <Field as="select" name="asesor" className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500">
-                        <option value="">Seleccionar...</option>
-                        {empleadosActivos.map((e) => (
-                          <option key={e.cedula} value={`${e.nombre ? e.nombre : ''}${e.apellido ? ' ' + e.apellido : ''}`.trim()}>{e.nombre} {e.apellido}</option>
-                        ))}
-                      </Field>
-                      <ErrorMessage name="asesor" component="div" className="text-red-600 text-sm mt-1" />
-                    </div>
-                    {/* Detalle */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <i className="bi bi-chat-left-text text-gray-400 mr-2"></i>
-                        Detalle
-                      </label>
-                      <Field as="textarea" name="detalle" rows={2} className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500" disabled={modoReprogramar} />
-                    </div>
-                  </div>
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-500 flex items-center">
-                      <i className="bi bi-exclamation-circle text-gray-400 mr-2"></i>
-                      * Todos los campos son obligatorios
-                    </p>
-                    <div className="flex space-x-3">
-                      <button
-                        type="button"
-                        onClick={() => { setShowModal(false); setModoReprogramar(false); setCitaAReprogramar(null); }}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
-                      >
-                        {modoReprogramar ? "Guardar Cambios" : "Agendar Cita"}
-                      </button>
-                    </div>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            {/* Formulario en dos columnas */}
+            <form onSubmit={handleGuardarCita} className="pt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Nombre */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-2" /> Nombre
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    value={formData.nombre}
+                    readOnly={modoReprogramar}
+                  />
+                  {touched.nombre && errores.nombre && <p className="text-red-600 text-xs mt-1">{errores.nombre}</p>}
+                </div>
+                {/* Apellido */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-2" /> Apellido
+                  </label>
+                  <input
+                    type="text"
+                    name="apellido"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    value={formData.apellido}
+                    readOnly={modoReprogramar}
+                  />
+                  {touched.apellido && errores.apellido && <p className="text-red-600 text-xs mt-1">{errores.apellido}</p>}
+                </div>
+                {/* Cédula */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaFileAlt className="inline text-gray-400 mr-2" /> Cédula
+                  </label>
+                  <input
+                    type="text"
+                    name="cedula"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    value={formData.cedula}
+                    readOnly={modoReprogramar}
+                  />
+                  {touched.cedula && errores.cedula && <p className="text-red-600 text-xs mt-1">{errores.cedula}</p>}
+                </div>
+                {/* Teléfono */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaPhone className="inline text-gray-400 mr-2" /> Teléfono
+                  </label>
+                  <input
+                    type="text"
+                    name="telefono"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    value={formData.telefono}
+                    readOnly={modoReprogramar}
+                  />
+                  {touched.telefono && errores.telefono && <p className="text-red-600 text-xs mt-1">{errores.telefono}</p>}
+                </div>
+                {/* Tipo de Cita */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaBriefcase className="inline text-gray-400 mr-2" /> Tipo de Cita
+                  </label>
+                  <select
+                    name="tipoCita"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    value={formData.tipoCita}
+                    disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="General">General</option>
+                    <option value="Oposición">Oposición</option>
+                    <option value="Certificación">Certificación</option>
+                    <option value="Búsqueda de antecedentes">Búsqueda de antecedentes</option>
+                    <option value="Cesión de marca">Cesión de marca</option>
+                    <option value="Renovación">Renovación</option>
+                  </select>
+                  {touched.tipoCita && errores.tipoCita && <p className="text-red-600 text-xs mt-1">{errores.tipoCita}</p>}
+                </div>
+                {/* Hora Inicio */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hora de Inicio</label>
+                  <select
+                    name="horaInicio"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    value={formData.horaInicio}
+                    disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {opcionesHora.map(hora => (
+                      <option key={hora.value} value={hora.value} disabled={horaEstaOcupada(hora.value, modalDate?.startStr?.split('T')[0] || new Date().toISOString().split('T')[0])}>{hora.label}</option>
+                    ))}
+                  </select>
+                  {touched.horaInicio && errores.horaInicio && <p className="text-red-600 text-xs mt-1">{errores.horaInicio}</p>}
+                </div>
+                {/* Hora Fin */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hora de Fin</label>
+                  <select
+                    name="horaFin"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    value={formData.horaFin}
+                    disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {opcionesHora.map(hora => {
+                      const menorOIgual = formData.horaInicio && hora.value <= formData.horaInicio;
+                      const cruce = horaEstaOcupada(hora.value, modalDate?.startStr?.split('T')[0] || new Date().toISOString().split('T')[0]);
+                      return (
+                        <option key={hora.value} value={hora.value} disabled={menorOIgual || cruce}>
+                          {hora.label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {touched.horaFin && errores.horaFin && <p className="text-red-600 text-xs mt-1">{errores.horaFin}</p>}
+                </div>
+                {/* Asesor */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-2" /> Asesor
+                  </label>
+                  <select
+                    name="asesor"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    value={formData.asesor}
+                    disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {empleadosActivos.map(e => (
+                      <option key={e.cedula} value={`${e.nombre} ${e.apellido}`}>{e.nombre} {e.apellido}</option>
+                    ))}
+                  </select>
+                  {touched.asesor && errores.asesor && <p className="text-red-600 text-xs mt-1">{errores.asesor}</p>}
+                </div>
+                {/* Detalle */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <FaFileAlt className="inline text-gray-400 mr-2" /> Detalle
+                  </label>
+                  <textarea
+                    name="detalle"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    rows={2}
+                    value={formData.detalle}
+                    readOnly={modoReprogramar}
+                  />
+                  {touched.detalle && errores.detalle && <p className="text-red-600 text-xs mt-1">{errores.detalle}</p>}
+                </div>
+              </div>
+              {/* Botones */}
+              <div className="flex justify-end gap-3 mt-4">
+                <button type="button" onClick={cerrarModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700">
+                  {modoReprogramar ? 'Reprogramar Cita' : 'Agendar Cita'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
+      
 
       {showDetalle && (
         <VerDetalleCita
@@ -498,11 +872,46 @@ const Calendario = () => {
             setModoReprogramar(true);
             setShowDetalle(false);
             setShowModal(true);
+            // Precarga los datos de la cita a reprogramar
+            setFormData({
+              nombre: citaSeleccionada.nombre,
+              apellido: citaSeleccionada.apellido,
+              cedula: citaSeleccionada.cedula,
+              telefono: citaSeleccionada.telefono,
+              tipoCita: citaSeleccionada.tipoCita,
+              horaInicio: citaSeleccionada.horaInicio,
+              horaFin: citaSeleccionada.horaFin,
+              asesor: citaSeleccionada.asesor,
+              detalle: citaSeleccionada.detalle,
+            });
           }}
           onAnular={handleAnularCita}
           puedeReprogramar={citaSeleccionada?.estado !== "Cita anulada"}
           puedeAnular={citaSeleccionada?.estado !== "Cita anulada"}
         />
+      )}
+      {modalEventos.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-bold mb-4">Eventos en {modalEventos.hora}</h2>
+            <ul>
+              {modalEventos.eventos.map((ev, idx) => (
+                <li key={ev.publicId || idx} className="mb-2">
+                  <span className="font-semibold">{ev.title}</span>
+                  {ev.asesor && (
+                    <span className="ml-2 text-gray-600">({ev.asesor})</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+              onClick={() => setModalEventos({ open: false, eventos: [], hora: "" })}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import {
-  CiGrid41,
-  CiViewList,
-  CiUser,
-  CiCalendar,
-  CiSettings,
-  CiCircleCheck,
-} from "react-icons/ci";
-import { BsBullseye, BsCreditCard } from "react-icons/bs";
+  TbLayoutGrid,
+  TbUser,
+  TbUsers,
+  TbBriefcase,
+  TbCalendar,
+  TbCreditCard,
+  TbListDetails,
+  TbBox,
+  TbSettings,
+  TbCircleCheck,
+  TbUserSquareRounded
+} from "react-icons/tb";
 import { FiChevronRight } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
-import { LuBriefcase, LuUsers } from "react-icons/lu";
-import { BiCog } from "react-icons/bi";
 
 const SideBarGeneral = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,15 +25,15 @@ const SideBarGeneral = () => {
   const activeLinkClasses = "bg-gray-100 border-l-4 border-blue-500";
 
   const menuItems = [
-    { label: "Dashboard", icon: CiGrid41, to: "/admin/dashboard" },
-    { label: "Usuarios", icon: CiUser, to: "/admin/gestionUsuarios" },
-    { label: "Empleados", icon: LuBriefcase, to: "/admin/empleados" },
+    { label: "Dashboard", icon: TbLayoutGrid, to: "/admin/dashboard" },
+    { label: "Usuarios", icon: TbUser, to: "/admin/gestionUsuarios" },
+    { label: "Empleados", icon: TbUsers, to: "/admin/empleados" },
     // Solicitudes va como dropdown abajo
-    { label: "Citas", icon: CiCalendar, to: "/admin/calendario" },
-    { label: "Pagos", icon: BsCreditCard, to: "/admin/pagos" },
-    { label: "Clientes", icon: LuUsers, to: "/admin/gestionClientes" },
-    { label: "Servicios", icon: BiCog, to: "/admin/servicios" },
-    { label: "Configuración", icon: CiSettings, to: "/admin/roles" },
+    { label: "Citas", icon: TbCalendar, to: "/admin/calendario" },
+    { label: "Pagos", icon: TbCreditCard, to: "/admin/pagos" },
+    { label: "Clientes", icon: TbUserSquareRounded, to: "/admin/gestionClientes" },
+    { label: "Servicios", icon: TbBox, to: "/admin/servicios" }, // Cambiado a CiBoxList
+    { label: "Configuración", icon: TbSettings, to: "/admin/roles" },
   ];
 
   const handleToggleDropdown = () => setIsDropdownOpen(prev => !prev);
@@ -80,7 +82,7 @@ const SideBarGeneral = () => {
                 className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-200 cursor-pointer"
               >
                 <div className="flex items-center space-x-3">
-                  <CiViewList className={iconClass} />
+                  <TbListDetails className={iconClass} />
                   <span className="text-gray-700 text-sm font-medium hidden group-hover:block">
                     Solicitudes
                   </span>
@@ -105,7 +107,7 @@ const SideBarGeneral = () => {
                         : ""
                     }`}
                   >
-                    <BsBullseye className={iconClass} />
+                    <TbListDetails className={iconClass} />
                     <span className="text-gray-700 text-sm font-medium hidden group-hover:block">
                       En proceso
                     </span>
@@ -120,7 +122,7 @@ const SideBarGeneral = () => {
                         : ""
                     }`}
                   >
-                    <CiCircleCheck className={iconClass} />
+                    <TbCircleCheck className={iconClass} />
                     <span className="text-gray-700 text-sm font-medium hidden group-hover:block">
                       Terminadas
                     </span>

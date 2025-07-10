@@ -1,12 +1,13 @@
 import React from 'react';
 
 const tipos = [
-  { nombre: 'Búsqueda de Antecedentes', habilitado: false },
+  { nombre: 'Búsqueda de Antecedentes', habilitado: true },
   { nombre: 'Certificación de Marca', habilitado: true },
-  { nombre: 'Renovación de Marca', habilitado: false },
-  { nombre: 'Oposición', habilitado: false },
-  { nombre: 'Cesión de Marca', habilitado: false },
-  { nombre: 'Ampliamiento de Alcance', habilitado: false },
+  { nombre: 'Renovación de Marca', habilitado: true },
+  { nombre: 'Oposición', habilitado: true },
+  { nombre: 'Cesión de Marca', habilitado: true },
+  { nombre: 'Ampliamiento de Alcance', habilitado: true },
+  { nombre: 'Respuesta a Oposición', habilitado: true },
 ];
 
 const SeleccionarTipoSolicitud = ({ isOpen, onClose, onSeleccionar }) => {

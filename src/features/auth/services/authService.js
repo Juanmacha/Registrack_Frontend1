@@ -1,6 +1,6 @@
 import authData from "./authData";
 
-const USERS_KEY = "usuarios"; // LocalStorage para los usuarios registrados
+const USERS_KEY = "usuarios_mock"; // Unificado con mockDataService
 
 // Función para simular un JWT (base64 codificado)
 const createFakeToken = (user) => {
@@ -22,7 +22,12 @@ const authService = {
     }
 
     // Rol por defecto: "user"
-    const newUser = { ...userData, role: "user" };
+    const newUser = {
+      id: Date.now().toString(),
+      ...userData,
+      role: userData.role || "user",
+      estado: "activo"
+    };
 
     usuarios.push(newUser);
     localStorage.setItem(USERS_KEY, JSON.stringify(usuarios));
@@ -62,10 +67,12 @@ export default authService;
 
   if (!yaHayAdmin) {
     usuarios.push({
+      id: Date.now().toString(),
       email: "admin@demo.com",
       password: "admin123",
       name: "Administrador",
-      role: "admin",
+      role: "Administrador",
+      estado: "activo"
     });
 
     localStorage.setItem(USERS_KEY, JSON.stringify(usuarios));
