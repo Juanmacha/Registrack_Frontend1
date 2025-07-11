@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const EditarEmpleadoModal = ({
   showModal,
@@ -20,10 +21,9 @@ const EditarEmpleadoModal = ({
   const [errors, setErrors] = useState({});
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
 
-  // Cargar roles activos del sistema
   useEffect(() => {
     const roles = JSON.parse(localStorage.getItem("roles_mock")) || [];
-    const rolesActivos = roles.filter(rol => rol.estado === "Activo");
+    const rolesActivos = roles.filter((rol) => rol.estado === "Activo");
     setRolesDisponibles(rolesActivos);
   }, []);
 
@@ -67,6 +67,22 @@ const EditarEmpleadoModal = ({
     e.preventDefault();
     if (validateForm()) {
       handleActualizarEmpleado(formData);
+
+      Swal.fire({
+        icon: "success",
+        title: "Empleado actualizado",
+        text: "Los datos del empleado se han actualizado correctamente.",
+        confirmButtonColor: "#3085d6",
+      });
+
+      setShowModal(false);
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Campos incompletos",
+        text: "Por favor completa todos los campos obligatorios.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
@@ -75,7 +91,6 @@ const EditarEmpleadoModal = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl p-6 overflow-hidden">
-        {/* Header */}
         <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 p-2 rounded-full">
@@ -88,14 +103,12 @@ const EditarEmpleadoModal = ({
           </div>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="pt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-person text-gray-400 mr-2"></i>
-                Nombre *
+                <i className="bi bi-person text-gray-400 mr-2"></i>Nombre *
               </label>
               <input
                 type="text"
@@ -112,8 +125,7 @@ const EditarEmpleadoModal = ({
             {/* Apellidos */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-person-vcard text-gray-400 mr-2"></i>
-                Apellidos *
+                <i className="bi bi-person-vcard text-gray-400 mr-2"></i>Apellidos *
               </label>
               <input
                 type="text"
@@ -130,8 +142,7 @@ const EditarEmpleadoModal = ({
             {/* Tipo de Documento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-card-list text-gray-400 mr-2"></i>
-                Tipo de Documento *
+                <i className="bi bi-card-list text-gray-400 mr-2"></i>Tipo de Documento *
               </label>
               <select
                 name="tipoDocumento"
@@ -153,8 +164,7 @@ const EditarEmpleadoModal = ({
             {/* Documento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-hash text-gray-400 mr-2"></i>
-                Número de Documento *
+                <i className="bi bi-hash text-gray-400 mr-2"></i>Número de Documento *
               </label>
               <input
                 type="text"
@@ -171,8 +181,7 @@ const EditarEmpleadoModal = ({
             {/* Correo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-envelope text-gray-400 mr-2"></i>
-                Correo *
+                <i className="bi bi-envelope text-gray-400 mr-2"></i>Correo *
               </label>
               <input
                 type="email"
@@ -189,8 +198,7 @@ const EditarEmpleadoModal = ({
             {/* Rol */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-person-badge text-gray-400 mr-2"></i>
-                Rol *
+                <i className="bi bi-person-badge text-gray-400 mr-2"></i>Rol *
               </label>
               <select
                 name="rol"
@@ -201,7 +209,7 @@ const EditarEmpleadoModal = ({
                 }`}
               >
                 <option value="">Seleccionar rol...</option>
-                {rolesDisponibles.map(rol => (
+                {rolesDisponibles.map((rol) => (
                   <option key={rol.id} value={rol.nombre}>
                     {rol.nombre}
                   </option>
@@ -213,8 +221,7 @@ const EditarEmpleadoModal = ({
             {/* Estado */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-flag text-gray-400 mr-2"></i>
-                Estado
+                <i className="bi bi-flag text-gray-400 mr-2"></i>Estado
               </label>
               <select
                 name="estado"
@@ -228,11 +235,9 @@ const EditarEmpleadoModal = ({
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500 flex items-center">
-              <i className="bi bi-exclamation-circle text-gray-400 mr-2"></i>
-              * Campos requeridos
+              <i className="bi bi-exclamation-circle text-gray-400 mr-2"></i>* Campos requeridos
             </p>
             <div className="flex space-x-3">
               <button

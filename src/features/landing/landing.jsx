@@ -7,7 +7,7 @@ const Landing = () => {
   return (
     <div>
       <LandingNavbar />
-      <div className="pt-28">
+      <div>
         <Hero />
         <Footer />
       </div>

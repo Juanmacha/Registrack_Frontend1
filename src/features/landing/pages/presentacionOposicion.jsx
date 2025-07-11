@@ -39,7 +39,7 @@ const PresentacionOposicion = () => {
   };
 
   return (
-    <div className="font-sans bg-white pt-20">
+    <div className="font-sans bg-white pt-3 md:pt-28">
       <LandingNavbar />
 
       {/* Presentación de oposición */}

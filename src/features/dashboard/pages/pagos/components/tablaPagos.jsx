@@ -54,7 +54,7 @@ const Tablapagos = () => {
       <div className="flex items-center justify-between px-4 mb-4 w-full">
         <input
           type="text"
-          placeholder="Buscar por ID o método"
+          placeholder="Buscar"
           className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
           value={busqueda}
           onChange={handleBusquedaChange}

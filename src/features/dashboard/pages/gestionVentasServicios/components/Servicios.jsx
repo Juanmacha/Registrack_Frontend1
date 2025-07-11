@@ -97,10 +97,6 @@ const Servicios = () => {
   return (
     <div className="flex-1 flex justify-center">
       <div className="w-full px-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Servicios</h1>
-          <p className="text-gray-600">Administra los servicios ofrecidos y controla su visibilidad en la página de inicio</p>
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {servicios.map((servicio) => (
             <div

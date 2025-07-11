@@ -2,26 +2,384 @@
 @tailwind components;
 @tailwind utilities;
 
-.btn-outline-primary:hover {
-  background-color: #275FAA !important;
-  border-color: #275FAA !important;
+/* ===== MEDIA QUERIES PERSONALIZADAS ===== */
+
+/* Móviles pequeños (320px - 480px) */
+@media (max-width: 480px) {
+  /* Dashboard - Gráficas */
+  .dashboard-chart-container {
+    min-height: 300px !important;
+    padding: 1rem !important;
+  }
+  
+  .dashboard-chart {
+    width: 280px !important;
+    height: 280px !important;
+  }
+  
+  /* Sidebar móvil */
+  .sidebar-mobile {
+    width: 100% !important;
+    position: fixed !important;
+    z-index: 50 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar-mobile.open {
+    transform: translateX(0);
+  }
+  
+  /* Tablas responsivas */
+  .table-responsive {
+    font-size: 0.75rem !important;
+  }
+  
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.5rem 0.25rem !important;
+  }
+  
+  /* Modales móviles */
+  .modal-mobile {
+    width: 95% !important;
+    margin: 1rem auto !important;
+    max-height: 90vh !important;
+  }
+  
+  /* Hero section */
+  .hero-title {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem !important;
+  }
+  
+  /* Navbar móvil */
+  .navbar-mobile {
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .navbar-logo {
+    height: 3rem !important;
+  }
 }
 
-.btn-outline-secondary:hover {
-  background-color: #6C757D !important;
-  border-color: #6C757D !important;
+/* Tablets (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Dashboard - Layout mejorado */
+  .dashboard-container {
+    padding: 1rem !important;
+  }
+  
+  .dashboard-chart {
+    width: 350px !important;
+    height: 350px !important;
+  }
+  
+  /* Sidebar tablet */
+  .sidebar-tablet {
+    width: 80px !important;
+  }
+  
+  .sidebar-tablet:hover {
+    width: 200px !important;
+  }
+  
+  /* Tablas con scroll horizontal */
+  .table-scroll {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Cards responsivas */
+  .card-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  }
+  
+  /* Hero section tablet */
+  .hero-title {
+    font-size: 3.5rem !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.125rem !important;
+  }
 }
 
-.btn-outline-dark:hover {
-  background-color: #2C3E50 !important;
-  border-color: #2C3E50 !important;
+/* Tablets grandes y laptops pequeños (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Dashboard - Layout optimizado */
+  .dashboard-chart {
+    width: 400px !important;
+    height: 400px !important;
+  }
+  
+  /* Sidebar laptop */
+  .sidebar-laptop {
+    width: 60px !important;
+  }
+  
+  .sidebar-laptop:hover {
+    width: 240px !important;
+  }
+  
+  /* Grid responsivo */
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  }
+  
+  /* Hero section laptop */
+  .hero-title {
+    font-size: 4rem !important;
+  }
 }
 
-.btn-outline-info:hover {
-  background-color: #1E4A85 !important;
-  border-color: #1E4A85 !important;
+/* Laptops y desktops (1025px - 1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  /* Dashboard - Layout completo */
+  .dashboard-chart {
+    width: 450px !important;
+    height: 450px !important;
+  }
+  
+  /* Sidebar desktop */
+  .sidebar-desktop {
+    width: 80px !important;
+  }
+  
+  .sidebar-desktop:hover {
+    width: 280px !important;
+  }
+  
+  /* Contenedores optimizados */
+  .container-optimized {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
 }
 
-.input {
-  @apply w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500;
+/* Pantallas grandes (1441px+) */
+@media (min-width: 1441px) {
+  /* Dashboard - Layout máximo */
+  .dashboard-chart {
+    width: 500px !important;
+    height: 500px !important;
+  }
+  
+  /* Sidebar grande */
+  .sidebar-large {
+    width: 100px !important;
+  }
+  
+  .sidebar-large:hover {
+    width: 320px !important;
+  }
+  
+  /* Contenedores grandes */
+  .container-large {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* ===== COMPONENTES ESPECÍFICOS ===== */
+
+/* Gráficas del Dashboard */
+.dashboard-chart-container {
+  @apply bg-white rounded-xl shadow border border-gray-200 p-4 mb-6;
+  transition: all 0.3s ease;
+}
+
+.dashboard-chart-container:hover {
+  @apply shadow-lg;
+  transform: translateY(-2px);
+}
+
+/* Tablas responsivas */
+.table-responsive {
+  @apply overflow-x-auto w-full;
+}
+
+.table-responsive table {
+  @apply min-w-full;
+}
+
+/* Modales responsivos */
+.modal-responsive {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50;
+}
+
+.modal-content-responsive {
+  @apply bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Sidebar responsivo */
+.sidebar-responsive {
+  @apply bg-white border-r border-gray-300 shadow-md relative;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Cards responsivas */
+.card-responsive {
+  @apply bg-white rounded-xl shadow border border-gray-200 p-4;
+  transition: all 0.3s ease;
+}
+
+.card-responsive:hover {
+  @apply shadow-lg;
+  transform: translateY(-2px);
+}
+
+/* Botones responsivos */
+.btn-responsive {
+  @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+}
+
+.btn-responsive:active {
+  transform: scale(0.95);
+}
+
+/* ===== UTILIDADES RESPONSIVAS ===== */
+
+/* Ocultar en móviles */
+.hidden-mobile {
+  @apply hidden sm:block;
+}
+
+/* Mostrar solo en móviles */
+.mobile-only {
+  @apply block sm:hidden;
+}
+
+/* Ocultar en tablets */
+.hidden-tablet {
+  @apply hidden md:block;
+}
+
+/* Mostrar solo en tablets */
+.tablet-only {
+  @apply block md:hidden;
+}
+
+/* ===== ANIMACIONES RESPONSIVAS ===== */
+
+/* Animación de entrada para móviles */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-mobile {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+/* Animación de fade para tablets */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-tablet {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ===== ESTADOS HOVER RESPONSIVOS ===== */
+
+/* Hover solo en dispositivos con mouse */
+@media (hover: hover) {
+  .hover-responsive:hover {
+    @apply shadow-lg;
+    transform: translateY(-2px);
+  }
+  
+  .btn-hover-responsive:hover {
+    @apply bg-blue-700;
+    transform: translateY(-1px);
+  }
+}
+
+/* ===== IMPRESIÓN ===== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-friendly {
+    @apply bg-white text-black;
+  }
+  
+  .dashboard-chart-container {
+    @apply border border-gray-300;
+    box-shadow: none !important;
+  }
+}
+
+/* ===== ACCESIBILIDAD ===== */
+
+/* Focus visible para navegación por teclado */
+.focus-visible:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Contraste mejorado para texto */
+.text-accessible {
+  @apply text-gray-900;
+}
+
+/* ===== PERFORMANCE ===== */
+
+/* Optimización para dispositivos de baja capacidad */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== DARK MODE (FUTURO) ===== */
+
+@media (prefers-color-scheme: dark) {
+  .dark-mode-ready {
+    @apply bg-gray-900 text-white;
+  }
+  
+  .dark-mode-ready .dashboard-chart-container {
+    @apply bg-gray-800 border-gray-700;
+  }
+}
+
+/* ==== FULLCALENDAR CUSTOM ==== */
+.fc-daygrid-day-number {
+  text-decoration: none !important;
+  color: #2563eb !important;
+}
+.fc-daygrid-day-number:hover {
+  text-decoration: none !important;
+  color: #1d4ed8 !important;
+}
+.fc-day-today {
+  background: #e0e7ff !important;
+}
+.fc-day-today .fc-daygrid-day-number {
+  color: #1d4ed8 !important;
+  font-weight: bold;
 }

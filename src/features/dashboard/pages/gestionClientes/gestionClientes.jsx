@@ -95,7 +95,7 @@ const GestionClientes = () => {
         <div className="flex items-center justify-between px-4 mb-4 w-full">
           <input
             type="text"
-            placeholder="Buscar por nombre, empresa, documento..."
+            placeholder="Buscar"
             className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
             value={busqueda}
             onChange={(e) => {

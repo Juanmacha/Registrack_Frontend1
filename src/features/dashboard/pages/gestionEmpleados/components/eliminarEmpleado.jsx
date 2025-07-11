@@ -2,8 +2,8 @@ import React from "react";
 import Swal from "sweetalert2";
 
 const EliminarEmpleado = ({ empleado, onEliminar }) => {
-  const handleEliminar = () => {
-    Swal.fire({
+  const handleEliminar = async () => {
+    const result = await Swal.fire({
       title: `¿Eliminar a ${empleado.nombre}?`,
       text: "Esta acción no se puede deshacer.",
       icon: "warning",
@@ -12,12 +12,33 @@ const EliminarEmpleado = ({ empleado, onEliminar }) => {
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        onEliminar(empleado);
-        Swal.fire("Eliminado", `${empleado.nombre} fue eliminado.`, "success");
-      }
     });
+
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: "Eliminando...",
+        allowOutsideClick: false,
+        didOpen: () => {
+      
+        },
+      });
+
+      try {
+        await onEliminar(empleado);
+        Swal.fire({
+          icon: "success",
+          title: "Eliminado",
+          text: `${empleado.nombre} fue eliminado exitosamente.`,
+          confirmButtonColor: "#3085d6",
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error al eliminar",
+          text: "Hubo un problema al eliminar el empleado.",
+        });
+      }
+    }
   };
 
   return (

@@ -275,7 +275,7 @@ const Ayuda = () => {
   return (
     <div className="min-h-screen bg-white">
       <LandingNavbar />
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 lg:px-24 py-20 pt-36">
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 lg:px-24 py-20 pt-20">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6 no-underline">

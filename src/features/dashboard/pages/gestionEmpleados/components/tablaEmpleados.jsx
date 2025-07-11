@@ -1,9 +1,10 @@
 import React from "react";
+import EliminarEmpleado from "./eliminarEmpleado";
 
 const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
   const getEstadoBadge = (estado) => {
     const color =
-      {
+      { 
         Activo: "text-green-800",
         Inactivo: "text-red-800",
         Eliminado: "text-yellow-800",
@@ -18,7 +19,8 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
-      <div className="overflow-x-auto w-full">
+      {/* Eliminar overflow-x-auto para evitar scroll horizontal */}
+      <div className="w-full">
         <table className="table-auto w-full divide-y divide-gray-100 text-sm text-gray-700">
           <thead className="text-left text-sm text-gray-500 bg-gray-50">
             <tr>
@@ -48,11 +50,11 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
                     {getEstadoBadge(item.estado)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex justify-center gap-2 flex-wrap">
+                    <div className="flex justify-center gap-1 flex-nowrap">
                       <button
                         title="Editar"
                         onClick={() => onEditar(item)}
-                        className="btn btn-outline-secondary btn-sm custom-hover rounded-circle p-0 d-flex align-items-center justify-center"
+                        className="btn btn-outline-secondary btn-sm custom-hover rounded-circle p-0 d-flex align-items-center justify-content-center"
                         style={{ width: "32px", height: "32px" }}
                       >
                         <i className="bi bi-pencil-fill"></i>
@@ -60,19 +62,15 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
                       <button
                         title="Ver"
                         onClick={() => onVer(item)}
-                        className="btn btn-outline-info btn-sm custom-hover rounded-circle p-0 d-flex align-items-center justify-center"
+                        className="btn btn-outline-info btn-sm custom-hover rounded-circle p-0 d-flex align-items-center justify-content-center"
                         style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
                       >
                         <i className="bi bi-eye-fill"></i>
                       </button>
-                      <button
-                        title="Eliminar"
-                        onClick={() => onEliminar(item)}
-                        className="btn btn-outline-danger btn-sm custom-hover rounded-circle p-0 d-flex align-items-center justify-center"
-                        style={{ width: "32px", height: "32px" }}
-                      >
-                        <i className="bi bi-trash-fill"></i>
-                      </button>
+                      <EliminarEmpleado
+                        empleado={item}
+                        onEliminar={onEliminar}
+                      />
                     </div>
                   </td>
                 </tr>

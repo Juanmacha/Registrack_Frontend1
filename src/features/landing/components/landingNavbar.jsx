@@ -49,7 +49,7 @@ const NavBarLanding = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="w-full bg-white fixed top-0 left-0 z-50">
+    <nav className="navbar-container w-full bg-white fixed top-0 left-0 z-50">
       <div className="max-w-screen-xl mx-auto h-28 flex items-center px-6 relative">
         {/* Columna izquierda: Logo */}
         <div className="flex items-center flex-shrink-0">
@@ -57,14 +57,14 @@ const NavBarLanding = () => {
             <img
               src="/images/logoNombre.png"
               alt="Logo"
-              className="h-20 w-auto object-contain cursor-pointer"
+              className="navbar-logo h-20 w-auto object-contain cursor-pointer"
             />
           </Link>
         </div>
 
         {/* Columna central: Opciones centradas */}
         <div className="flex-1 flex justify-center">
-          <div className="flex gap-10 text-lg">
+          <div className="navbar-menu flex gap-10 text-lg">
             {!user ? (
               <>
                 <ScrollLink
@@ -74,7 +74,7 @@ const NavBarLanding = () => {
                   offset={-110}
                   spy={true}
                   activeClass={ACTIVE_CLASSES}
-                  className={`cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
+                  className={`navbar-link cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
                 >
                   Nosotros
                 </ScrollLink>
@@ -85,7 +85,7 @@ const NavBarLanding = () => {
                   offset={-110}
                   spy={true}
                   activeClass={ACTIVE_CLASSES}
-                  className={`cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
+                  className={`navbar-link cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
                 >
                   Servicios
                 </ScrollLink>
@@ -96,7 +96,7 @@ const NavBarLanding = () => {
                   offset={-110}
                   spy={true}
                   activeClass={ACTIVE_CLASSES}
-                  className={`cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
+                  className={`navbar-link cursor-pointer text-lg no-underline px-2 py-1 border-b-2 transition ${INACTIVE_CLASSES}`}
                 >
                   Contáctanos
                 </ScrollLink>
@@ -202,7 +202,7 @@ const NavBarLanding = () => {
         </div>
 
         {/* Botón hamburguesa */}
-        <div className="md:hidden ml-4">
+        <div className="navbar-mobile md:hidden ml-4">
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
             className="text-gray-700 hover:text-blue-600 focus:outline-none"
@@ -215,7 +215,7 @@ const NavBarLanding = () => {
 
         {/* Menú desplegable para móviles */}
         {menuAbierto && (
-          <div className="md:hidden absolute top-28 left-0 w-full bg-white shadow-md flex flex-col items-center gap-4 py-4 z-40">
+          <div className="navbar-menu md:hidden absolute top-28 left-0 w-full bg-white shadow-md flex flex-col items-center gap-4 py-4 z-40">
             {!user ? (
               <>
                 <ScrollLink

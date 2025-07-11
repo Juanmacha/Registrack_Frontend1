@@ -131,6 +131,15 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
     setForm(f => ({ ...f, clases: (f.clases || []).filter((_, idx) => idx !== i) }));
   };
 
+  // Utilidad para convertir File a base64
+  const fileToBase64 = file => new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
@@ -144,7 +153,20 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
       return;
     }
     try {
-      await onGuardar(form);
+      // Convertir archivos a base64 antes de guardar
+      const formToSave = { ...form };
+      const fileFields = [
+        'certificadoCamara',
+        'logotipoMarca',
+        'poderRepresentante',
+        'poderAutorizacion',
+      ];
+      for (const field of fileFields) {
+        if (formToSave[field] instanceof File) {
+          formToSave[field] = await fileToBase64(formToSave[field]);
+        }
+      }
+      await onGuardar(formToSave);
       Swal.fire({
         icon: 'success',
         title: 'Solicitud actualizada',

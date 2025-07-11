@@ -28,14 +28,6 @@ export default function ModalVerDetalleServicio({ servicio, isOpen, onClose }) {
               <p className="text-sm text-gray-500">ID: {servicio.id}</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-900 hover:text-red-700 bg-white border border-gray-300 text-2xl px-2 py-1 rounded-full focus:outline-none shadow sticky top-0"
-            style={{ position: 'sticky', top: 0 }}
-            aria-label="Cerrar"
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
         </div>
         {/* Content: grid 3 columnas en desktop, 1 en móvil */}
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 bg-gradient-to-br from-white to-blue-50">
@@ -73,6 +65,15 @@ export default function ModalVerDetalleServicio({ servicio, isOpen, onClose }) {
               )) : <span className="italic text-gray-400">Sin estados</span>}
             </ol>
           </div>
+        </div>
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end rounded-b-2xl">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

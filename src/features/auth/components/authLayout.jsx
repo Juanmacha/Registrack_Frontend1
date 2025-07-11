@@ -3,16 +3,16 @@ import { Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-white">
+    <div className="auth-container flex h-screen w-full overflow-hidden bg-white">
       {/* Lado Izquierdo: Formulario */}
-      <div className="w-full md:w-1/2 h-full flex items-center justify-center px-4 bg-white">
+      <div className="auth-form w-full md:w-1/2 h-full flex items-center justify-center px-4 bg-white">
         <div className="w-full max-w-md">
           <Outlet />
         </div>
       </div>
 
 {/* Lado Derecho: Branding */}
-<div className="hidden md:flex w-1/2 h-full items-center justify-center">
+<div className="auth-video hidden md:flex w-1/2 h-full items-center justify-center">
 <div className="flex-1 flex justify-center items-center h-[400px] md:h-[500px]">
     <video
       src="/images/Whisk_cauajgm4ymzhyjjkltawzjetndazzc1hn2y3lwe.mp4"

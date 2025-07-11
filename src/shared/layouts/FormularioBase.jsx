@@ -33,8 +33,8 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
   const FormularioComponente = FORMULARIOS_POR_SERVICIO[tipoSolicitud];
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.3)] z-50 flex justify-center items-center">
-      <div className="bg-white rounded-xl shadow-md max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+    <div className="modal-responsive">
+      <div className="modal-content-responsive bg-white rounded-xl shadow-md max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
         {/* Encabezado limpio */}
         <div className="bg-gray-50 px-6 py-4 rounded-t-xl mb-6">
           <h2 className="text-xl font-semibold text-gray-800">{titulo}</h2>
@@ -64,13 +64,13 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
         {/* Paso 1 */}
         {step === 1 && (
           <form className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-gray-600 font-medium">¿Quién solicita el servicio? *</label>
+            <div className="form-grid grid md:grid-cols-2 gap-4">
+              <div className="form-field">
+                <label className="form-label text-sm text-gray-600 font-medium">¿Quién solicita el servicio? *</label>
                 <select
                   value={tipoSolicitante}
                   onChange={(e) => setTipoSolicitante(e.target.value)}
-                  className="input"
+                  className="form-input input"
                 >
                   <option value="">Seleccionar...</option>
                   <option value="titular">Titular de la marca</option>
@@ -78,12 +78,12 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
                 </select>
               </div>
 
-              <div>
-                <label className="text-sm text-gray-600 font-medium">Tipo de persona *</label>
+              <div className="form-field">
+                <label className="form-label text-sm text-gray-600 font-medium">Tipo de persona *</label>
                 <select
                   value={tipoPersona}
                   onChange={(e) => setTipoPersona(e.target.value)}
-                  className="input"
+                  className="form-input input"
                 >
                   <option value="">Seleccionar...</option>
                   <option value="natural">Natural</option>
@@ -142,14 +142,14 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
             <div className="flex justify-end border-t pt-4 gap-x-2">
               <button
                 onClick={onClose}
-                className="border border-red-300 px-4 py-2 rounded-md"
+                className="btn-responsive border border-red-300 px-4 py-2 rounded-md"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={siguientePaso}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn-responsive bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Siguiente
               </button>
@@ -177,13 +177,13 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
             <div className="flex justify-between border-t pt-4">
               <button
                 onClick={pasoAnterior}
-                className="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-100"
+                className="btn-responsive bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-100"
               >
                 Atrás
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="btn-responsive bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Finalizar
               </button>

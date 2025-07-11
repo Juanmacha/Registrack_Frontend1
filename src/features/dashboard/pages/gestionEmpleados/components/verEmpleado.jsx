@@ -30,22 +30,16 @@ const VerEmpleadoModal = ({ showModal, setShowModal, empleado }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center space-x-3">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 p-2 rounded-full">
-              <i className="bi bi-person-badge text-blue-600 text-xl"></i>
+              <i className="bi bi-person text-blue-600 text-xl"></i>
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-800">Detalle del Empleado</h2>
               <p className="text-sm text-gray-500">ID: {empleado.id || "No disponible"}</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowModal(false)}
-            className="text-gray-900 hover:text-red-700 bg-gray-50"
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
         </div>
 
         {/* Content */}
@@ -57,8 +51,8 @@ const VerEmpleadoModal = ({ showModal, setShowModal, empleado }) => {
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex items-center space-x-3">
                   <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${empleado.nombre}`}
-                    alt={empleado.nombre}
+                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${empleado.nombre} ${empleado.apellidos}`}
+                    alt={`${empleado.nombre} ${empleado.apellidos}`}
                     className="w-12 h-12 rounded-full"
                   />
                   <div>

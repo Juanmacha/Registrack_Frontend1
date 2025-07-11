@@ -65,7 +65,7 @@ const MisProcesos = () => {
   return (
     <>
       <NavBarLanding />
-      <div className="w-full py-8 px-4 pt-32">
+      <div className="w-full py-8 px-4 pt-3 md:pt-28">
         <div className="flex justify-center gap-4 mb-8">
           <button
             className={`px-4 py-2 rounded font-semibold transition-all ${!vistaHistorial ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
@@ -99,7 +99,7 @@ const MisProcesos = () => {
                 <span className="absolute left-3 top-2.5 text-gray-400"><i className="bi bi-search"></i></span>
                 <input
                   type="text"
-                  placeholder="Buscar en procesos (marca, expediente, tipo...)"
+                  placeholder="Buscar"
                   className="pl-9 pr-3 py-3 w-full text-base border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 bg-white shadow-md"
                   value={busquedaActivos}
                   onChange={e => setBusquedaActivos(e.target.value)}

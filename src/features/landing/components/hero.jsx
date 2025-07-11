@@ -111,7 +111,7 @@ const QuienesSomos = () => (
 
 // Componente para la tarjeta de servicio
 const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }) => (
-  <div className="bg-gray-100 rounded-xl shadow-md transition-transform duration-300 transform hover:-translate-y-2 hover:shadow-xl text-center overflow-hidden">
+  <div className="service-card bg-gray-100 rounded-xl shadow-md transition-transform duration-300 transform hover:-translate-y-2 hover:shadow-xl text-center overflow-hidden">
                   <img
                     src={servicio.landing_data?.imagen || "/images/certificacion.jpg"}
                     alt={servicio.landing_data?.titulo || servicio.nombre}
@@ -128,13 +128,13 @@ const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }
                     <div className="flex flex-row gap-2 justify-center mt-2">
                       <button
           onClick={() => onSaberMas(servicio)}
-                        className="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md font-medium shadow-sm hover:bg-[#163366] transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="btn-responsive bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md font-medium shadow-sm hover:bg-[#163366] transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
                       >
                         Saber más
                       </button>
                       <button
           onClick={() => onAdquirir(servicio)}
-          className={`px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${
+          className={`btn-responsive px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${
             formularioDisponible 
               ? 'bg-green-600 text-white hover:bg-green-700' 
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -160,7 +160,7 @@ const ServiciosSection = ({ servicios, loading, onSaberMas, onAdquirir }) => (
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="services-grid grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {servicios.map((servicio) => (
             <ServicioCard
               key={servicio.id}
@@ -268,15 +268,15 @@ const Hero = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white overflow-y-scroll no-scrollbar font-sans pt-3">
+    <div className="min-h-screen w-full bg-white overflow-y-scroll no-scrollbar font-sans pt-3 md:pt-28">
       {/* Hero Section */}
-      <header className="py-12 px-4 md:px-12 lg:px-24 bg-white">
+      <header className="hero-container bg-white">
         <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-10 md:gap-16 min-h-[420px]">
           <div className="flex flex-col justify-center">
-            <h1 className="text-6xl text-left font-bold bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
+            <h1 className="hero-title text-6xl text-left font-bold mb-6">
               Certimarcas
             </h1>
-            <p className="text-lg text-gray-700 mb-6 text-left">
+            <p className="hero-subtitle text-lg text-gray-700 mb-6 text-left">
               ¿Tienes una gran idea? Nosotros la protegemos. En Registrack te
               ayudamos a registrar tu marca de forma fácil, rápida y sin enredos
               legales. ¡Haz que tu marca sea solo tuya, hoy!

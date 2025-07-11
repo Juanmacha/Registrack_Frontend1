@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 const CrearEmpleadoModal = ({
   showModal,
@@ -10,10 +11,9 @@ const CrearEmpleadoModal = ({
   const [errors, setErrors] = useState({});
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
 
-  // Cargar roles activos del sistema
   useEffect(() => {
     const roles = JSON.parse(localStorage.getItem("roles_mock")) || [];
-    const rolesActivos = roles.filter(rol => rol.estado === "Activo");
+    const rolesActivos = roles.filter((rol) => rol.estado === "Activo");
     setRolesDisponibles(rolesActivos);
   }, []);
 
@@ -56,29 +56,46 @@ const CrearEmpleadoModal = ({
 
     if (Object.keys(nuevosErrores).length === 0) {
       handleSubmit(nuevoEmpleado);
+
+      Swal.fire({
+        icon: "success",
+        title: "Empleado creado",
+        text: "El empleado ha sido creado exitosamente.",
+        confirmButtonColor: "#3085d6",
+      });
+
+      setShowModal(false);
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Campos incompletos",
+        text: "Por favor completa todos los campos obligatorios.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl p-6 overflow-hidden">
-        {/* Header */}
         <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-green-100 p-2 rounded-full">
               <i className="bi bi-person-plus text-green-600 text-xl"></i>
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">Crear Nuevo Empleado</h2>
-              <p className="text-sm text-gray-500">Completa los datos del nuevo empleado</p>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Crear Nuevo Empleado
+              </h2>
+              <p className="text-sm text-gray-500">
+                Completa los datos del nuevo empleado
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={(e) => e.preventDefault()} className="pt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Tipo de Documento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-card-list text-gray-400 mr-2"></i>
@@ -98,10 +115,11 @@ const CrearEmpleadoModal = ({
                 <option value="CE">Cédula de Extranjería</option>
                 <option value="PA">Pasaporte</option>
               </select>
-              {errors.tipoDocumento && <p className="text-sm text-red-600">{errors.tipoDocumento}</p>}
+              {errors.tipoDocumento && (
+                <p className="text-sm text-red-600">{errors.tipoDocumento}</p>
+              )}
             </div>
 
-            {/* Documento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-hash text-gray-400 mr-2"></i>
@@ -116,10 +134,11 @@ const CrearEmpleadoModal = ({
                   errors.documento ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.documento && <p className="text-sm text-red-600">{errors.documento}</p>}
+              {errors.documento && (
+                <p className="text-sm text-red-600">{errors.documento}</p>
+              )}
             </div>
 
-            {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person text-gray-400 mr-2"></i>
@@ -134,10 +153,11 @@ const CrearEmpleadoModal = ({
                   errors.nombre ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.nombre && <p className="text-sm text-red-600">{errors.nombre}</p>}
+              {errors.nombre && (
+                <p className="text-sm text-red-600">{errors.nombre}</p>
+              )}
             </div>
 
-            {/* Apellidos */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person-vcard text-gray-400 mr-2"></i>
@@ -152,10 +172,11 @@ const CrearEmpleadoModal = ({
                   errors.apellidos ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.apellidos && <p className="text-sm text-red-600">{errors.apellidos}</p>}
+              {errors.apellidos && (
+                <p className="text-sm text-red-600">{errors.apellidos}</p>
+              )}
             </div>
 
-            {/* Correo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-envelope text-gray-400 mr-2"></i>
@@ -170,10 +191,11 @@ const CrearEmpleadoModal = ({
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
 
-            {/* Rol */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person-badge text-gray-400 mr-2"></i>
@@ -188,16 +210,17 @@ const CrearEmpleadoModal = ({
                 }`}
               >
                 <option value="">Seleccionar rol...</option>
-                {rolesDisponibles.map(rol => (
+                {rolesDisponibles.map((rol) => (
                   <option key={rol.id} value={rol.nombre}>
                     {rol.nombre}
                   </option>
                 ))}
               </select>
-              {errors.rol && <p className="text-sm text-red-600">{errors.rol}</p>}
+              {errors.rol && (
+                <p className="text-sm text-red-600">{errors.rol}</p>
+              )}
             </div>
 
-            {/* Estado */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-flag text-gray-400 mr-2"></i>
@@ -214,11 +237,12 @@ const CrearEmpleadoModal = ({
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
               </select>
-              {errors.estado && <p className="text-sm text-red-600">{errors.estado}</p>}
+              {errors.estado && (
+                <p className="text-sm text-red-600">{errors.estado}</p>
+              )}
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500 flex items-center">
               <i className="bi bi-exclamation-circle text-gray-400 mr-2"></i>

@@ -55,6 +55,7 @@ const NavBar = () => {
     "/admin/pagos": "Pagos",
     "/admin/gestionClientes": "Gestión de Clientes",
     "/admin/roles": "Configuración",
+    "/admin/servicios": "Gestión de Servicios",
     "/profile": "Mi Perfil",
   };
 

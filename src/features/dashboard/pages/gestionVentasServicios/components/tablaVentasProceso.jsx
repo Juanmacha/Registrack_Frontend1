@@ -12,6 +12,8 @@ import { getServicios } from '../services/serviciosManagementService';
 import Swal from 'sweetalert2';
 import * as xlsx from "xlsx";
 import { saveAs } from "file-saver";
+import JSZip from "jszip";
+import dataEmpleados from '../../gestionEmpleados/services/dataEmpleados';
 
 const TablaVentasProceso = ({ adquirir }) => {
   const [datos, setDatos] = useState([]);
@@ -33,6 +35,8 @@ const TablaVentasProceso = ({ adquirir }) => {
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [serviciosDisponibles, setServiciosDisponibles] = useState([]);
   const [estadosDisponibles, setEstadosDisponibles] = useState([]);
+  const [modalAsignarEncargadoOpen, setModalAsignarEncargadoOpen] = useState(false);
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
 
   // Obtener todos los datos sin paginar
   const allDatos = getVentasEnProceso(1, 9999, '');
@@ -329,7 +333,7 @@ const TablaVentasProceso = ({ adquirir }) => {
           <span className="absolute left-3 top-2.5 text-gray-400"><i className="bi bi-search"></i></span>
           <input
             type="text"
-            placeholder="Buscar por titular o marca"
+            placeholder="Buscar"
             className="pl-9 pr-3 h-12 w-full text-base border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 bg-white shadow-md"
             value={busqueda}
             onChange={e => { setBusqueda(e.target.value); setPaginaActual(1); }}
@@ -427,7 +431,7 @@ const TablaVentasProceso = ({ adquirir }) => {
                       <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex gap-2 justify-center flex-wrap">
+                      <div className="flex gap-1 justify-center flex-nowrap">
                         <button
                           className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
                           style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
@@ -461,6 +465,64 @@ const TablaVentasProceso = ({ adquirir }) => {
                           title="Ver detalle"
                         >
                           <i className="bi bi-eye-fill"></i>
+                        </button>
+                        <button
+                          className="btn btn-outline-warning rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                          style={{ width: "32px", height: "32px", borderColor: "#F2994A", color: "#F2994A" }}
+                          onClick={async () => {
+                            const zip = new JSZip();
+                            // Archivos a incluir
+                            const files = [
+                              { file: item.certificadoCamara, label: "Certificado_Camara" },
+                              { file: item.logotipoMarca, label: "Logotipo_Marca" },
+                              { file: item.poderRepresentante, label: "Poder_Representante" },
+                              { file: item.poderAutorizacion, label: "Poder_Autorizacion" },
+                            ];
+                            let added = 0;
+                            for (const { file, label } of files) {
+                              if (file && typeof file !== "string" && file.name && file instanceof File) {
+                                // Si es un File (input file)
+                                zip.file(label + "_" + file.name, file);
+                                added++;
+                              } else if (file && typeof file === "string" && file.startsWith("data:")) {
+                                // Si es base64
+                                const arr = file.split(",");
+                                const mime = arr[0].match(/:(.*?);/)[1];
+                                const bstr = atob(arr[1]);
+                                let n = bstr.length;
+                                const u8arr = new Uint8Array(n);
+                                while (n--) u8arr[n] = bstr.charCodeAt(n);
+                                zip.file(label + "." + mime.split("/")[1], u8arr);
+                                added++;
+                              }
+                            }
+                            if (added === 0) {
+                              Swal.fire({
+                                icon: "info",
+                                title: "Sin archivos",
+                                text: "No hay documentos adjuntos para descargar en esta venta.",
+                                customClass: { popup: "swal2-border-radius" }
+                              });
+                              return;
+                            }
+                            const content = await zip.generateAsync({ type: "blob" });
+                            saveAs(content, `Documentos_Venta_${item.id || item.expediente || ""}.zip`);
+                          }}
+                          title="Descargar documentos ZIP"
+                        >
+                          <i className="bi bi-file-earmark-zip"></i>
+                        </button>
+                        <button
+                          className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                          style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
+                          onClick={() => {
+                            setDatoSeleccionado(item);
+                            setEmpleadoSeleccionado(item.encargado || "");
+                            setModalAsignarEncargadoOpen(true);
+                          }}
+                          title="Asignar encargado"
+                        >
+                          <i className="bi bi-person-badge"></i>
                         </button>
                         <button
                           className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
@@ -563,6 +625,63 @@ const TablaVentasProceso = ({ adquirir }) => {
                 disabled={!motivoAnular.trim()}
               >
                 Anular
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {modalAsignarEncargadoOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-0 overflow-y-auto max-h-[90vh] relative border border-gray-200">
+            {/* Header sticky */}
+            <div className="sticky top-0 z-10 bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col items-center rounded-t-2xl shadow-sm">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="bg-blue-100 p-2 rounded-full">
+                  <i className="bi bi-person-badge text-blue-600 text-2xl"></i>
+                </span>
+                <h2 className="text-xl font-semibold text-gray-800">Asignar Encargado</h2>
+              </div>
+              <p className="text-sm text-gray-500 text-center">Selecciona el empleado encargado de esta venta.</p>
+            </div>
+            {/* Content */}
+            <div className="p-6 flex flex-col gap-4">
+              <select
+                className="w-full border border-gray-300 rounded-md p-2 text-base focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                value={empleadoSeleccionado}
+                onChange={e => setEmpleadoSeleccionado(e.target.value)}
+              >
+                <option value="">Sin asignar</option>
+                {dataEmpleados.map(emp => (
+                  <option key={emp.cedula} value={`${emp.nombre} ${emp.apellido}`}>{emp.nombre} {emp.apellido}</option>
+                ))}
+              </select>
+            </div>
+            {/* Footer */}
+            <div className="flex justify-end gap-2 px-6 pb-6">
+              <button
+                onClick={() => setModalAsignarEncargadoOpen(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  if (!datoSeleccionado) return;
+                  await actualizarVenta(datoSeleccionado.id, { encargado: empleadoSeleccionado || "Sin asignar" });
+                  setModalAsignarEncargadoOpen(false);
+                  setEmpleadoSeleccionado("");
+                  Swal.fire({
+                    icon: "success",
+                    title: "Encargado asignado",
+                    text: "El encargado ha sido actualizado correctamente.",
+                    customClass: { popup: "swal2-border-radius" }
+                  });
+                  refrescar();
+                }}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold"
+                disabled={empleadoSeleccionado === (datoSeleccionado?.encargado || "")}
+              >
+                Asignar
               </button>
             </div>
           </div>

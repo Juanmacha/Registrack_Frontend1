@@ -243,7 +243,7 @@ const TablaVentasFin = () => {
           <span className="absolute left-3 top-2.5 text-gray-400"><i className="bi bi-search"></i></span>
           <input
             type="text"
-            placeholder="Buscar por titular o marca"
+            placeholder="Buscar"
             className="pl-9 pr-3 h-12 w-full text-base border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 bg-white shadow-md"
             value={busqueda}
             onChange={e => { setBusqueda(e.target.value); setPaginaActual(1); }}

@@ -37,7 +37,7 @@ const VerDetalleCita = ({ cita, isOpen, onClose, onReprogramar, onAnular, puedeR
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center space-x-3">
           <div className="flex items-center space-x-3">
             <div className="bg-yellow-100 p-2 rounded-full">
               <i className="bi bi-calendar-event text-yellow-600 text-xl"></i>
@@ -46,12 +46,6 @@ const VerDetalleCita = ({ cita, isOpen, onClose, onReprogramar, onAnular, puedeR
               <h2 className="text-xl font-semibold text-gray-800">Detalle de la Cita</h2>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-900 hover:text-red-700 bg-gray-50"
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
         </div>
 
         {/* Content */}

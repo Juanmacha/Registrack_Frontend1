@@ -128,13 +128,13 @@ const Empleados = () => {
   return (
     <div className="w-full max-w-8xl mx-auto px-4 bg-[#eceded] min-h-screen">
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <div className="flex-1 flex mt-12 justify-center">
+        <div className="flex-1 flex mt-4 justify-center">
           <div className="w-full px-4">
             {/* === Barra superior === */}
             <div className="flex items-center justify-between px-4 mb-4 w-full">
               <input
                 type="text"
-                placeholder="Buscar por nombre, apellido, documento, rol..."
+                placeholder="Buscar"
                 className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
                 value={busqueda}
                 onChange={(e) => {

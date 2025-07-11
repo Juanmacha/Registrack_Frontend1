@@ -27,7 +27,7 @@ const RenovacionMarca = () => {
   };
 
   return (
-    <div className="font-sans bg-white pt-20">
+    <div className="font-sans bg-white pt-3 md:pt-28">
       <LandingNavbar />
 
       <section className="w-full min-h-[calc(100vh-112px)] flex flex-col md:flex-row items-center justify-between px-6 md:px-12 lg:px-24 py-10 bg-white">

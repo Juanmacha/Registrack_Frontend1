@@ -141,7 +141,6 @@ export default function ModalEditarServicio({ servicio, isOpen, onClose, onSave 
   return isOpen ? (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative border border-blue-200">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-2xl focus:outline-none bg-white border border-gray-300 rounded-full shadow" aria-label="Cerrar"><i className="bi bi-x-lg"></i></button>
         <h3 className="text-2xl font-bold mb-8 text-center text-blue-800">¿Qué deseas editar?</h3>
         <div className="flex flex-col gap-6">
           <button onClick={() => setModal('landing')} className="px-6 py-4 bg-blue-100 text-blue-800 rounded-xl font-semibold hover:bg-blue-200 shadow transition-all text-lg">Editar Datos para Landing Page</button>
@@ -166,6 +165,11 @@ export default function ModalEditarServicio({ servicio, isOpen, onClose, onSave 
           onClose={() => setModal(null)}
           onSave={data => { onSave('process', data); setModal(null); }}
         />
+        {modal === null && (
+          <div className="flex justify-end gap-2 mt-8">
+            <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+          </div>
+        )}
       </div>
     </div>
   ) : null;

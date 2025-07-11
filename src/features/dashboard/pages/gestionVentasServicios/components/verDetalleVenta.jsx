@@ -58,7 +58,7 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm transition-all">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl p-0 overflow-y-auto max-h-[90vh] relative border border-gray-200">
         {/* Header sticky */}
-        <div className="sticky top-0 z-10 bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center space-x-3 rounded-t-2xl shadow-sm">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-100 p-2 rounded-full">
               <i className="bi bi-eye text-blue-600 text-xl"></i>
@@ -68,13 +68,6 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
               <p className="text-sm text-gray-500">Expediente: {datos.expediente || <span className="italic text-gray-400">No especificado</span>}</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-900 hover:text-red-700 bg-gray-50 text-2xl px-2 py-1 rounded-full focus:outline-none sticky top-0"
-            style={{ position: 'sticky', top: 0 }}
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
         </div>
 
         {/* Content: grid 4 columnas en desktop, 1 en móvil */}

@@ -70,7 +70,7 @@ const HistorialProcesos = ({ procesos, servicios, servicioFiltro, estadoFiltro, 
           <span className="absolute left-3 top-2.5 text-gray-400"><i className="bi bi-search"></i></span>
           <input
             type="text"
-            placeholder="Buscar en historial (marca, expediente, tipo...)"
+            placeholder="Buscar"
             className="pl-9 pr-3 py-3 w-full text-base border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition placeholder-gray-400 bg-white shadow-md"
             value={busquedaHistorial}
             onChange={e => onChangeBusqueda(e.target.value)}

@@ -48,7 +48,13 @@ const Observaciones = ({ isOpen, onClose, onGuardar }) => {
           onChange={(e) => setTexto(e.target.value)}
         />
 
-        <div className="mt-4 text-end">
+        <div className="mt-4 text-end flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+          >
+            Cancelar
+          </button>
           <button
             onClick={handleGuardar}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
