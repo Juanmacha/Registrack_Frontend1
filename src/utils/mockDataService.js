@@ -21,8 +21,6 @@ import {
   getClienteByDocumento,
   getEmpleadoByDocumento,
   getVentasByCliente,
-  getPagosByOrdenServicio,
-  getCitasByCliente,
   tienePermiso
 } from './mockData.js';
 
@@ -432,6 +430,11 @@ export const SaleService = {
     return [...enProceso, ...finalizadas];
   },
   
+  getById(id) {
+    const ventas = this.getAll();
+    return ventas.find(venta => venta.id === id);
+  },
+  
   getByClient(email) {
     const ventas = this.getAll();
     return ventas.filter(venta => venta.email === email);
@@ -451,12 +454,47 @@ export const SaleService = {
   
   update(id, saleData) {
     const ventas = this.getInProcess();
-    const index = ventas.findIndex(venta => venta.id === id);
-    if (index !== -1) {
-      ventas[index] = { ...ventas[index], ...saleData };
-      setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
-      return ventas[index];
+    const ventasFin = this.getCompleted();
+    let ventaIndex = ventas.findIndex(venta => venta.id === id);
+    let ventaFinIndex = ventasFin.findIndex(venta => venta.id === id);
+    let venta;
+
+    // Si está en proceso
+    if (ventaIndex !== -1) {
+      venta = ventas[ventaIndex];
+      const ventaActualizada = { ...venta, ...saleData };
+
+      // Si cambia a finalizado/anulado/rechazado/cancelado, mover a finalizadas
+      if (["Finalizado", "Anulado", "Rechazado", "Cancelado"].includes(saleData.estado)) {
+        ventas.splice(ventaIndex, 1);
+        ventasFin.push(ventaActualizada);
+        setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+        setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
+      } else {
+        ventas[ventaIndex] = ventaActualizada;
+        setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+      }
+      return ventaActualizada;
     }
+    
+    // Si está en finalizadas
+    if (ventaFinIndex !== -1) {
+      venta = ventasFin[ventaFinIndex];
+      const ventaActualizada = { ...venta, ...saleData };
+
+      // Si vuelve a proceso
+      if (!["Finalizado", "Anulado", "Rechazado"].includes(saleData.estado)) {
+        ventasFin.splice(ventaFinIndex, 1);
+        ventas.push(ventaActualizada);
+        setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
+      setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+      } else {
+        ventasFin[ventaFinIndex] = ventaActualizada;
+        setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
+      }
+      return ventaActualizada;
+    }
+    
     return null;
   },
   
@@ -760,3 +798,36 @@ export function globalSearch(query) {
   
   return results;
 } 
+
+// ============================================================================
+// EXPORTACIÓN PRINCIPAL PARA COMPATIBILIDAD
+// ============================================================================
+
+export const mockDataService = {
+  // Servicios individuales
+  UserService,
+  EmployeeService,
+  ClientService,
+  SaleService,
+  PaymentService,
+  AppointmentService,
+  ServiceService,
+  RoleService,
+  
+  // Métodos de conveniencia
+  getUsers: () => UserService.getAll(),
+  getEmployees: () => EmployeeService.getAll(),
+  getClients: () => ClientService.getAll(),
+  getSales: () => SaleService,
+  getServices: () => ServiceService.getAll(),
+  getRoles: () => RoleService.getAll(),
+  
+  // Inicialización
+  initialize: initializeMockData,
+  
+  // Búsqueda global
+  search: globalSearch
+};
+
+// Exportación por defecto para compatibilidad
+export default mockDataService; 

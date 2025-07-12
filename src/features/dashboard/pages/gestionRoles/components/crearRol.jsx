@@ -11,112 +11,169 @@ const CrearRolModal = ({
 }) => {
   if (!showModal) return null;
 
+  // Mapear los recursos del sistema centralizado
+  const recursosSistema = [
+    { key: 'usuarios', nombre: 'Usuarios' },
+    { key: 'empleados', nombre: 'Empleados' },
+    { key: 'clientes', nombre: 'Clientes' },
+    { key: 'ventas', nombre: 'Ventas' },
+    { key: 'pagos', nombre: 'Pagos' },
+    { key: 'citas', nombre: 'Citas' },
+    { key: 'roles', nombre: 'Roles' },
+    { key: 'reportes', nombre: 'Reportes' },
+    { key: 'configuracion', nombre: 'Configuración' }
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center -mx-6 -mt-6 mb-4 rounded-t-xl">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-100 p-2 rounded-full">
-              <i className="bi bi-person-gear text-blue-600 text-xl"></i>
+        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <i className="bi bi-person-plus text-blue-600 text-xl"></i>
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">Crear nuevo rol</h2>
+              <h2 className="text-xl font-bold text-gray-800">Crear Nuevo Rol</h2>
+              <p className="text-sm text-gray-600">Define los permisos del nuevo rol</p>
             </div>
           </div>
+          <button
+            onClick={() => setShowModal(false)}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <i className="bi bi-x-lg text-xl"></i>
+          </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Nombre del rol
-            </label>
-            <input
-              type="text"
-              className="w-full border rounded-md px-3 py-2 text-sm"
-              value={nuevoRol.nombre}
-              onChange={(e) =>
-                setNuevoRol({ ...nuevoRol, nombre: e.target.value })
-              }
-              required
-            />
-          </div>
 
-          <div className="mb-2">
-            <label className="block text-sm font-medium mb-1">Estado</label>
-            <select
-              className="w-full border rounded-md px-2 py-1 text-sm"
-              value={nuevoRol.estado}
-              onChange={(e) =>
-                setNuevoRol({ ...nuevoRol, estado: e.target.value })
-              }
-            >
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold mb-3">Permisos por modelo:</h3>
-            <table className="w-full text-sm border rounded-md">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-3 py-2 border">Modelos</th>
-                  <th className="px-3 py-2 border text-center">Crear</th>
-                  <th className="px-3 py-2 border text-center">Editar</th>
-                  <th className="px-3 py-2 border text-center">Eliminar</th>
-                  <th className="px-3 py-2 border text-center">Ver Detalles</th>
-                  <th className="px-3 py-2 border text-center">Cambiar Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {modelosDisponibles.map((modelo) => (
-                  <tr key={modelo}>
-                    <td className="px-3 py-2 border">{modelo}</td>
-                    {["crear", "editar", "eliminar", "ver", "estado"].map(
-                      (accion) => (
-                        <td
-                          key={accion}
-                          className="px-3 py-2 border text-center"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!nuevoRol.permisos?.[modelo]?.[accion]}
-                            onChange={() =>
-                              handleCheckboxChange(modelo, accion)
-                            }
-                          />
-                        </td>
-                      )
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500 flex items-center">
-              <i className="bi bi-exclamation-circle text-gray-400 mr-2"></i>
-              * Todos los campos son obligatorios
-            </p>
-            <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
-              >
-                Crear Rol
-            </button>
+        {/* Content */}
+        <div className="p-6">
+          <form onSubmit={handleSubmit}>
+            {/* Información básica */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Información Básica</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre del Rol *
+                  </label>
+                  <input
+                    type="text"
+                    value={nuevoRol.nombre}
+                    onChange={(e) => setNuevoRol({ ...nuevoRol, nombre: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ej: Supervisor"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción
+                  </label>
+                  <input
+                    type="text"
+                    value={nuevoRol.descripcion || ''}
+                    onChange={(e) => setNuevoRol({ ...nuevoRol, descripcion: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Descripción del rol"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </form>
+
+            {/* Permisos */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Permisos del Sistema</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border rounded-lg">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Recurso</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Crear</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Leer</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Actualizar</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Eliminar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recursosSistema.map((recurso, index) => (
+                      <tr key={recurso.key} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-800 border-b">
+                          {recurso.nombre}
+                        </td>
+                        {['crear', 'leer', 'actualizar', 'eliminar'].map((accion) => (
+                          <td key={accion} className="px-4 py-3 text-center border-b">
+                            <input
+                              type="checkbox"
+                              checked={!!nuevoRol.permisos?.[recurso.key]?.[accion]}
+                              onChange={() => handleCheckboxChange(recurso.key, accion)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Resumen de permisos */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2">Resumen de Permisos</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-600 font-medium">Total de recursos:</span>
+                  <span className="ml-2 text-gray-800">{recursosSistema.length}</span>
+                </div>
+                <div>
+                  <span className="text-blue-600 font-medium">Permisos activos:</span>
+                  <span className="ml-2 text-gray-800">
+                    {recursosSistema.reduce((total, recurso) => 
+                      total + Object.values(nuevoRol.permisos?.[recurso.key] || {}).filter(p => p).length, 0
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-blue-600 font-medium">Permisos totales:</span>
+                  <span className="ml-2 text-gray-800">
+                    {recursosSistema.reduce((total, recurso) => 
+                      total + Object.keys(nuevoRol.permisos?.[recurso.key] || {}).length, 0
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-blue-600 font-medium">Porcentaje:</span>
+                  <span className="ml-2 text-gray-800">
+                    {recursosSistema.length > 0 
+                      ? Math.round((recursosSistema.reduce((total, recurso) => 
+                          total + Object.values(nuevoRol.permisos?.[recurso.key] || {}).filter(p => p).length, 0
+                        ) / recursosSistema.reduce((total, recurso) => 
+                          total + Object.keys(nuevoRol.permisos?.[recurso.key] || {}).length, 0
+                        )) * 100)
+                      : 0}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+          <button
+            onClick={() => setShowModal(false)}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Crear Rol
+          </button>
+        </div>
       </div>
     </div>
   );

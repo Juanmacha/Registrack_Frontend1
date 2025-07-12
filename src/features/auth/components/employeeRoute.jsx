@@ -8,7 +8,7 @@ const EmployeeRoute = ({ children }) => {
   }
 
   const user = authData.getUser();
-  if (!user || (user.role !== "admin" && user.role !== "empleado")) {
+  if (!user || (user.role !== "Administrador" && user.role !== "Empleado")) {
     return <Navigate to="/" replace />;
   }
 

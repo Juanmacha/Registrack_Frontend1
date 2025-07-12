@@ -3,10 +3,10 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import VerDetalleVenta from "./verDetalleVenta";
 import Observaciones from "./observaciones";
 import EditarVenta from "./editarVenta";
-import { getVentasFinalizadas, agregarComentario, getFromStorage } from "../services/ventasService";
+import { agregarComentario } from "../services/ventasService";
+import { mockDataService } from '../../../../../utils/mockDataService';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import getEstadoBadge from "../services/getEstadoBadge"; // Usa el mismo servicio
-import { getServicios } from '../services/serviciosManagementService';
 import * as xlsx from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -27,10 +27,10 @@ const TablaVentasFin = () => {
 
   useEffect(() => {
     // Obtener servicios y estados únicos
-    const servicios = getServicios().map(s => s.nombre);
+    const servicios = mockDataService.getServices().map(s => s.nombre);
     setServiciosDisponibles(['Todos', ...servicios]);
     // Obtener estados únicos de los datos
-    const ventas = getFromStorage('ventasServiciosFin');
+    const ventas = mockDataService.getSales().getCompleted();
     const estados = Array.from(new Set(ventas.map(v => v.estado))).filter(Boolean);
     setEstadosDisponibles(['Todos', ...estados]);
   }, []);
@@ -38,15 +38,9 @@ const TablaVentasFin = () => {
   // Obtener todos los datos sin paginar, con protección robusta
   let allDatos = [];
   try {
-    const raw = getFromStorage('ventasServiciosFin');
-    if (Array.isArray(raw)) {
-      allDatos = raw;
-    } else {
-      localStorage.setItem('ventasServiciosFin', '[]');
-      allDatos = [];
-    }
+    allDatos = mockDataService.getSales().getCompleted() || [];
   } catch (e) {
-    localStorage.setItem('ventasServiciosFin', '[]');
+    console.error('Error al obtener ventas finalizadas:', e);
     allDatos = [];
   }
 
@@ -82,9 +76,13 @@ const TablaVentasFin = () => {
 
   // Refrescar datos
   const refrescar = () => {
-    const resultado = getVentasFinalizadas(paginaActual, registrosPorPagina, busqueda);
-    setDatos(resultado.datos);
-    setTotalRegistros(resultado.total);
+    const ventas = mockDataService.getSales().getCompleted();
+    const datosFiltrados = busqueda ? ventas.filter(v => 
+      v.titular?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      v.marca?.toLowerCase().includes(busqueda.toLowerCase())
+    ) : ventas;
+    setDatos(datosFiltrados.slice((paginaActual - 1) * registrosPorPagina, paginaActual * registrosPorPagina));
+    setTotalRegistros(datosFiltrados.length);
   };
 
   useEffect(() => {

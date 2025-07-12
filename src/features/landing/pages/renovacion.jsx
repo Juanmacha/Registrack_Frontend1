@@ -8,6 +8,7 @@ import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
 import FormularioRenovacion from "../../../shared/components/formularioRenovacion";
 import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
 import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
+import alertService from '../../../utils/alertService.js';
 
 const RenovacionMarca = () => {
   const navigate = useNavigate();
@@ -95,8 +96,35 @@ const RenovacionMarca = () => {
           onClose={() => setMostrarModal(false)}
           onGuardar={async (form) => {
             const user = authData.getUser();
+            const fileToBase64 = file => new Promise((resolve, reject) => {
+              if (!file) return resolve(null);
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
             if (user && user.email) {
-              await crearVenta({ ...form, email: user.email });
+              const formToSave = { ...form };
+              const fileFields = [
+                'certificadoCamara',
+                'logotipoMarca',
+                'poderRepresentante',
+                'poderAutorizacion',
+              ];
+              for (const field of fileFields) {
+                if (formToSave[field] instanceof File) {
+                  formToSave[field] = await fileToBase64(formToSave[field]);
+                }
+              }
+              await crearVenta({ ...formToSave, email: user.email });
+              if (typeof alertService !== 'undefined') {
+                await alertService.success(
+                  "Solicitud creada",
+                  "Tu solicitud ha sido creada exitosamente. Te contactaremos pronto."
+                );
+              } else {
+                alert('Solicitud creada exitosamente.');
+              }
             }
             setMostrarModal(false);
           }}

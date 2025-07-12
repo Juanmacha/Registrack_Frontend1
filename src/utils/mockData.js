@@ -694,16 +694,6 @@ export function getVentasByCliente(email) {
   ];
 }
 
-// Obtener pagos por orden de servicio
-export function getPagosByOrdenServicio(idOrden) {
-  return PAGOS.filter(pago => pago.id_orden_servicio === idOrden);
-}
-
-// Obtener citas por cliente
-export function getCitasByCliente(cedula) {
-  return CITAS.filter(cita => cita.extendedProps.cedula === cedula);
-}
-
 // Validar si un usuario tiene permisos
 export function tienePermiso(usuario, recurso, accion) {
   const rol = ROLES_PERMISOS.find(r => r.nombre === usuario.role);
@@ -736,7 +726,5 @@ export default {
   getClienteByDocumento,
   getEmpleadoByDocumento,
   getVentasByCliente,
-  getPagosByOrdenServicio,
-  getCitasByCliente,
   tienePermiso
 }; 

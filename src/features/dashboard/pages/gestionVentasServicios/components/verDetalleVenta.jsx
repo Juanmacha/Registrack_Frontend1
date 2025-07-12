@@ -169,9 +169,61 @@ const VerDetalleVenta = ({ datos, isOpen, onClose }) => {
             <div className="bg-gray-50 rounded-lg p-3 max-h-56 overflow-y-auto">
               <h4 className="text-xs font-semibold text-gray-600 mb-1">Archivos Adjuntos</h4>
               <div className={labelClass}>Certificado Cámara:</div>
-              <div className={valueClass}>{renderFileDisplayName(datos.certificadoCamara)}</div>
+              <div className={valueClass}>
+                {datos.certificadoCamara && typeof datos.certificadoCamara === 'string' && datos.certificadoCamara.startsWith('data:') ? (
+                  <a
+                    href={datos.certificadoCamara}
+                    download={`certificado_camara.${datos.certificadoCamara.split(';')[0].split('/')[1] || 'pdf'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    Descargar Certificado
+                  </a>
+                ) : renderFileDisplayName(datos.certificadoCamara)}
+              </div>
               <div className={labelClass}>Logotipo Marca:</div>
-              <div className={valueClass}>{renderFileDisplayName(datos.logotipoMarca)}</div>
+              <div className={valueClass}>
+                {datos.logotipoMarca && typeof datos.logotipoMarca === 'string' && datos.logotipoMarca.startsWith('data:') ? (
+                  <a
+                    href={datos.logotipoMarca}
+                    download={`logotipo_marca.${datos.logotipoMarca.split(';')[0].split('/')[1] || 'png'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    Descargar Logotipo
+                  </a>
+                ) : renderFileDisplayName(datos.logotipoMarca)}
+              </div>
+              <div className={labelClass}>Poder Representante:</div>
+              <div className={valueClass}>
+                {datos.poderRepresentante && typeof datos.poderRepresentante === 'string' && datos.poderRepresentante.startsWith('data:') ? (
+                  <a
+                    href={datos.poderRepresentante}
+                    download={`poder_representante.${datos.poderRepresentante.split(';')[0].split('/')[1] || 'pdf'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    Descargar Poder
+                  </a>
+                ) : renderFileDisplayName(datos.poderRepresentante)}
+              </div>
+              <div className={labelClass}>Poder Autorización:</div>
+              <div className={valueClass}>
+                {datos.poderAutorizacion && typeof datos.poderAutorizacion === 'string' && datos.poderAutorizacion.startsWith('data:') ? (
+                  <a
+                    href={datos.poderAutorizacion}
+                    download={`poder_autorizacion.${datos.poderAutorizacion.split(';')[0].split('/')[1] || 'pdf'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    Descargar Autorización
+                  </a>
+                ) : renderFileDisplayName(datos.poderAutorizacion)}
+              </div>
             </div>
           </div>
 

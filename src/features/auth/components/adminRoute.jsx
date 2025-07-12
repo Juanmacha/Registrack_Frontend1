@@ -8,7 +8,7 @@ const AdminRoute = ({ children }) => {
   }
 
   const user = authData.getUser();
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "Administrador") {
     return <Navigate to="/" replace />;
   }
 

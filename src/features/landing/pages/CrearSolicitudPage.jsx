@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getServicios } from '../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService.js';
+import { mockDataService } from '../../../utils/mockDataService';
 import NavBarLanding from '../../landing/components/landingNavbar';
 import authData from '../../auth/services/authData.js';
 import alertService from '../../../utils/alertService.js';
+import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 
 const CrearSolicitudPage = () => {
   const { servicioId } = useParams();
@@ -48,7 +49,7 @@ const CrearSolicitudPage = () => {
 
   useEffect(() => {
     if (servicioId) {
-      const servicioEncontrado = getServicios().find(s => s.id === servicioId);
+      const servicioEncontrado = mockDataService.getServices().find(s => s.id === servicioId);
       setServicio(servicioEncontrado);
       setForm(prev => ({ ...prev, tipoSolicitud: servicioEncontrado?.nombre || '' }));
       setLoading(false);
@@ -102,17 +103,33 @@ const CrearSolicitudPage = () => {
     e.preventDefault();
     
     try {
-      // Aquí iría la lógica para guardar la solicitud
+      const user = authData.getUser();
+      if (!user || !user.email) {
+        await alertService.error(
+          "Error", 
+          "Debes iniciar sesión para crear una solicitud."
+        );
+        navigate('/login');
+        return;
+      }
+
+      // Preparar los datos de la solicitud
       const datos = {
         ...form,
+        email: user.email,
         fechaSolicitud: new Date().toISOString().slice(0, 10),
         certificadoCamara: form.certificadoCamara?.name || '',
         logotipoMarca: form.logotipoMarca?.name || '',
         poderRepresentante: form.poderRepresentante?.name || '',
         poderAutorizacion: form.poderAutorizacion?.name || '',
+        estado: 'En revisión',
+        encargado: 'Sin asignar',
+        comentarios: []
       };
 
-      // Simular guardado exitoso
+      // Guardar la solicitud usando crearVenta
+      await crearVenta(datos);
+
       await alertService.success(
         "Solicitud creada", 
         `Tu solicitud de ${form.tipoSolicitud} ha sido creada exitosamente. Te contactaremos pronto.`
@@ -120,6 +137,7 @@ const CrearSolicitudPage = () => {
       
       navigate('/misprocesos');
     } catch (error) {
+      console.error('Error al crear solicitud:', error);
       await alertService.error(
         "Error", 
         "Hubo un problema al crear la solicitud. Por favor, intenta nuevamente."

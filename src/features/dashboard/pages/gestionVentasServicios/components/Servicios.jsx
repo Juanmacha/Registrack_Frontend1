@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { mockDataService } from '../../../../../utils/mockDataService';
 import {
-  getServicios,
   toggleVisibilidadServicio,
   updateLandingData,
   updateInfoPageData,
@@ -19,7 +19,7 @@ const Servicios = () => {
   const cargarServicios = async () => {
     setLoading(true);
     // Forzar lectura fresca de localStorage
-    const nuevosServicios = await Promise.resolve(getServicios());
+    const nuevosServicios = await Promise.resolve(mockDataService.getServices());
     setServicios([...nuevosServicios]);
     setLoading(false);
   };

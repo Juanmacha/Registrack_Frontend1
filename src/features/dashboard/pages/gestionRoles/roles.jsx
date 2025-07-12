@@ -10,6 +10,7 @@ import {
   mostrarMensajeError,
 } from "../../../../utils/alerts";
 import { modelosDisponibles, guardarRoles } from "./services/rolesG";
+import { RoleService } from "../../../../utils/mockDataService";
 
 const GestionRoles = () => {
   const [roles, setRoles] = useState([]);
@@ -19,22 +20,29 @@ const GestionRoles = () => {
 
   const [nuevoRol, setNuevoRol] = useState({
     nombre: "",
-    estado: "activo",
+    estado: "Activo",
     permisos: {},
   });
 
   useEffect(() => {
-    const almacenados = JSON.parse(localStorage.getItem("roles")) || [];
-    setRoles(almacenados);
+    // Cargar roles desde el sistema centralizado
+    const rolesCentralizados = RoleService.getAll();
+    setRoles(rolesCentralizados);
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (nuevoRol.nombre.trim() !== "") {
-      guardarRoles(roles, nuevoRol, setRoles);
-      setNuevoRol({ nombre: "", estado: "activo", permisos: {} });
-      setShowModal(false);
-      mostrarMensajeExito("¡Rol creado exitosamente!");
+      // Usar RoleService para crear el rol
+      const rolCreado = RoleService.create(nuevoRol);
+      if (rolCreado) {
+        setRoles(RoleService.getAll());
+        setNuevoRol({ nombre: "", estado: "Activo", permisos: {} });
+        setShowModal(false);
+        mostrarMensajeExito("¡Rol creado exitosamente!");
+      } else {
+        mostrarMensajeError("Error al crear el rol.");
+      }
     } else {
       mostrarMensajeError("Por favor, ingresa un nombre para el rol.");
     }
@@ -53,16 +61,29 @@ const GestionRoles = () => {
     }));
   };
 
+  const handleActualizarRoles = () => {
+    setRoles(RoleService.getAll());
+  };
+
   return (
     <div className="flex-1 flex justify-center">
       <div className="w-full px-4">
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            className="btn btn-primary px-4 py-2 text-sm rounded-md"
-            onClick={() => setShowModal(true)}
-          >
-            <i className="bi bi-plus"></i> Crear Rol
-          </button>
+        <div className="flex justify-between items-center mt-4 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Gestión de Roles</h1>
+          <div className="flex gap-3">
+            <button
+              className="btn btn-secondary px-4 py-2 text-sm rounded-md"
+              onClick={handleActualizarRoles}
+            >
+              <i className="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+            <button
+              className="btn btn-primary px-4 py-2 text-sm rounded-md"
+              onClick={() => setShowModal(true)}
+            >
+              <i className="bi bi-plus"></i> Crear Rol
+            </button>
+          </div>
         </div>
 
         <TablaRoles

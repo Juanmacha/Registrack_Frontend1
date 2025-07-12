@@ -69,9 +69,9 @@ const Login = () => {
         // Mostrar alerta de éxito
         await alertService.loginSuccess(`${result.user.name}`);
         // Redirigir según el rol
-        if (result.user.role === "admin") {
+        if (result.user.role === "Administrador") {
           navigate("/admin/dashboard");
-        } else if (result.user.role === "empleado") {
+        } else if (result.user.role === "Empleado") {
           navigate("/admin/dashboard");
         } else {
           navigate("/");

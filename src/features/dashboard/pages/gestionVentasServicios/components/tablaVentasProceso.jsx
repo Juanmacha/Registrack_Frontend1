@@ -4,11 +4,11 @@ import VerDetalleVenta from "./verDetalleVenta";
 import Observaciones from "./observaciones";
 import EditarVenta from "./editarVenta";
 import SeleccionarTipoSolicitud from "./SeleccionarTipoSolicitud";
-import { getVentasEnProceso, crearVenta, agregarComentario, anularVenta, initDatosPrueba, actualizarVenta } from "../services/ventasService";
+import { crearVenta, agregarComentario, anularVenta, initDatosPrueba, actualizarVenta } from "../services/ventasService";
+import { mockDataService } from '../../../../../utils/mockDataService';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import getEstadoBadge from "../services/getEstadoBadge";
 import CrearSolicitud from "./CrearSolicitud";
-import { getServicios } from '../services/serviciosManagementService';
 import Swal from 'sweetalert2';
 import * as xlsx from "xlsx";
 import { saveAs } from "file-saver";
@@ -39,7 +39,7 @@ const TablaVentasProceso = ({ adquirir }) => {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
 
   // Obtener todos los datos sin paginar
-  const allDatos = getVentasEnProceso(1, 9999, '');
+  const allDatos = { datos: mockDataService.getSales().getInProcess() };
 
   // Filtrar por texto, servicio y estado
   const texto = busqueda.trim().toLowerCase();
@@ -62,9 +62,13 @@ const TablaVentasProceso = ({ adquirir }) => {
   // Refrescar datos
   const refrescar = () => {
     try {
-      const resultado = getVentasEnProceso(paginaActual, registrosPorPagina, busqueda);
-      setDatos(resultado.datos || []);
-      setTotalRegistros(resultado.total || 0);
+      const ventas = mockDataService.getSales().getInProcess();
+      const datosFiltrados = busqueda ? ventas.filter(v => 
+        v.titular?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        v.marca?.toLowerCase().includes(busqueda.toLowerCase())
+      ) : ventas;
+      setDatos(datosFiltrados.slice((paginaActual - 1) * registrosPorPagina, paginaActual * registrosPorPagina));
+      setTotalRegistros(datosFiltrados.length);
     } catch (error) {
       console.error('Error al refrescar datos:', error);
       setDatos([]);
@@ -77,7 +81,7 @@ const TablaVentasProceso = ({ adquirir }) => {
     initDatosPrueba();
     refrescar();
     // Obtener servicios y estados únicos
-    const servicios = getServicios();
+    const servicios = mockDataService.getServices();
     setServiciosDisponibles(['Todos', ...servicios.map(s => s.nombre)]);
     // Estados correctos solo para Certificación de Marca
     const cert = servicios.find(s => s.nombre === 'Certificación de Marca');
@@ -163,7 +167,7 @@ const TablaVentasProceso = ({ adquirir }) => {
     if (!result.isConfirmed) return;
     try {
       // Aquí va la lógica de anulación real
-      // await anularVenta(datoSeleccionado.id, motivoAnular);
+      await anularVenta(datoSeleccionado.id, motivoAnular);
       Swal.fire({
         icon: 'success',
         title: 'Venta anulada',
@@ -602,9 +606,20 @@ const TablaVentasProceso = ({ adquirir }) => {
       />
       {modalAnularOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-            <h2 className="text-xl font-semibold mb-4 text-center">Anular Venta de Servicio</h2>
-            <p className="mb-2 text-gray-700 text-center">¿Estás seguro que deseas anular esta venta? Esta acción no se puede deshacer.<br/>Debes indicar el motivo de anulación.</p>
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-0 relative">
+            {/* Encabezado visual consistente */}
+            <div className="flex items-center gap-4 bg-gray-50 rounded-t-xl px-6 py-4 border-b border-gray-200">
+              <span className="bg-blue-100 p-3 rounded-full flex items-center justify-center">
+                <i className="bi bi-x-octagon text-blue-600 text-xl"></i>
+              </span>
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800 leading-tight">Anular Venta de Servicio</h2>
+                <div className="text-sm text-gray-500 font-medium">Esta acción no se puede deshacer</div>
+              </div>
+            </div>
+            {/* Contenido del modal */}
+            <div className="p-6">
+              <p className="mb-2 text-gray-700 text-center">¿Estás seguro que deseas anular esta venta?<br/>Debes indicar el motivo de anulación.</p>
             <textarea
               className="w-full border border-gray-300 rounded-md p-2 text-sm mb-4"
               placeholder="Motivo de anulación..."
@@ -626,6 +641,7 @@ const TablaVentasProceso = ({ adquirir }) => {
               >
                 Anular
               </button>
+              </div>
             </div>
           </div>
         </div>

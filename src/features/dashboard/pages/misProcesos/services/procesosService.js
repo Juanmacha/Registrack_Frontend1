@@ -1,16 +1,15 @@
 // Servicio para obtener y filtrar procesos de usuario
-import { getFromStorage } from "../../gestionVentasServicios/services/ventasService.js";
-import { getServicios } from "../../gestionVentasServicios/services/serviciosManagementService.js";
+// ✅ REFACTORIZADO: Ahora usa la data mock centralizada
+
+import { SaleService, ServiceService, initializeMockData } from '../../../../../utils/mockDataService.js';
+
+// Inicializar datos mock centralizados
+initializeMockData();
 
 export function getSolicitudesUsuario(email) {
   try {
-    // Consultar ambos arrays: en proceso y finalizados
-    const solicitudesActivas = getFromStorage("ventasServicios");
-    const solicitudesFinalizadas = getFromStorage("ventasServiciosFin");
-    const todas = [
-      ...(Array.isArray(solicitudesActivas) ? solicitudesActivas : []),
-      ...(Array.isArray(solicitudesFinalizadas) ? solicitudesFinalizadas : []),
-    ];
+    // Usar SaleService para obtener todas las ventas
+    const todas = SaleService.getAll();
     return todas.filter((s) => s && typeof s === "object" && s.email === email);
   } catch {
     return [];
@@ -21,17 +20,17 @@ export function filtrarProcesos(procesos, finalizados = false) {
   if (!Array.isArray(procesos)) return [];
   if (finalizados) {
     return procesos.filter((p) =>
-      ["Aprobado", "Rechazado", "Anulado"].includes(p.estado)
+      ["Aprobado", "Rechazado", "Anulado", "Finalizado"].includes(p.estado)
     );
   } else {
     return procesos.filter(
-      (p) => !["Aprobado", "Rechazado", "Anulado"].includes(p.estado)
+      (p) => !["Aprobado", "Rechazado", "Anulado", "Finalizado"].includes(p.estado)
     );
   }
 }
 
 export function obtenerServicios() {
-  const servs = getServicios();
+  const servs = ServiceService.getAll();
   return Array.isArray(servs) ? servs : [];
 }
 

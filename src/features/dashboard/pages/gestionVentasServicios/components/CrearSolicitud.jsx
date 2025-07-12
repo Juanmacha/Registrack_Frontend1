@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { crearVenta } from '../services/ventasService';
-import { getServicios } from '../services/serviciosManagementService';
+import { mockDataService } from '../../../../../utils/mockDataService';
 import authData from '../../../../auth/services/authData.js';
 import Swal from 'sweetalert2';
 import { PAISES } from '../../../../../shared/utils/paises.js';
@@ -33,7 +33,7 @@ const CrearSolicitud = ({ isOpen, onClose, onGuardar, tipoSolicitud, servicioId 
   const [servicioNombre, setServicioNombre] = useState('');
   useEffect(() => {
     if (servicioId) {
-      const servicio = getServicios().find(s => s.id === servicioId);
+      const servicio = mockDataService.getServices().find(s => s.id === servicioId);
       setServicioNombre(servicio ? servicio.nombre : '');
     } else {
       setServicioNombre('');

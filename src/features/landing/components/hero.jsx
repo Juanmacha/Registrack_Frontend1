@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FaBalanceScale, FaMedal, FaRocket, FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { getServicios } from "../../dashboard/pages/gestionVentasServicios/services/serviciosManagementService";
+import { mockDataService } from "../../../utils/mockDataService.js";
 import authData from '../../auth/services/authData';
 
 // Formularios y Modal
@@ -183,7 +183,7 @@ const useServicios = () => {
 
   useEffect(() => {
     const cargar = () => {
-      const todos = getServicios();
+      const todos = mockDataService.getServices();
       setServicios(todos.filter(s => s.visible_en_landing));
       setLoading(false);
     };

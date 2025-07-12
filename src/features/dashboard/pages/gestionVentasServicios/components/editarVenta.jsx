@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { actualizarVenta, agregarComentario } from '../services/ventasService';
-import { getServicios } from '../services/serviciosManagementService.js';
+import { mockDataService } from '../../../../../utils/mockDataService';
 import Swal from 'sweetalert2';
 import { PAISES } from '../../../../../shared/utils/paises.js';
 
@@ -185,7 +185,7 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
   // Obtener estados correctos para Certificación de Marca
   let estadosCert = estados;
   if (form.tipoSolicitud === 'Certificación de Marca') {
-    const servicios = getServicios();
+    const servicios = mockDataService.getServices();
     const cert = servicios.find(s => s.nombre === 'Certificación de Marca');
     estadosCert = cert && cert.process_states ? cert.process_states.map(e => e.name) : estados;
   }
