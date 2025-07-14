@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PAISES } from '../utils/paises.js';
+import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
@@ -189,11 +189,6 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     }
     try {
       await onGuardar(form);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud de certificación se ha creado correctamente.'
-      });
       onClose();
     } catch (err) {
       Swal.fire({
@@ -411,8 +406,19 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
             </div>
           </div>
           {/* Clases de la Marca */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Clases de la Marca *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Clases de la marca
+            </label>
+            {/* Enlace a la Clasificación de Niza */}
+            <a
+              href="https://www.wipo.int/es/web/classification-nice"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-xs mb-2 inline-block"
+            >
+              Consulta la Clasificación de Niza para identificar la clase adecuada
+            </a>
             <div className="space-y-2">
               {form.clases.map((clase, i) => (
                 <div key={i} className="flex gap-2 items-center">

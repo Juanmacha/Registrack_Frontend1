@@ -4,9 +4,9 @@ import authData from '../../../auth/services/authData.js';
 import ProcesosActivos from './components/ProcesosActivos.jsx';
 import HistorialProcesos from './components/HistorialProcesos.jsx';
 import { getSolicitudesUsuario, filtrarProcesos, obtenerServicios } from './services/procesosService.js';
+import { useSalesSync } from '../../../../utils/hooks/useDataSync.js';
 
 const MisProcesos = () => {
-  const [procesos, setProcesos] = useState([]);
   const [servicios, setServicios] = useState([]);
   const [error, setError] = useState(null);
   const [vistaHistorial, setVistaHistorial] = useState(false);
@@ -18,13 +18,19 @@ const MisProcesos = () => {
   const [estadoFiltroActivos, setEstadoFiltroActivos] = useState('Todos');
   const user = authData.getUser();
 
+  // Usar hook de sincronización para procesos del usuario
+  const [procesos, refreshProcesos, lastUpdate] = useSalesSync(
+    () => {
+      if (user && user.email) {
+        return getSolicitudesUsuario(user.email);
+      }
+      return [];
+    },
+    [user?.email]
+  );
+
   useEffect(() => {
     try {
-      if (user && user.email) {
-        setProcesos(getSolicitudesUsuario(user.email));
-      } else {
-        setProcesos([]);
-      }
       setServicios(obtenerServicios());
     } catch (err) {
       setError('Ocurrió un error al cargar tus procesos.');

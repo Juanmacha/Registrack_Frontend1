@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PAISES } from '../utils/paises.js';
+import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
@@ -164,11 +164,6 @@ const FormularioOposicion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Opos
     }
     try {
       await onGuardar(form);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud de oposición se ha creado correctamente.'
-      });
       onClose();
     } catch (err) {
       Swal.fire({

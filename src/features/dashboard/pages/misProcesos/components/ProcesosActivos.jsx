@@ -4,11 +4,47 @@ import { obtenerFechaCreacion } from '../services/procesosService.js';
 import { PAISES } from '../../../../../shared/utils/paises.js';
 
 const ProcesosActivos = ({ procesos, servicios }) => {
+  // Función para obtener el nombre del estado actual
+  const obtenerNombreEstado = (servicio, estadoActual) => {
+    if (!servicio || !servicio.process_states) return estadoActual || '-';
+    
+    // Mapeo de estados comunes
+    const estadoMapping = {
+      'En revisión': 'en_proceso',
+      'Pendiente': 'recibida', 
+      'En proceso': 'en_proceso',
+      'Finalizado': 'finalizado',
+      'Aprobado': 'aprobado',
+      'Rechazado': 'rechazado',
+      'Anulado': 'anulado'
+    };
+
+    // Buscar por nombre exacto
+    let estadoEncontrado = servicio.process_states.find(e => e.name === estadoActual);
+    
+    // Si no se encuentra, buscar por status_key
+    if (!estadoEncontrado) {
+      estadoEncontrado = servicio.process_states.find(e => e.status_key === estadoActual);
+    }
+    
+    // Si no se encuentra, buscar por mapeo
+    if (!estadoEncontrado) {
+      const statusKeyMapeado = estadoMapping[estadoActual];
+      if (statusKeyMapeado) {
+        estadoEncontrado = servicio.process_states.find(e => e.status_key === statusKeyMapeado);
+      }
+    }
+
+    return estadoEncontrado ? estadoEncontrado.name : estadoActual || '-';
+  };
+
   return (
     <div className="space-y-10">
       {procesos.map((proc) => {
         const servicio = servicios.find(s => s && s.nombre === proc.tipoSolicitud);
         const estados = servicio?.process_states || [];
+        const nombreEstadoActual = obtenerNombreEstado(servicio, proc.estado);
+        
         // Buscar país y bandera
         const paisObj = PAISES.find(p => p.nombre === proc.pais);
         return (
@@ -30,7 +66,7 @@ const ProcesosActivos = ({ procesos, servicios }) => {
               {/* Estado actual centrado entre los dos bloques */}
               <div className="flex-1 flex justify-center items-center min-w-0">
                 <div className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold shadow inline-block whitespace-nowrap">
-                  Estado actual: {(servicio?.process_states?.find(e => e.name === proc.estado)?.name || proc.estado || '-')}
+                  Estado actual: {nombreEstadoActual}
                 </div>
               </div>
               <div className="text-right flex-1 min-w-0">
@@ -51,7 +87,7 @@ const ProcesosActivos = ({ procesos, servicios }) => {
               <div className="font-semibold text-gray-700 mb-2">Detalles del proceso actual</div>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm">
                 <div className="grid grid-cols-1 gap-2">
-                  <div>Etapa actual: <span className="font-bold text-blue-700">{proc.estado || '-'}</span></div>
+                  <div>Etapa actual: <span className="font-bold text-blue-700">{nombreEstadoActual}</span></div>
                   <div>Próxima acción: <span className="font-bold text-gray-800">Revisión de documentos</span></div>
                 </div>
                 <div className="grid grid-cols-1 gap-2">

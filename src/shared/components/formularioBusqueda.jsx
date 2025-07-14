@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { PAISES } from '../utils/paises.js';
+import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
+import ValidationService from '../../utils/validationService.js';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
 
@@ -63,32 +64,64 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
   const validate = (customForm) => {
     const f = customForm || form;
     const e = {};
-    if (!f.expediente) e.expediente = 'Requerido';
-    else if (!/^[0-9]{6,15}$/.test(f.expediente)) e.expediente = 'Solo números, 6-15 dígitos';
-    if (!f.tipoDocumento) e.tipoDocumento = 'Requerido';
-    if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
-    else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
-    else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-    if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
-    if (!f.email) e.email = 'Requerido';
-    else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
-    if (!f.telefono) e.telefono = 'Requerido';
-    else if (!/^[0-9]{7,15}$/.test(f.telefono)) e.telefono = 'Solo números, 7-15 dígitos';
-    if (!f.direccion) e.direccion = 'Requerido';
-    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) e.direccion = 'Dirección inválida';
-    if (!f.pais) e.pais = 'Requerido';
-    if (!f.nitMarca) e.nitMarca = 'Requerido';
-    else if (!/^[0-9]{6,15}$/.test(f.nitMarca)) e.nitMarca = 'Solo números, 6-15 dígitos';
-    if (!f.nombreMarca) e.nombreMarca = 'Requerido';
-    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
-    if (!f.clases.length) e.clases = 'Agrega al menos una clase';
+    
+    // ✅ NUEVO: Usar ValidationService para validaciones básicas
+    const requiredFields = ['expediente', 'tipoDocumento', 'numeroDocumento', 'nombreCompleto', 'email', 'telefono', 'direccion', 'pais', 'nitMarca', 'nombreMarca'];
+    const requiredErrors = ValidationService.validateRequiredFields(f, requiredFields);
+    Object.assign(e, requiredErrors);
+    
+    // Validaciones específicas usando ValidationService
+    if (f.email && !ValidationService.isValidEmail(f.email)) {
+      e.email = 'Correo inválido';
+    }
+    
+    if (f.telefono && !ValidationService.isValidPhone(f.telefono)) {
+      e.telefono = 'Teléfono inválido';
+    }
+    
+    // Validaciones específicas del formulario
+    if (f.expediente && !/^[0-9]{6,15}$/.test(f.expediente)) {
+      e.expediente = 'Solo números, 6-15 dígitos';
+    }
+    
+    if (f.numeroDocumento) {
+      if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) {
+        e.numeroDocumento = 'Solo números, 6-15 dígitos';
+      } else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) {
+        e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
+      }
+    }
+    
+    if (f.nombreCompleto && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) {
+      e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+    }
+    
+    if (f.direccion && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) {
+      e.direccion = 'Dirección inválida';
+    }
+    
+    if (f.nitMarca && !/^[0-9]{6,15}$/.test(f.nitMarca)) {
+      e.nitMarca = 'Solo números, 6-15 dígitos';
+    }
+    
+    if (f.nombreMarca && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) {
+      e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
+    }
+    
+    // Validaciones de clases
+    if (!f.clases.length) {
+      e.clases = 'Agrega al menos una clase';
+    }
+    
     f.clases.forEach((c, i) => {
       if (!c.numero) e[`clase_numero_${i}`] = 'Número requerido';
       if (!c.descripcion) e[`clase_desc_${i}`] = 'Descripción requerida';
     });
+    
+    // Validaciones de archivos
     if (!f.poderRepresentante) e.poderRepresentante = 'Adjunta el poder';
     if (!f.poderAutorizacion) e.poderAutorizacion = 'Adjunta el poder';
+    
     return e;
   };
 
@@ -254,8 +287,19 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
             </div>
           </div>
           {/* Clases de la Marca */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Clases de la Marca *</label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Clases de la marca
+            </label>
+            {/* Enlace a la Clasificación de Niza */}
+            <a
+              href="https://www.wipo.int/es/web/classification-nice"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-xs mb-2 inline-block"
+            >
+              Consulta la Clasificación de Niza para identificar la clase adecuada
+            </a>
             <div className="space-y-2">
               {form.clases.map((clase, i) => (
                 <div key={i} className="flex gap-2 items-center">

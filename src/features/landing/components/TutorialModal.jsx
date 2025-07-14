@@ -4,6 +4,7 @@ import { FaTimes, FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-i
 const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [failedImages, setFailedImages] = useState(new Set());
 
   if (!isOpen || !tutorialData) return null;
 
@@ -27,7 +28,12 @@ const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
     setCurrentStep(stepIndex);
   };
 
+  const handleImageError = (imagePath) => {
+    setFailedImages(prev => new Set([...prev, imagePath]));
+  };
+
   const currentStepData = tutorialData.steps[currentStep];
+  const imageFailed = failedImages.has(currentStepData.image);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -110,15 +116,26 @@ const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
             </p>
           </div>
 
-          {/* Image placeholder */}
+          {/* Image */}
           {currentStepData.image && (
-            <div className="bg-gray-100 rounded-lg p-8 text-center mb-6">
-              <div className="text-gray-400 text-sm">
-                📸 Captura de pantalla del paso {currentStepData.step}
-              </div>
-              <div className="text-xs text-gray-400 mt-2">
-                (Imagen ilustrativa)
-              </div>
+            <div className="mb-6">
+              {!imageFailed ? (
+                <img
+                  src={currentStepData.image}
+                  alt={`Paso ${currentStepData.step}: ${currentStepData.title}`}
+                  className="max-w-full h-auto rounded-lg shadow-md mx-auto"
+                  onError={() => handleImageError(currentStepData.image)}
+                />
+              ) : (
+                <div className="bg-gray-100 rounded-lg p-8 text-center mb-6">
+                  <div className="text-gray-400 text-sm">
+                    📸 Captura de pantalla del paso {currentStepData.step}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-2">
+                    (Imagen no disponible)
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

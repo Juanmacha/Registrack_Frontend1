@@ -48,6 +48,10 @@ import FormularioRespuestaOposicion from '../shared/components/formularioRespues
 import FormularioRenovacion from '../shared/components/formularioRenovacion';
 import CrearSolicitudPage from '../features/landing/pages/CrearSolicitudPage';
 
+// Componentes de prueba
+import TestSincronizacion from '../components/TestSincronizacion';
+import TestSimple from '../components/TestSimple';
+
 
 const AppRoutes = () => {
   return (
@@ -112,6 +116,10 @@ const AppRoutes = () => {
       </Route>
 
       <Route path="/crear-solicitud/:servicioId" element={<CrearSolicitudPage />} />
+
+      {/* Rutas de prueba para sincronización */}
+      <Route path="/test-sync" element={<TestSincronizacion />} />
+      <Route path="/test-simple" element={<TestSimple />} />
 
       {/* Redirecciones para compatibilidad con URLs antiguas */}
       <Route path="/pages/cesionMarca" element={<Navigate to="/pages/cesion-marca" replace />} />

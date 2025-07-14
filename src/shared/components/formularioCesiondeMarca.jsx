@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PAISES } from '../utils/paises.js';
+import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];

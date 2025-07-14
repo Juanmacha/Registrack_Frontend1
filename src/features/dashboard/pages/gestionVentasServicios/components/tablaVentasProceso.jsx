@@ -5,7 +5,8 @@ import Observaciones from "./observaciones";
 import EditarVenta from "./editarVenta";
 import SeleccionarTipoSolicitud from "./SeleccionarTipoSolicitud";
 import { crearVenta, agregarComentario, anularVenta, initDatosPrueba, actualizarVenta } from "../services/ventasService";
-import { mockDataService } from '../../../../../utils/mockDataService';
+import { mockDataService } from '../../../../../utils/mockDataService.js';
+import { useSalesSync } from '../../../../../utils/hooks/useDataSync.js';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import getEstadoBadge from "../services/getEstadoBadge";
 import CrearSolicitud from "./CrearSolicitud";
@@ -13,10 +14,9 @@ import Swal from 'sweetalert2';
 import * as xlsx from "xlsx";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
-import dataEmpleados from '../../gestionEmpleados/services/dataEmpleados';
+import { EmployeeService } from '../../../../../utils/mockDataService.js';
 
 const TablaVentasProceso = ({ adquirir }) => {
-  const [datos, setDatos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
@@ -38,12 +38,15 @@ const TablaVentasProceso = ({ adquirir }) => {
   const [modalAsignarEncargadoOpen, setModalAsignarEncargadoOpen] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
 
-  // Obtener todos los datos sin paginar
-  const allDatos = { datos: mockDataService.getSales().getInProcess() };
+  // Usar hook de sincronización para ventas en proceso
+  const [ventasEnProceso, refreshVentas, lastUpdate] = useSalesSync(
+    () => mockDataService.getSales().getInProcess(),
+    [busqueda, servicioFiltro, estadoFiltro]
+  );
 
   // Filtrar por texto, servicio y estado
   const texto = busqueda.trim().toLowerCase();
-  const datosFiltrados = allDatos.datos.filter(item => {
+  const datosFiltrados = ventasEnProceso.filter(item => {
     const coincideServicio = servicioFiltro === 'Todos' || item.tipoSolicitud === servicioFiltro;
     const coincideEstado = estadoFiltro === 'Todos' || item.estado === estadoFiltro;
     const coincideTexto =
@@ -59,27 +62,15 @@ const TablaVentasProceso = ({ adquirir }) => {
   const fin = inicio + registrosPorPagina;
   const datosPagina = datosFiltrados.slice(inicio, fin);
 
-  // Refrescar datos
-  const refrescar = () => {
-    try {
-      const ventas = mockDataService.getSales().getInProcess();
-      const datosFiltrados = busqueda ? ventas.filter(v => 
-        v.titular?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        v.marca?.toLowerCase().includes(busqueda.toLowerCase())
-      ) : ventas;
-      setDatos(datosFiltrados.slice((paginaActual - 1) * registrosPorPagina, paginaActual * registrosPorPagina));
-      setTotalRegistros(datosFiltrados.length);
-    } catch (error) {
-      console.error('Error al refrescar datos:', error);
-      setDatos([]);
-      setTotalRegistros(0);
-    }
-  };
+  // Actualizar total de registros cuando cambian los datos
+  useEffect(() => {
+    setTotalRegistros(datosFiltrados.length);
+  }, [datosFiltrados]);
 
   useEffect(() => {
     // Inicializar datos de prueba si no hay datos
     initDatosPrueba();
-    refrescar();
+    
     // Obtener servicios y estados únicos
     const servicios = mockDataService.getServices();
     setServiciosDisponibles(['Todos', ...servicios.map(s => s.nombre)]);
@@ -87,15 +78,7 @@ const TablaVentasProceso = ({ adquirir }) => {
     const cert = servicios.find(s => s.nombre === 'Certificación de Marca');
     const estadosCert = cert && cert.process_states ? cert.process_states.map(e => e.name) : [];
     setEstadosDisponibles(['Todos', ...estadosCert]);
-    // eslint-disable-next-line
-  }, [paginaActual, busqueda]);
-
-  // Refrescar cuando se cierre el modal de creación
-  useEffect(() => {
-    if (!modalCrearOpen) {
-      refrescar();
-    }
-  }, [modalCrearOpen]);
+  }, []);
 
   // Abrir modal de creación si viene adquirir
   useEffect(() => {
@@ -104,8 +87,6 @@ const TablaVentasProceso = ({ adquirir }) => {
       setModalTipoOpen(false);
       setModalCrearOpen(true);
       setModoCrear(true);
-      // Si tienes un mapeo de id a nombre de servicio, puedes hacerlo aquí
-      // setTipoSeleccionado(nombreServicioPorId[adquirir] || '')
     }
   }, [adquirir]);
 
@@ -116,7 +97,7 @@ const TablaVentasProceso = ({ adquirir }) => {
     setModalEditarOpen(false);
     setModoCrear(false);
     setTimeout(() => {
-      refrescar();
+      refreshVentas();
     }, 100);
   };
 
@@ -138,7 +119,7 @@ const TablaVentasProceso = ({ adquirir }) => {
     setModoCrear(false);
     setPaginaActual(1); // Forzar a la primera página
     setTimeout(() => {
-      refrescar();
+      refreshVentas();
     }, 100);
   };
 
@@ -146,9 +127,9 @@ const TablaVentasProceso = ({ adquirir }) => {
     if (datoSeleccionado && datoSeleccionado.id) {
       agregarComentario(datoSeleccionado.id, texto);
       // Refrescar inmediatamente y luego de un pequeño delay para asegurar consistencia
-      refrescar();
+      refreshVentas();
       setTimeout(() => {
-        refrescar();
+        refreshVentas();
       }, 200);
     }
     setModalObservacionOpen(false);
@@ -175,7 +156,7 @@ const TablaVentasProceso = ({ adquirir }) => {
       });
       setModalAnularOpen(false);
       setMotivoAnular("");
-      refrescar();
+      refreshVentas();
     } catch (err) {
       Swal.fire({
         icon: 'error',
@@ -667,7 +648,7 @@ const TablaVentasProceso = ({ adquirir }) => {
                 onChange={e => setEmpleadoSeleccionado(e.target.value)}
               >
                 <option value="">Sin asignar</option>
-                {dataEmpleados.map(emp => (
+                {EmployeeService.getAll().map(emp => (
                   <option key={emp.cedula} value={`${emp.nombre} ${emp.apellido}`}>{emp.nombre} {emp.apellido}</option>
                 ))}
               </select>
@@ -692,7 +673,7 @@ const TablaVentasProceso = ({ adquirir }) => {
                     text: "El encargado ha sido actualizado correctamente.",
                     customClass: { popup: "swal2-border-radius" }
                   });
-                  refrescar();
+                  refreshVentas();
                 }}
                 className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold"
                 disabled={empleadoSeleccionado === (datoSeleccionado?.encargado || "")}

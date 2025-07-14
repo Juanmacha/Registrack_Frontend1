@@ -25,21 +25,17 @@ export const TIPOS_DOCUMENTO = {
 };
 
 // ============================================================================
-// ROLES DE USUARIO
+// ROLES DE USUARIO - UNIFICADOS
 // ============================================================================
 
 export const ROLES = {
-  ADMIN: "Administrador",
-  USUARIO: "Cliente", 
-  EMPLEADO: "Empleado"
-};
-
-// Roles más descriptivos para el sistema
-export const ROLES_SISTEMA = {
   ADMINISTRADOR: "Administrador",
-  EMPLEADO: "Empleado",
+  EMPLEADO: "Empleado", 
   CLIENTE: "Cliente"
 };
+
+// Eliminar ROLES_SISTEMA duplicado y usar ROLES en todo el sistema
+// export const ROLES_SISTEMA = { ... }; // ❌ ELIMINAR ESTA DUPLICACIÓN
 
 // ============================================================================
 // ESTADOS DE PROCESO
@@ -53,6 +49,18 @@ export const ESTADOS_PROCESO = {
   PENDIENTE: "pendiente",
   APROBADO: "aprobado",
   RECHAZADO: "rechazado"
+};
+
+// ============================================================================
+// ESTADOS DE CITAS
+// ============================================================================
+
+export const ESTADOS_CITA = {
+  PROGRAMADA: "programada",
+  REPROGRAMADA: "reprogramada",
+  CANCELADA: "cancelada",
+  COMPLETADA: "completada",
+  PENDIENTE: "pendiente"
 };
 
 // ============================================================================
@@ -80,7 +88,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Búsqueda de Antecedentes",
       resumen: "Verifica la disponibilidad de tu marca antes de iniciar el registro.",
-      image: "/images/busqueda.jpg"
+      imagen: "/images/busqueda.jpg"
     },
     info_page_data: {
       descripcion: "Nuestro servicio de búsqueda de antecedentes incluye una revisión exhaustiva de bases de datos nacionales e internacionales para verificar la disponibilidad de marcas y evitar conflictos legales futuros.",
@@ -100,7 +108,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Certificación de Marca",
       resumen: "Acompañamiento completo en el proceso de certificación de tu marca.",
-      image: "/images/certificacion.jpg"
+      imagen: "/images/certificacion.jpg"
     },
     info_page_data: {
       descripcion: "Te acompañamos en todo el proceso de certificación de marca, desde la presentación de la solicitud hasta la obtención del certificado oficial, garantizando el cumplimiento de todos los requisitos legales.",
@@ -126,7 +134,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Renovación de Marca",
       resumen: "Renueva tu marca y mantén tu protección legal vigente.",
-      image: "/images/renovacion.jpeg"
+      imagen: "/images/renovacion.jpeg"
     },
     info_page_data: {
       descripcion: "Mantenemos tu marca protegida gestionando las renovaciones oportunas de los registros, asegurando que nunca pierdas la protección legal de tu propiedad intelectual.",
@@ -146,7 +154,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Presentación de Oposición", 
       resumen: "Defiende tus derechos de marca presentando una oposición.",
-      image: "/images/opocision.jpeg"
+      imagen: "/images/opocision.jpeg"
     },
     info_page_data: {
       descripcion: "Protegemos tus derechos de marca presentando oposiciones estratégicas contra solicitudes de registro que puedan generar confusión o afectar tu propiedad intelectual.",
@@ -166,7 +174,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Cesión de Marca",
       resumen: "Gestiona la transferencia de derechos de tu marca de forma segura.",
-      image: "/images/cesion.jpg"
+      imagen: "/images/cesion.jpg"
     },
     info_page_data: {
       descripcion: "Facilitamos la transferencia de derechos de marca, asesorando en todos los aspectos legales y administrativos del proceso de cesión para garantizar una transacción segura y legal.",
@@ -186,7 +194,7 @@ export const SERVICIOS = [
     landing_data: {
       titulo: "Ampliación de Alcance",
       resumen: "Extiende la protección de tu marca a nuevas clases o categorías.",
-      image: "/images/ampliaxcion.jpg"
+      imagen: "/images/ampliaxcion.jpg"
     },
     info_page_data: {
       descripcion: "Ampliamos la protección de tu marca a nuevas clases o categorías de productos y servicios, adaptando la estrategia de protección a la evolución de tu negocio.",
@@ -213,7 +221,7 @@ export const USUARIOS = [
     documentNumber: "1010101010",
     email: "juan.perez@example.com",
     password: "123456",
-    role: ROLES.ADMIN,
+    role: ROLES.ADMINISTRADOR,
     estado: "activo"
   },
   {
@@ -224,7 +232,7 @@ export const USUARIOS = [
     documentNumber: "1144228899",
     email: "ana.gomez@example.com",
     password: "abcdef",
-    role: ROLES_SISTEMA.CLIENTE,
+    role: ROLES.CLIENTE,
     estado: "activo"
   },
   {
@@ -235,7 +243,7 @@ export const USUARIOS = [
     documentNumber: "999222111",
     email: "carlos.ramirez@example.com",
     password: "pass1234",
-    role: ROLES_SISTEMA.CLIENTE,
+    role: ROLES.CLIENTE,
     estado: "activo"
   },
   {
@@ -246,7 +254,7 @@ export const USUARIOS = [
     documentNumber: "1122334455",
     email: "laura.torres@example.com",
     password: "securepass",
-    role: ROLES.ADMIN,
+    role: ROLES.ADMINISTRADOR,
     estado: "activo"
   },
   {
@@ -257,7 +265,7 @@ export const USUARIOS = [
     documentNumber: "1077998509",
     email: "antoniodjromana@gmail.com",
     password: "Yuver",
-    role: ROLES_SISTEMA.CLIENTE,
+    role: ROLES.CLIENTE,
     estado: "activo"
   },
   {
@@ -268,7 +276,7 @@ export const USUARIOS = [
     documentNumber: "9090808070",
     email: "santiago.guerrero@example.com",
     password: "santi123",
-    role: ROLES.ADMIN,
+    role: ROLES.ADMINISTRADOR,
     estado: "activo"
   }
 ];
@@ -285,7 +293,7 @@ export const EMPLEADOS = [
     nombre: "Juan",
     apellidos: "Pérez",
     email: "juan@example.com",
-    rol: ROLES_SISTEMA.ADMINISTRADOR,
+    rol: ROLES.ADMINISTRADOR,
     estado: "Activo",
     fechaContratacion: "2024-01-15",
     departamento: "Administración",
@@ -299,7 +307,7 @@ export const EMPLEADOS = [
     nombre: "Ana",
     apellidos: "Gómez",
     email: "ana@example.com",
-    rol: ROLES_SISTEMA.EMPLEADO,
+    rol: ROLES.EMPLEADO,
     estado: "Activo",
     fechaContratacion: "2024-03-20",
     departamento: "Atención al Cliente",
@@ -313,7 +321,7 @@ export const EMPLEADOS = [
     nombre: "Carlos",
     apellidos: "Morales",
     email: "carlos@example.com",
-    rol: ROLES_SISTEMA.EMPLEADO,
+    rol: ROLES.EMPLEADO,
     estado: "Activo",
     fechaContratacion: "2024-02-10",
     departamento: "Gestión de Servicios",
@@ -327,7 +335,7 @@ export const EMPLEADOS = [
     nombre: "María",
     apellidos: "López",
     email: "maria@example.com",
-    rol: ROLES_SISTEMA.ADMINISTRADOR,
+    rol: ROLES.ADMINISTRADOR,
     estado: "Activo",
     fechaContratacion: "2023-11-05",
     departamento: "Administración",
@@ -341,7 +349,7 @@ export const EMPLEADOS = [
     nombre: "Laura",
     apellidos: "Torres",
     email: "laura@example.com",
-    rol: ROLES_SISTEMA.EMPLEADO,
+    rol: ROLES.EMPLEADO,
     estado: "Activo",
     fechaContratacion: "2024-04-15",
     departamento: "Atención al Cliente",
@@ -355,7 +363,7 @@ export const EMPLEADOS = [
     nombre: "Roberto",
     apellidos: "Hernández",
     email: "roberto@example.com",
-    rol: ROLES_SISTEMA.EMPLEADO,
+    rol: ROLES.EMPLEADO,
     estado: "Activo",
     fechaContratacion: "2024-01-30",
     departamento: "Gestión de Servicios",
@@ -449,8 +457,8 @@ export const VENTAS_EN_PROCESO = [
   },
   {
     id: "2",
-    titular: "Empresa XYZ",
-    tipoPersona: "Jurídica", 
+    titular: "Ana Gómez",
+    tipoPersona: "Natural", 
     expediente: "EXP-00124",
     tipoSolicitud: "Certificación de Marca",
     marca: "Zentra",
@@ -459,12 +467,12 @@ export const VENTAS_EN_PROCESO = [
     estado: "Pendiente",
     comentarios: [],
     fechaSolicitud: "2025-01-20",
-    email: "empresa.xyz@example.com",
+    email: "ana.gomez@example.com",
     telefono: "3009876543"
   },
   {
     id: "3",
-    titular: "Ana Martínez",
+    titular: "Carlos Ramírez",
     tipoPersona: "Natural",
     expediente: "EXP-00125", 
     tipoSolicitud: "Búsqueda de Antecedentes",
@@ -474,8 +482,68 @@ export const VENTAS_EN_PROCESO = [
     estado: "En proceso",
     comentarios: [],
     fechaSolicitud: "2025-01-25",
-    email: "ana.martinez@example.com",
+    email: "carlos.ramirez@example.com",
     telefono: "3023456789"
+  },
+  {
+    id: "4",
+    titular: "Yuver Martinez",
+    tipoPersona: "Natural",
+    expediente: "EXP-00126",
+    tipoSolicitud: "Renovación de Marca",
+    marca: "InnovaTech",
+    encargado: "Dr. Rodríguez",
+    proximaCita: null,
+    estado: "En proceso",
+    comentarios: [],
+    fechaSolicitud: "2025-01-28",
+    email: "antoniodjromana@gmail.com",
+    telefono: "3012345678"
+  },
+  {
+    id: "5",
+    titular: "Laura Torres",
+    tipoPersona: "Natural",
+    expediente: "EXP-00127",
+    tipoSolicitud: "Presentación de Oposición",
+    marca: "TorresDesign",
+    encargado: "Dra. Silva",
+    proximaCita: null,
+    estado: "Pendiente",
+    comentarios: [],
+    fechaSolicitud: "2025-01-30",
+    email: "laura.torres@example.com",
+    telefono: "3023456789"
+  },
+  {
+    id: "6",
+    titular: "Santiago Guerrero",
+    tipoPersona: "Natural",
+    expediente: "EXP-00128",
+    tipoSolicitud: "Cesión de Marca",
+    marca: "GuerreroDesign",
+    encargado: "Dr. Mendoza",
+    proximaCita: null,
+    estado: "En revisión",
+    comentarios: [],
+    fechaSolicitud: "2025-02-01",
+    email: "santiago.guerrero@example.com",
+    telefono: "3034567890"
+  },
+  {
+    id: "7",
+    titular: "Empresa ABC",
+    tipoPersona: "Jurídica",
+    expediente: "EXP-00129",
+    tipoSolicitud: "Ampliación de Alcance",
+    marca: "ABC Solutions",
+    encargado: "Dra. Herrera",
+    proximaCita: null,
+    estado: "En proceso",
+    comentarios: [],
+    fechaSolicitud: "2025-02-03",
+    email: "empresa.abc@example.com",
+    telefono: "3045678901"
   }
 ];
 
@@ -485,36 +553,100 @@ export const VENTAS_EN_PROCESO = [
 
 export const VENTAS_FINALIZADAS = [
   {
-    id: "4",
-    titular: "Carlos Ramírez",
+    id: "8",
+    titular: "Juan Pérez",
     tipoPersona: "Natural",
     expediente: "EXP-00120",
     tipoSolicitud: "Renovación de Marca",
-    marca: "EmpaqX",
+    marca: "TechNova",
     encargado: "Dr. Pérez",
     proximaCita: null,
     estado: "Finalizado",
     comentarios: [],
     fechaSolicitud: "2024-12-15",
     fechaFinalizacion: "2025-01-10",
-    email: "carlos.ramirez@example.com",
+    email: "juan.perez@example.com",
     telefono: "3101234567"
   },
   {
-    id: "5",
-    titular: "Luisa Gómez",
-    tipoPersona: "Jurídica",
+    id: "9",
+    titular: "Ana Gómez",
+    tipoPersona: "Natural",
     expediente: "EXP-00121",
     tipoSolicitud: "Certificación de Marca", 
-    marca: "Innova",
+    marca: "Zentra",
     encargado: "Dra. Torres",
     proximaCita: null,
     estado: "Rechazado",
     comentarios: [],
     fechaSolicitud: "2024-11-20",
     fechaFinalizacion: "2025-01-05",
-    email: "luisa.gomez@example.com",
+    email: "ana.gomez@example.com",
     telefono: "3019876543"
+  },
+  {
+    id: "10",
+    titular: "Carlos Ramírez",
+    tipoPersona: "Natural",
+    expediente: "EXP-00122",
+    tipoSolicitud: "Búsqueda de Antecedentes",
+    marca: "Creativa",
+    encargado: "Dra. Vega",
+    proximaCita: null,
+    estado: "Finalizado",
+    comentarios: [],
+    fechaSolicitud: "2024-10-15",
+    fechaFinalizacion: "2024-11-20",
+    email: "carlos.ramirez@example.com",
+    telefono: "3056789012"
+  },
+  {
+    id: "11",
+    titular: "Yuver Martinez",
+    tipoPersona: "Natural",
+    expediente: "EXP-00123",
+    tipoSolicitud: "Presentación de Oposición",
+    marca: "InnovaTech",
+    encargado: "Dr. Castro",
+    proximaCita: null,
+    estado: "Aprobado",
+    comentarios: [],
+    fechaSolicitud: "2024-09-10",
+    fechaFinalizacion: "2024-12-05",
+    email: "antoniodjromana@gmail.com",
+    telefono: "3067890123"
+  },
+  {
+    id: "12",
+    titular: "Laura Torres",
+    tipoPersona: "Natural",
+    expediente: "EXP-00124",
+    tipoSolicitud: "Cesión de Marca",
+    marca: "TorresDesign",
+    encargado: "Dra. Morales",
+    proximaCita: null,
+    estado: "Finalizado",
+    comentarios: [],
+    fechaSolicitud: "2024-08-20",
+    fechaFinalizacion: "2024-10-15",
+    email: "laura.torres@example.com",
+    telefono: "3078901234"
+  },
+  {
+    id: "13",
+    titular: "Santiago Guerrero",
+    tipoPersona: "Natural",
+    expediente: "EXP-00125",
+    tipoSolicitud: "Ampliación de Alcance",
+    marca: "GuerreroDesign",
+    encargado: "Dr. Herrera",
+    proximaCita: null,
+    estado: "Aprobado",
+    comentarios: [],
+    fechaSolicitud: "2024-07-15",
+    fechaFinalizacion: "2024-09-20",
+    email: "santiago.guerrero@example.com",
+    telefono: "3089012345"
   }
 ];
 
@@ -611,7 +743,7 @@ export const CITAS = [
 export const ROLES_PERMISOS = [
   {
     id: "1",
-    nombre: ROLES_SISTEMA.ADMINISTRADOR,
+    nombre: ROLES.ADMINISTRADOR,
     estado: "Activo",
     descripcion: "Acceso completo al sistema con todos los permisos",
     permisos: {
@@ -628,7 +760,7 @@ export const ROLES_PERMISOS = [
   },
   {
     id: "2",
-    nombre: ROLES_SISTEMA.EMPLEADO,
+    nombre: ROLES.EMPLEADO,
     estado: "Activo",
     descripcion: "Acceso limitado para gestión de clientes y servicios",
     permisos: {
@@ -645,7 +777,7 @@ export const ROLES_PERMISOS = [
   },
   {
     id: "3",
-    nombre: ROLES_SISTEMA.CLIENTE,
+    nombre: ROLES.CLIENTE,
     estado: "Activo",
     descripcion: "Acceso básico para consulta de servicios propios",
     permisos: {

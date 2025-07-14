@@ -88,16 +88,19 @@ const alertService = {
     });
   },
 
-  // Alerta de carga
+  // Alerta de carga con spinner personalizado
   loading: (title = 'Cargando...', options = {}) => {
     return Swal.fire({
       title: title,
       allowOutsideClick: false,
       allowEscapeKey: false,
       showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
+      html: `
+        <div class="flex flex-col items-center justify-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-gray-600 mb-4"></div>
+          <p class="text-gray-600">${title}</p>
+        </div>
+      `,
       ...customConfig,
       ...options
     });
@@ -241,6 +244,122 @@ const alertService = {
       title: 'Sesión expirada',
       text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
       confirmButtonText: 'Entendido',
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alertas automáticas para cambios de estado
+  saleStatusChanged: (saleData, oldStatus, newStatus) => {
+    return Swal.fire({
+      icon: 'info',
+      title: 'Estado actualizado',
+      text: `La solicitud "${saleData.marca}" ha cambiado de "${oldStatus}" a "${newStatus}"`,
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de cita próxima
+  upcomingAppointment: (appointmentData) => {
+    return Swal.fire({
+      icon: 'info',
+      title: 'Cita próxima',
+      text: `Tienes una cita programada para ${appointmentData.fecha} a las ${appointmentData.horaInicio}`,
+      confirmButtonText: 'Ver detalles',
+      showCancelButton: true,
+      cancelButtonText: 'Más tarde',
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de nueva solicitud
+  newSaleCreated: (saleData) => {
+    return Swal.fire({
+      icon: 'success',
+      title: 'Nueva solicitud',
+      text: `Se ha creado una nueva solicitud para "${saleData.marca}"`,
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de pago recibido
+  paymentReceived: (paymentData) => {
+    return Swal.fire({
+      icon: 'success',
+      title: 'Pago recibido',
+      text: `Se ha registrado un pago de $${paymentData.monto} por ${paymentData.metodo_pago}`,
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de error de validación
+  validationError: (errors) => {
+    const errorMessages = Object.values(errors).join('\n');
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Datos incompletos',
+      text: errorMessages,
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de confirmación de eliminación
+  confirmDelete: (itemName, itemType = 'elemento') => {
+    return Swal.fire({
+      icon: 'warning',
+      title: '¿Eliminar?',
+      text: `¿Estás seguro de que quieres eliminar ${itemName}? Esta acción no se puede deshacer.`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc2626',
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de éxito de eliminación
+  deleteSuccess: (itemName) => {
+    return Swal.fire({
+      icon: 'success',
+      title: 'Eliminado',
+      text: `${itemName} ha sido eliminado correctamente.`,
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false,
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de confirmación de cancelación
+  confirmCancel: (itemName, itemType = 'elemento') => {
+    return Swal.fire({
+      icon: 'question',
+      title: '¿Cancelar?',
+      text: `¿Estás seguro de que quieres cancelar ${itemName}?`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No',
+      ...customConfig
+    });
+  },
+
+  // ✅ NUEVO: Alerta de cancelación exitosa
+  cancelSuccess: (itemName) => {
+    return Swal.fire({
+      icon: 'success',
+      title: 'Cancelado',
+      text: `${itemName} ha sido cancelado correctamente.`,
+      timer: 2000,
+      timerProgressBar: true,
+      showConfirmButton: false,
       ...customConfig
     });
   }

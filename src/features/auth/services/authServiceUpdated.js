@@ -1,4 +1,5 @@
 import { UserService, initializeMockData } from "../../../utils/mockDataService.js";
+import { ROLES } from "../../../utils/mockData.js";
 
 const TOKEN_KEY = "authToken";
 const USER_KEY = "currentUser";
@@ -110,7 +111,7 @@ const authService = {
 
     // Mapeo de roles a permisos
     const rolePermissions = {
-      "Administrador": {
+      [ROLES.ADMINISTRADOR]: {
         usuarios: { crear: true, leer: true, actualizar: true, eliminar: true },
         empleados: { crear: true, leer: true, actualizar: true, eliminar: true },
         clientes: { crear: true, leer: true, actualizar: true, eliminar: true },
@@ -121,7 +122,7 @@ const authService = {
         reportes: { crear: true, leer: true, actualizar: true, eliminar: true },
         configuracion: { crear: true, leer: true, actualizar: true, eliminar: true }
       },
-      "Empleado": {
+      [ROLES.EMPLEADO]: {
         usuarios: { crear: false, leer: true, actualizar: false, eliminar: false },
         empleados: { crear: false, leer: true, actualizar: false, eliminar: false },
         clientes: { crear: true, leer: true, actualizar: true, eliminar: false },
@@ -132,7 +133,7 @@ const authService = {
         reportes: { crear: false, leer: true, actualizar: false, eliminar: false },
         configuracion: { crear: false, leer: false, actualizar: false, eliminar: false }
       },
-      "Cliente": {
+      [ROLES.CLIENTE]: {
         usuarios: { crear: false, leer: false, actualizar: false, eliminar: false },
         empleados: { crear: false, leer: false, actualizar: false, eliminar: false },
         clientes: { crear: false, leer: false, actualizar: false, eliminar: false },
@@ -157,19 +158,19 @@ const authService = {
   // Verificar si es administrador
   isAdmin: () => {
     const user = authService.getCurrentUser();
-    return user && user.role === "Administrador";
+    return user && user.role === ROLES.ADMINISTRADOR;
   },
 
   // Verificar si es empleado
   isEmployee: () => {
     const user = authService.getCurrentUser();
-    return user && (user.role === "Administrador" || user.role === "Empleado");
+    return user && (user.role === ROLES.ADMINISTRADOR || user.role === ROLES.EMPLEADO);
   },
 
   // Verificar si es cliente
   isClient: () => {
     const user = authService.getCurrentUser();
-    return user && user.role === "Cliente";
+    return user && user.role === ROLES.CLIENTE;
   }
 };
 

@@ -23,6 +23,7 @@ import {
   getVentasByCliente,
   tienePermiso
 } from './mockData.js';
+import alertService from './alertService.js';
 
 // ============================================================================
 // CONFIGURACIÓN DE ALMACENAMIENTO
@@ -41,27 +42,106 @@ const STORAGE_KEYS = {
 };
 
 // ============================================================================
+// SISTEMA DE NOTIFICACIONES PARA ACTUALIZACIONES
+// ============================================================================
+
+const dataChangeListeners = new Set();
+
+export const DataChangeNotifier = {
+  // Suscribirse a cambios de datos
+  subscribe(callback) {
+    dataChangeListeners.add(callback);
+    return () => dataChangeListeners.delete(callback);
+  },
+
+  // Notificar a todos los listeners
+  notify(dataType, action, data) {
+    dataChangeListeners.forEach(callback => {
+      try {
+        callback(dataType, action, data);
+      } catch (error) {
+        console.error('Error en listener de cambio de datos:', error);
+      }
+    });
+  },
+
+  // Notificar cambio específico
+  notifySaleChange(action, saleData) {
+    this.notify('sale', action, saleData);
+  },
+
+  // Notificar cambio de usuario
+  notifyUserChange(action, userData) {
+    this.notify('user', action, userData);
+  }
+};
+
+// ============================================================================
+// SERVICIO DE LOCALSTORAGE CENTRALIZADO
+// ============================================================================
+
+export const LocalStorageService = {
+  // Obtener datos con manejo de errores
+  get(key) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error(`Error al obtener datos de ${key}:`, error);
+      return null;
+    }
+  },
+
+  // Guardar datos con manejo de errores
+  set(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.error(`Error al guardar datos en ${key}:`, error);
+      return false;
+    }
+  },
+
+  // Eliminar datos
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar datos de ${key}:`, error);
+      return false;
+    }
+  },
+
+  // Verificar si existe una clave
+  has(key) {
+    return localStorage.getItem(key) !== null;
+  },
+
+  // Limpiar todas las claves mock
+  clearMockData() {
+    Object.values(STORAGE_KEYS).forEach(key => {
+      this.remove(key);
+    });
+  },
+
+  // Obtener todas las claves mock
+  getMockKeys() {
+    return Object.values(STORAGE_KEYS);
+  }
+};
+
+// ============================================================================
 // FUNCIONES DE ALMACENAMIENTO
 // ============================================================================
 
 function getFromStorage(key) {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error(`Error al obtener datos de ${key}:`, error);
-    return [];
-  }
+  return LocalStorageService.get(key) || [];
 }
 
 function setToStorage(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    return true;
-  } catch (error) {
-    console.error(`Error al guardar datos en ${key}:`, error);
-    return false;
-  }
+  return LocalStorageService.set(key, data);
 }
 
 // ============================================================================
@@ -150,6 +230,9 @@ export const UserService = {
     // Sincronizar con empleados si el rol es de empleado
     this.syncWithEmployees(newUser);
     
+    // Sincronizar con clientes si el rol es de cliente
+    this.syncWithClients(newUser);
+    
     return newUser;
   },
   
@@ -165,6 +248,11 @@ export const UserService = {
       // Sincronizar con empleados si el rol cambió
       if (oldUser.role !== userData.role) {
         this.syncWithEmployees(usuarios[index]);
+      }
+      
+      // Sincronizar con clientes si el rol cambió o es cliente
+      if (oldUser.role !== userData.role || userData.role === 'Cliente') {
+        this.syncWithClients(usuarios[index]);
       }
       
       return usuarios[index];
@@ -222,6 +310,43 @@ export const UserService = {
       };
       empleados.push(newEmployee);
       setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+    }
+  },
+
+  // Sincronizar usuario con clientes
+  syncWithClients(user) {
+    if (user.role === 'Cliente') {
+      const clientes = getFromStorage(STORAGE_KEYS.CLIENTES);
+      // Buscar si ya existe un cliente con el mismo documento
+      let cliente = clientes.find(cli => cli.documento === user.documentNumber);
+      if (cliente) {
+        // Actualizar datos del cliente
+        cliente.nombre = user.firstName;
+        cliente.apellido = user.lastName;
+        cliente.email = user.email;
+        cliente.tipoDocumento = user.documentType;
+        cliente.documento = user.documentNumber;
+        cliente.tipoPersona = user.tipoPersona || 'Natural';
+        cliente.estado = user.estado || 'activo';
+      } else {
+        // Crear nuevo cliente
+        cliente = {
+          id: Date.now().toString(),
+          nombre: user.firstName,
+          apellido: user.lastName,
+          email: user.email,
+          tipoDocumento: user.documentType,
+          documento: user.documentNumber,
+          tipoPersona: user.tipoPersona || 'Natural',
+          estado: user.estado || 'activo',
+          nitEmpresa: user.nitEmpresa || '',
+          nombreEmpresa: user.nombreEmpresa || '',
+          marca: user.marca || '',
+          telefono: user.telefono || ''
+        };
+        clientes.push(cliente);
+      }
+      setToStorage(STORAGE_KEYS.CLIENTES, clientes);
     }
   }
 };
@@ -449,6 +574,13 @@ export const SaleService = {
     };
     ventas.push(newSale);
     setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+    
+    // ✅ NUEVO: Alerta automática de nueva solicitud
+    alertService.newSaleCreated(newSale);
+    
+    // Notificar el cambio
+    DataChangeNotifier.notifySaleChange('create', newSale);
+    
     return newSale;
   },
   
@@ -464,15 +596,22 @@ export const SaleService = {
       venta = ventas[ventaIndex];
       const ventaActualizada = { ...venta, ...saleData };
 
+      // ✅ NUEVO: Alerta automática de cambio de estado
+      if (saleData.estado && saleData.estado !== venta.estado) {
+        alertService.saleStatusChanged(ventaActualizada, venta.estado, saleData.estado);
+      }
+
       // Si cambia a finalizado/anulado/rechazado/cancelado, mover a finalizadas
       if (["Finalizado", "Anulado", "Rechazado", "Cancelado"].includes(saleData.estado)) {
         ventas.splice(ventaIndex, 1);
         ventasFin.push(ventaActualizada);
         setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
         setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
+        DataChangeNotifier.notifySaleChange('move_to_completed', ventaActualizada);
       } else {
         ventas[ventaIndex] = ventaActualizada;
         setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+        DataChangeNotifier.notifySaleChange('update', ventaActualizada);
       }
       return ventaActualizada;
     }
@@ -482,15 +621,22 @@ export const SaleService = {
       venta = ventasFin[ventaFinIndex];
       const ventaActualizada = { ...venta, ...saleData };
 
+      // ✅ NUEVO: Alerta automática de cambio de estado
+      if (saleData.estado && saleData.estado !== venta.estado) {
+        alertService.saleStatusChanged(ventaActualizada, venta.estado, saleData.estado);
+      }
+
       // Si vuelve a proceso
       if (!["Finalizado", "Anulado", "Rechazado"].includes(saleData.estado)) {
         ventasFin.splice(ventaFinIndex, 1);
         ventas.push(ventaActualizada);
         setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
-      setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+        setToStorage(STORAGE_KEYS.VENTAS_PROCESO, ventas);
+        DataChangeNotifier.notifySaleChange('move_to_process', ventaActualizada);
       } else {
         ventasFin[ventaFinIndex] = ventaActualizada;
         setToStorage(STORAGE_KEYS.VENTAS_FINALIZADAS, ventasFin);
+        DataChangeNotifier.notifySaleChange('update', ventaActualizada);
       }
       return ventaActualizada;
     }
@@ -502,6 +648,10 @@ export const SaleService = {
     const ventas = this.getInProcess();
     const filtered = ventas.filter(venta => venta.id !== id);
     setToStorage(STORAGE_KEYS.VENTAS_PROCESO, filtered);
+    
+    // Notificar el cambio
+    DataChangeNotifier.notifySaleChange('delete', { id });
+    
     return true;
   },
   
@@ -513,6 +663,10 @@ export const SaleService = {
         texto: `Cancelado: ${motivo}`
       }]
     });
+    
+    // Notificar el cambio
+    DataChangeNotifier.notifySaleChange('cancel', venta);
+    
     return venta;
   },
   
@@ -523,7 +677,12 @@ export const SaleService = {
         fecha: new Date().toISOString(),
         texto: comment
       }];
-      return this.update(id, { comentarios });
+      const ventaActualizada = this.update(id, { comentarios });
+      
+      // Notificar el cambio
+      DataChangeNotifier.notifySaleChange('add_comment', ventaActualizada);
+      
+      return ventaActualizada;
     }
     return null;
   }
@@ -576,33 +735,30 @@ export const AppointmentService = {
     return getFromStorage(STORAGE_KEYS.CITAS);
   },
   
+  getById(id) {
+    const citas = this.getAll();
+    return citas.find(cita => cita.id === id);
+  },
+  
   getByClient(cedula) {
     const citas = this.getAll();
-    return citas.filter(cita => cita.extendedProps?.cedula === cedula);
+    return citas.filter(cita => cita.cedulaCliente === cedula);
   },
   
   create(appointmentData) {
     const citas = this.getAll();
     const newAppointment = {
       id: Date.now().toString(),
-      title: `Asesor: ${appointmentData.asesor}`,
-      start: appointmentData.fecha + 'T' + appointmentData.horaInicio,
-      end: appointmentData.fecha + 'T' + appointmentData.horaFin,
-      extendedProps: {
-        nombre: appointmentData.nombre,
-        apellido: appointmentData.apellido,
-        cedula: appointmentData.cedula,
-        telefono: appointmentData.telefono,
-        horaInicio: appointmentData.horaInicio,
-        horaFin: appointmentData.horaFin,
-        detalle: appointmentData.detalle,
-        tipoCita: appointmentData.tipoCita,
-        asesor: appointmentData.asesor,
-        estado: 'Programada'
-      }
+      ...appointmentData,
+      fechaCreacion: new Date().toISOString(),
+      estado: 'programada'
     };
     citas.push(newAppointment);
     setToStorage(STORAGE_KEYS.CITAS, citas);
+    
+    // Notificar cambio
+    DataChangeNotifier.notify('appointment', 'create', newAppointment);
+    
     return newAppointment;
   },
   
@@ -612,20 +768,54 @@ export const AppointmentService = {
     if (index !== -1) {
       citas[index] = { ...citas[index], ...appointmentData };
       setToStorage(STORAGE_KEYS.CITAS, citas);
+      
+      // Notificar cambio
+      DataChangeNotifier.notify('appointment', 'update', citas[index]);
+      
       return citas[index];
     }
     return null;
   },
   
   cancel(id, motivo) {
-    const cita = this.update(id, { 
-      extendedProps: {
-        ...this.getById(id)?.extendedProps,
-        estado: 'Cancelada',
-        motivo: motivo
-      }
+    const cita = this.getById(id);
+    if (cita) {
+      const citaActualizada = this.update(id, {
+        estado: 'cancelada',
+        motivoCancelacion: motivo,
+        fechaCancelacion: new Date().toISOString()
+      });
+      
+      // Notificar cambio
+      DataChangeNotifier.notify('appointment', 'cancel', citaActualizada);
+      
+      return citaActualizada;
+    }
+    return null;
+  },
+  
+  // ✅ NUEVO: Obtener empleados para calendario
+  getEmployeesForCalendar() {
+    return EmployeeService.getAll().filter(emp => emp.estado === 'Activo');
+  },
+  
+  // ✅ NUEVO: Obtener citas por empleado
+  getByEmployee(empleadoId) {
+    const citas = this.getAll();
+    return citas.filter(cita => cita.empleadoId === empleadoId);
+  },
+  
+  // ✅ NUEVO: Obtener citas próximas
+  getUpcoming(days = 7) {
+    const citas = this.getAll();
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + days);
+    
+    return citas.filter(cita => {
+      const citaDate = new Date(cita.fecha);
+      return citaDate >= today && citaDate <= futureDate && cita.estado === 'programada';
     });
-    return cita;
   }
 };
 

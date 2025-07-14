@@ -47,6 +47,41 @@ const DetalleProcesoModal = ({ proceso, onClose }) => {
 
 const HistorialProcesos = ({ procesos, servicios, servicioFiltro, estadoFiltro, busquedaHistorial, onChangeServicio, onChangeEstado, onChangeBusqueda }) => {
   const [detalle, setDetalle] = useState(null);
+  
+  // Función para obtener el nombre del estado actual
+  const obtenerNombreEstado = (servicio, estadoActual) => {
+    if (!servicio || !servicio.process_states) return estadoActual || '-';
+    
+    // Mapeo de estados comunes
+    const estadoMapping = {
+      'En revisión': 'en_proceso',
+      'Pendiente': 'recibida', 
+      'En proceso': 'en_proceso',
+      'Finalizado': 'finalizado',
+      'Aprobado': 'aprobado',
+      'Rechazado': 'rechazado',
+      'Anulado': 'anulado'
+    };
+
+    // Buscar por nombre exacto
+    let estadoEncontrado = servicio.process_states.find(e => e.name === estadoActual);
+    
+    // Si no se encuentra, buscar por status_key
+    if (!estadoEncontrado) {
+      estadoEncontrado = servicio.process_states.find(e => e.status_key === estadoActual);
+    }
+    
+    // Si no se encuentra, buscar por mapeo
+    if (!estadoEncontrado) {
+      const statusKeyMapeado = estadoMapping[estadoActual];
+      if (statusKeyMapeado) {
+        estadoEncontrado = servicio.process_states.find(e => e.status_key === statusKeyMapeado);
+      }
+    }
+
+    return estadoEncontrado ? estadoEncontrado.name : estadoActual || '-';
+  };
+
   // Obtener servicios y estados únicos del historial
   const serviciosHistorial = ['Todos', ...Array.from(new Set(procesos.map(p => p.tipoSolicitud)))];
   const estadosHistorial = ['Todos', ...Array.from(new Set(procesos.map(p => p.estado)))];
@@ -121,37 +156,44 @@ const HistorialProcesos = ({ procesos, servicios, servicioFiltro, estadoFiltro, 
               </tr>
             </thead>
             <tbody>
-              {procesosFiltrados.map((proc) => (
-                <tr key={proc.id || proc.expediente || Math.random()} className="border-b last:border-0 hover:bg-blue-50 transition-all duration-200 group">
-                  <td className="px-6 py-4 font-semibold text-blue-700 underline cursor-pointer group-hover:text-blue-900 transition-all duration-200 align-middle">{proc.nombreMarca || 'Sin marca'}</td>
-                  <td className="px-6 py-4 align-middle">{proc.expediente || '-'}</td>
-                  <td className="px-6 py-4 align-middle font-medium">{proc.tipoSolicitud || '-'}</td>
-                  <td className="px-6 py-4 align-middle">
-                    {proc.estado === 'Anulado' ? (
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">Anulado</span>
-                    ) : proc.estado === 'Aprobado' ? (
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Aprobado</span>
-                    ) : (
-                      <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">Rechazado</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 align-middle">
-                    {proc.estado === 'Anulado' && proc.motivoAnulacion ? (
-                      <span className="italic text-red-600">{proc.motivoAnulacion}</span>
-                    ) : ''}
-                  </td>
-                  <td className="px-6 py-4 align-middle text-xs">{obtenerFechaCreacion(proc)}</td>
-                  <td className="px-6 py-4 align-middle text-xs">{obtenerFechaFin(proc)}</td>
-                  <td className="px-6 py-4 align-middle">
-                    <button
-                      className="px-3 py-1 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-800 transition-all shadow"
-                      onClick={() => setDetalle(proc)}
-                    >
-                      Ver detalle
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {procesosFiltrados.map((proc) => {
+                const servicio = servicios.find(s => s && s.nombre === proc.tipoSolicitud);
+                const nombreEstadoActual = obtenerNombreEstado(servicio, proc.estado);
+                
+                return (
+                  <tr key={proc.id || proc.expediente || Math.random()} className="border-b last:border-0 hover:bg-blue-50 transition-all duration-200 group">
+                    <td className="px-6 py-4 font-semibold text-blue-700 underline cursor-pointer group-hover:text-blue-900 transition-all duration-200 align-middle">{proc.nombreMarca || 'Sin marca'}</td>
+                    <td className="px-6 py-4 align-middle">{proc.expediente || '-'}</td>
+                    <td className="px-6 py-4 align-middle font-medium">{proc.tipoSolicitud || '-'}</td>
+                    <td className="px-6 py-4 align-middle">
+                      {proc.estado === 'Anulado' ? (
+                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full font-semibold">Anulado</span>
+                      ) : proc.estado === 'Aprobado' ? (
+                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Aprobado</span>
+                      ) : proc.estado === 'Finalizado' ? (
+                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">Finalizado</span>
+                      ) : (
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">Rechazado</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 align-middle">
+                      {proc.estado === 'Anulado' && proc.motivoAnulacion ? (
+                        <span className="italic text-red-600">{proc.motivoAnulacion}</span>
+                      ) : ''}
+                    </td>
+                    <td className="px-6 py-4 align-middle text-xs">{obtenerFechaCreacion(proc)}</td>
+                    <td className="px-6 py-4 align-middle text-xs">{obtenerFechaFin(proc)}</td>
+                    <td className="px-6 py-4 align-middle">
+                      <button
+                        className="px-3 py-1 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-800 transition-all shadow"
+                        onClick={() => setDetalle(proc)}
+                      >
+                        Ver detalle
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {procesosFiltrados.length === 0 && (
                 <tr>
                   <td colSpan={8} className="text-center py-8 text-gray-400 text-lg">No se encontraron resultados.</td>

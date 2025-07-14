@@ -6,12 +6,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import esLocale from "@fullcalendar/core/locales/es";
-import dataEmpleados from "../gestionEmpleados/services/dataEmpleados";
+import { AppointmentService, EmployeeService } from "../../../../utils/mockDataService.js";
 import VerDetalleCita from "../gestionCitas/components/verDetallecita";
 import Swal from "sweetalert2";
 import { FaCalendarAlt, FaUser, FaPhone, FaFileAlt, FaBriefcase, FaDownload, FaSearch, FaEye, FaEdit, FaTrash, FaCalendarDay } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import * as XLSX from "xlsx";
+import "../../../../styles/fullcalendar-custom.css";
 
 
 const Calendario = () => {
@@ -193,11 +194,8 @@ const Calendario = () => {
   };
   const opcionesHora = generarOpcionesHora();
 
-// Lista fija de 2 empleados por defecto para el select
-const empleadosActivos = [
-  { cedula: '2001', nombre: 'Juan', apellido: 'Pérez', estado: 'Activo' },
-  { cedula: '2002', nombre: 'Lucía', apellido: 'Gómez', estado: 'Activo' },
-];
+// ✅ NUEVO: Obtener empleados del servicio centralizado
+const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === 'Activo');
 
 
   const initialValues = {
@@ -662,39 +660,39 @@ const empleadosActivos = [
 
       {/* MODAL DE AGENDAR CITA */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl p-6 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-gray-50 z-10">
               <div className="flex items-center space-x-3">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <FaCalendarAlt className="text-blue-600 text-xl" />
+                <div className="bg-blue-100 p-1.5 rounded-full">
+                  <FaCalendarAlt className="text-blue-600 text-lg" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800">{modoReprogramar ? 'Reprogramar Cita' : 'Agendar Nueva Cita'}</h2>
-                  <p className="text-sm text-gray-500">
+                  <h2 className="text-lg font-semibold text-gray-800">{modoReprogramar ? 'Reprogramar Cita' : 'Agendar Nueva Cita'}</h2>
+                  <p className="text-xs text-gray-500">
                     {modoReprogramar ? 'Modifica solo los campos permitidos para reprogramar la cita' : 'Llena los campos para registrar una cita'}
                   </p>
                 </div>
               </div>
-              <button onClick={cerrarModal} className="text-gray-900 hover:text-red-700 bg-gray-50">
-                <span className="text-2xl">&times;</span>
+              <button onClick={cerrarModal} className="text-gray-900 hover:text-red-700 bg-gray-50 p-1 rounded">
+                <span className="text-xl">&times;</span>
               </button>
             </div>
             {/* Formulario en dos columnas */}
-            <form onSubmit={handleGuardarCita} className="pt-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleGuardarCita} className="p-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Nombre */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-2" /> Nombre
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-1" /> Nombre
                   </label>
                   <input
                     type="text"
                     name="nombre"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.nombre}
                     readOnly={modoReprogramar}
                   />
@@ -702,15 +700,15 @@ const empleadosActivos = [
                 </div>
                 {/* Apellido */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-2" /> Apellido
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-1" /> Apellido
                   </label>
                   <input
                     type="text"
                     name="apellido"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.apellido}
                     readOnly={modoReprogramar}
                   />
@@ -718,15 +716,15 @@ const empleadosActivos = [
                 </div>
                 {/* Cédula */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaFileAlt className="inline text-gray-400 mr-2" /> Cédula
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaFileAlt className="inline text-gray-400 mr-1" /> Cédula
                   </label>
                   <input
                     type="text"
                     name="cedula"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.cedula}
                     readOnly={modoReprogramar}
                   />
@@ -734,15 +732,15 @@ const empleadosActivos = [
                 </div>
                 {/* Teléfono */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaPhone className="inline text-gray-400 mr-2" /> Teléfono
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaPhone className="inline text-gray-400 mr-1" /> Teléfono
                   </label>
                   <input
                     type="text"
                     name="telefono"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.telefono}
                     readOnly={modoReprogramar}
                   />
@@ -750,14 +748,14 @@ const empleadosActivos = [
                 </div>
                 {/* Tipo de Cita */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaBriefcase className="inline text-gray-400 mr-2" /> Tipo de Cita
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaBriefcase className="inline text-gray-400 mr-1" /> Tipo de Cita
                   </label>
                   <select
                     name="tipoCita"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.tipoCita}
                     disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
                   >
@@ -773,12 +771,12 @@ const empleadosActivos = [
                 </div>
                 {/* Hora Inicio */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hora de Inicio</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Inicio</label>
                   <select
                     name="horaInicio"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.horaInicio}
                     disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
                   >
@@ -791,12 +789,12 @@ const empleadosActivos = [
                 </div>
                 {/* Hora Fin */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hora de Fin</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Fin</label>
                   <select
                     name="horaFin"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.horaFin}
                     disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
                   >
@@ -815,14 +813,14 @@ const empleadosActivos = [
                 </div>
                 {/* Asesor */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-2" /> Asesor
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaUser className="inline text-gray-400 mr-1" /> Asesor
                   </label>
                   <select
                     name="asesor"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 text-sm"
                     value={formData.asesor}
                     disabled={!modoReprogramar ? false : !modoReprogramar ? false : false}
                   >
@@ -835,25 +833,26 @@ const empleadosActivos = [
                 </div>
                 {/* Detalle */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <FaFileAlt className="inline text-gray-400 mr-2" /> Detalle
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaFileAlt className="inline text-gray-400 mr-1" /> Detalle
                   </label>
                   <textarea
                     name="detalle"
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500"
-                    rows={2}
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 text-sm"
+                    rows={1}
                     value={formData.detalle}
                     readOnly={modoReprogramar}
+                    placeholder="Detalles adicionales de la cita..."
                   />
                   {touched.detalle && errores.detalle && <p className="text-red-600 text-xs mt-1">{errores.detalle}</p>}
                 </div>
               </div>
               {/* Botones */}
-              <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={cerrarModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700">
+              <div className="flex justify-end gap-2 mt-3">
+                <button type="button" onClick={cerrarModal} className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+                <button type="submit" className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
                   {modoReprogramar ? 'Reprogramar Cita' : 'Agendar Cita'}
                 </button>
               </div>

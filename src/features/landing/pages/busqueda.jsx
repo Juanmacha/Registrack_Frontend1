@@ -110,14 +110,7 @@ const BusquedaAntecedentes = () => {
                 }
               }
               await crearVenta({ ...formToSave, email: user.email });
-              if (typeof alertService !== 'undefined') {
-                await alertService.success(
-                  "Solicitud creada",
-                  "Tu solicitud ha sido creada exitosamente. Te contactaremos pronto."
-                );
-              } else {
-                alert('Solicitud creada exitosamente.');
-              }
+              // Eliminada la alerta de éxito aquí
             }
             setMostrarModal(false);
           }}

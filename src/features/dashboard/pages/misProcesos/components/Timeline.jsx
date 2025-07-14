@@ -1,7 +1,37 @@
 import React from 'react';
 
 const Timeline = ({ estados, estadoActual, esHistorial, estadoFinal, motivoAnulacion }) => {
-  const actualIdx = estados.findIndex(e => e.name === estadoActual || e.status_key === estadoActual);
+  // Mapeo de estados comunes a status_key
+  const estadoMapping = {
+    'En revisión': 'en_proceso',
+    'Pendiente': 'recibida', 
+    'En proceso': 'en_proceso',
+    'Finalizado': 'finalizado',
+    'Aprobado': 'aprobado',
+    'Rechazado': 'rechazado',
+    'Anulado': 'anulado'
+  };
+
+  // Buscar el índice del estado actual
+  let actualIdx = estados.findIndex(e => 
+    e.name === estadoActual || 
+    e.status_key === estadoActual ||
+    e.status_key === estadoMapping[estadoActual]
+  );
+
+  // Si no se encuentra, intentar con el mapeo inverso
+  if (actualIdx === -1) {
+    actualIdx = estados.findIndex(e => 
+      estadoMapping[e.name] === estadoActual ||
+      estadoMapping[e.status_key] === estadoActual
+    );
+  }
+
+  // Si aún no se encuentra, usar el primer estado como fallback
+  if (actualIdx === -1 && estados.length > 0) {
+    actualIdx = 0;
+  }
+
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex flex-col items-center w-full">
