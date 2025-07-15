@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiEnvelope } from "react-icons/bi";
+import { UserService } from '../../../utils/mockDataService.js';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -26,11 +27,11 @@ const ForgotPassword = () => {
     const err = validate(email);
     setError(err);
     if (err) return;
-    // Verifica en localStorage
-    const storedUsers = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const found = storedUsers.find((u) => u.email === email);
+    // Verifica en usuarios_mock
+    const found = UserService.getByEmail(email);
     if (found) {
       setError("");
+      localStorage.setItem("emailRecuperacion", email);
       navigate("/codigoRecuperacion");
     } else {
       setError("Este correo no está registrado.");
@@ -67,7 +68,7 @@ const ForgotPassword = () => {
           className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold shadow-md hover:bg-blue-700 transition-all duration-300"
           disabled={!!validate(email)}
         >
-          Enviar instrucciones
+          Enviar Codigo
         </button>
       </>
 

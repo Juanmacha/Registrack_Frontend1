@@ -36,6 +36,7 @@ import Renovacion from '../features/landing/pages/renovacion';
 import Ampliacion from '../features/landing/pages/ampliacion';
 import Cesion from '../features/landing/pages/cesionMarca';
 import Oposicion from '../features/landing/pages/presentacionOposicion';
+import EditarProfile from '../features/auth/pages/editProfile';
 
 //Formularios
 import FormularioBase from '../shared/layouts/FormularioBase'
@@ -59,6 +60,7 @@ const AppRoutes = () => {
       {/* Rutas públicas */}
       <Route path="/" element={<Landing />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path='/editProfile' element={<EditarProfile/>}/>
 
       {/* Páginas individuales de servicios */}
       <Route path="/pages/cesion-marca" element={<Cesion />} />

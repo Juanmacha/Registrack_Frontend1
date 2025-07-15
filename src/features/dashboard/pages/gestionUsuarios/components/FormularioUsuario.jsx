@@ -138,185 +138,183 @@ const FormularioUsuario = ({
               <p className="text-sm text-gray-500">{modoEdicion ? `Editando: ${usuarioEditar?.firstName} ${usuarioEditar?.lastName}` : "Llena los campos para crear un usuario"}</p>
             </div>
           </div>
-          {onClose && (
-            <button onClick={onClose} className="text-gray-900 hover:text-red-700 bg-gray-50">
-              <i className="bi bi-x-lg"></i>
-            </button>
-          )}
+          {/* Botón de cerrar eliminado */}
         </div>
 
         {/* Formulario en dos columnas */}
         <form onSubmit={handleSubmit} className="pt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tipo de Documento */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-card-text text-gray-400 mr-2"></i>
-                Tipo de Documento
+                Tipo de Documento <span className="text-gray-500">*</span>
               </label>
-    <select
-      name="documentType"
-      value={nuevoUsuario.documentType}
+              <select
+                name="documentType"
+                value={nuevoUsuario.documentType}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 bg-white ${mostrarError('documentType') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    >
-      <option value="">Seleccionar...</option>
-      <option value="CC">Cédula de Ciudadanía</option>
-      <option value="CE">Cédula de Extranjería</option>
-      <option value="TI">Tarjeta de Identidad</option>
-      <option value="PP">Pasaporte</option>
-    </select>
+                required
+              >
+                <option value="">Tipo de documento</option>
+                <option value="CC">Cédula de ciudadanía (CC)</option>
+                <option value="TI">Tarjeta de identidad (TI)</option>
+                <option value="CE">Cédula de extranjería (CE)</option>
+                <option value="PA">Pasaporte (PA)</option>
+                <option value="PEP">Permiso Especial de Permanencia (PEP)</option>
+                <option value="NIT">Número de Identificación Tributaria (NIT)</option>
+              </select>
               {mostrarError('documentType') && <p className="text-red-600 text-sm mt-1">{errores.documentType}</p>}
-  </div>
+            </div>
             {/* Número de Documento */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-123 text-gray-400 mr-2"></i>
-                Número de Documento
+                Número de Documento <span className="text-gray-500">*</span>
               </label>
-    <input
-      type="text"
-      name="documentNumber"
-      value={nuevoUsuario.documentNumber}
+              <input
+                type="text"
+                name="documentNumber"
+                value={nuevoUsuario.documentNumber}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('documentNumber') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    />
+                required
+              />
               {mostrarError('documentNumber') && <p className="text-red-600 text-sm mt-1">{errores.documentNumber}</p>}
-  </div>
+            </div>
             {/* Nombre */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person text-gray-400 mr-2"></i>
-                Nombre
+                Nombre <span className="text-gray-500">*</span>
               </label>
-    <input
-      type="text"
-      name="firstName"
-      value={nuevoUsuario.firstName}
+              <input
+                type="text"
+                name="firstName"
+                value={nuevoUsuario.firstName}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('firstName') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    />
+                required
+              />
               {mostrarError('firstName') && <p className="text-red-600 text-sm mt-1">{errores.firstName}</p>}
-  </div>
+            </div>
             {/* Apellido */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person text-gray-400 mr-2"></i>
-                Apellido
+                Apellido <span className="text-gray-500">*</span>
               </label>
-    <input
-      type="text"
-      name="lastName"
-      value={nuevoUsuario.lastName}
+              <input
+                type="text"
+                name="lastName"
+                value={nuevoUsuario.lastName}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('lastName') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    />
+                required
+              />
               {mostrarError('lastName') && <p className="text-red-600 text-sm mt-1">{errores.lastName}</p>}
-  </div>
+            </div>
             {/* Email */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-envelope text-gray-400 mr-2"></i>
-                Email
+                Email <span className="text-gray-500">*</span>
               </label>
-    <input
-      type="email"
-      name="email"
-      value={nuevoUsuario.email}
+              <input
+                type="email"
+                name="email"
+                value={nuevoUsuario.email}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('email') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    />
+                required
+              />
               {mostrarError('email') && <p className="text-red-600 text-sm mt-1">{errores.email}</p>}
-  </div>
+            </div>
             {/* Rol */}
-  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <i className="bi bi-person-badge text-gray-400 mr-2"></i>
-                Rol
+                Rol <span className="text-gray-500">*</span>
               </label>
-    <select
-      name="role"
-      value={nuevoUsuario.role}
+              <select
+                name="role"
+                value={nuevoUsuario.role}
                 onChange={handleInputChangeRealtime}
                 onBlur={handleBlur}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 bg-white ${mostrarError('role') ? 'border-red-500' : 'border-gray-300'}`}
-      required
-    >
-      <option value="">Seleccionar rol...</option>
-      {rolesDisponibles.map(rol => (
-        <option key={rol.id} value={rol.nombre}>
-          {rol.nombre}
-        </option>
-      ))}
-    </select>
+                required
+              >
+                <option value="">Seleccionar rol...</option>
+                {rolesDisponibles.map(rol => (
+                  <option key={rol.id} value={rol.nombre}>
+                    {rol.nombre}
+                  </option>
+                ))}
+              </select>
               {mostrarError('role') && <p className="text-red-600 text-sm mt-1">{errores.role}</p>}
-  </div>
+            </div>
             {/* Contraseña y Confirmar Contraseña solo en modo creación */}
             {!modoEdicion && (
               <>
-  {/* Contraseña */}
-  <div>
+                {/* Contraseña */}
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     <i className="bi bi-lock text-gray-400 mr-2"></i>
-                    Contraseña
+                    Contraseña <span className="text-gray-500">*</span>
                   </label>
-    <div className="relative">
-      <input
-        type={mostrarPassword ? "text" : "password"}
-        name="password"
-        value={nuevoUsuario.password || ""}
-        onChange={handlePasswordChange}
+                  <div className="relative">
+                    <input
+                      type={mostrarPassword ? "text" : "password"}
+                      name="password"
+                      value={nuevoUsuario.password || ""}
+                      onChange={handlePasswordChange}
                       onBlur={handleBlur}
                       className={`w-full px-3 py-2 border rounded-lg shadow-sm pr-10 bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('password') ? 'border-red-500' : 'border-gray-300'}`}
-        required
-      />
-      <span
-        className="absolute top-2.5 right-3 text-gray-500 cursor-pointer"
-        onClick={() => setMostrarPassword((v) => !v)}
-      >
-        {mostrarPassword ? <BiHide /> : <BiShow />}
-      </span>
-    </div>
+                      required
+                    />
+                    <span
+                      className="absolute top-2.5 right-3 text-gray-500 cursor-pointer"
+                      onClick={() => setMostrarPassword((v) => !v)}
+                    >
+                      {mostrarPassword ? <BiHide /> : <BiShow />}
+                    </span>
+                  </div>
                   {mostrarError('password') && <p className="text-red-600 text-sm mt-1">{errores.password}</p>}
-  </div>
-  {/* Confirmar contraseña */}
-  <div>
+                </div>
+                {/* Confirmar contraseña */}
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     <i className="bi bi-lock-fill text-gray-400 mr-2"></i>
-                    Confirmar Contraseña
+                    Confirmar Contraseña <span className="text-gray-500">*</span>
                   </label>
-    <div className="relative">
-      <input
-        type={mostrarConfirmar ? "text" : "password"}
-        name="confirmarPassword"
-        value={confirmarPassword}
-        onChange={handleConfirmarChange}
+                  <div className="relative">
+                    <input
+                      type={mostrarConfirmar ? "text" : "password"}
+                      name="confirmarPassword"
+                      value={confirmarPassword}
+                      onChange={handleConfirmarChange}
                       onBlur={handleBlur}
                       className={`w-full px-3 py-2 border rounded-lg shadow-sm pr-10 bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('confirmarPassword') ? 'border-red-500' : 'border-gray-300'}`}
-        required
-      />
-      <span
-        className="absolute top-2.5 right-3 text-gray-500 cursor-pointer"
-        onClick={() => setMostrarConfirmar((v) => !v)}
-      >
-        {mostrarConfirmar ? <BiHide /> : <BiShow />}
-      </span>
-    </div>
+                      required
+                    />
+                    <span
+                      className="absolute top-2.5 right-3 text-gray-500 cursor-pointer"
+                      onClick={() => setMostrarConfirmar((v) => !v)}
+                    >
+                      {mostrarConfirmar ? <BiHide /> : <BiShow />}
+                    </span>
+                  </div>
                   {(mostrarError('confirmarPassword') || errorPassword) && <p className="text-red-600 text-sm mt-1">{errores.confirmarPassword || errorPassword}</p>}
                 </div>
               </>
-    )}
-  </div>
+            )}
+          </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
@@ -334,15 +332,15 @@ const FormularioUsuario = ({
                   Cancelar
                 </button>
               )}
-    <button
-      type="submit"
+              <button
+                type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
-    >
+              >
                 {modoEdicion ? "Guardar Cambios" : "Registrar Usuario"}
-    </button>
+              </button>
             </div>
-  </div>
-</form>
+          </div>
+        </form>
       </div>
     </div>
   );

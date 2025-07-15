@@ -18,9 +18,13 @@ const BusquedaAntecedentes = () => {
   // Forzar scroll al inicio de la página
   useScrollToTop();
 
-  const handleAdquirirServicio = () => {
+  const handleAdquirirServicio = async () => {
     if (!user) {
-      alert("Debes iniciar sesión para adquirir este servicio.");
+      await alertService.warning(
+        "¡Atención!",
+        "Debes iniciar sesión para adquirir este servicio.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
       navigate("/login");
     } else {
       setMostrarModal(true);

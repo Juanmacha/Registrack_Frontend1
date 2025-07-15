@@ -24,8 +24,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
     pais: '',
     nitMarca: '',
     nombreMarca: '',
-    categoria: '',
-    clases: [{ numero: '', descripcion: '' }],
     certificadoRenovacion: null,
     logotipoMarca: null,
     poderRepresentante: null,
@@ -61,8 +59,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
         pais: '',
         nitMarca: '',
         nombreMarca: '',
-        categoria: '',
-        clases: [{ numero: '', descripcion: '' }],
         certificadoRenovacion: null,
         logotipoMarca: null,
         poderRepresentante: null,
@@ -134,12 +130,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
     else if (!/^[0-9]{6,15}$/.test(f.nitMarca)) e.nitMarca = 'Solo números, 6-15 dígitos';
     if (!f.nombreMarca) e.nombreMarca = 'Requerido';
     else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
-    if (!f.categoria) e.categoria = 'Requerido';
-    if (!f.clases.length) e.clases = 'Agrega al menos una clase';
-    f.clases.forEach((c, i) => {
-      if (!c.numero) e[`clase_numero_${i}`] = 'Número requerido';
-      if (!c.descripcion) e[`clase_desc_${i}`] = 'Descripción requerida';
-    });
     if (!f.certificadoRenovacion) e.certificadoRenovacion = 'Adjunta el certificado';
     if (!f.logotipoMarca) e.logotipoMarca = 'Adjunta el logotipo';
     return e;
@@ -393,43 +383,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
               <label className="block text-sm font-medium mb-1">Nombre de la Marca *</label>
               <input type="text" name="nombreMarca" value={form.nombreMarca} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreMarca ? 'border-red-500' : ''}`} />
               {errors.nombreMarca && <p className="text-xs text-red-600">{errors.nombreMarca}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Categoría *</label>
-              <select name="categoria" value={form.categoria} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.categoria ? 'border-red-500' : ''}`}>
-                <option value="">Seleccionar</option>
-                {categorias.map(c => <option key={c}>{c}</option>)}
-              </select>
-              {errors.categoria && <p className="text-xs text-red-600">{errors.categoria}</p>}
-            </div>
-          </div>
-          {/* Campo de clases de la marca */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Clases de la marca
-            </label>
-            {/* Enlace a la Clasificación de Niza */}
-            <a
-              href="https://www.wipo.int/es/web/classification-nice"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline text-xs mb-2 inline-block"
-            >
-              Consulta la Clasificación de Niza para identificar la clase adecuada
-            </a>
-            {/* Clases de la Marca */}
-            <div className="space-y-2">
-              {form.clases.map((clase, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <input type="number" min="1" max="45" placeholder="N° Clase" value={clase.numero} onChange={e => handleClaseChange(i, 'numero', e.target.value)} className="w-24 border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
-                  <input type="text" placeholder="Descripción (el porqué)" value={clase.descripcion} onChange={e => handleClaseChange(i, 'descripcion', e.target.value)} className="flex-1 border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400" />
-                  <button type="button" onClick={() => removeClase(i)} className="text-red-500 hover:text-red-700 text-lg">×</button>
-                  {errors[`clase_numero_${i}`] && <span className="text-xs text-red-600">{errors[`clase_numero_${i}`]}</span>}
-                  {errors[`clase_desc_${i}`] && <span className="text-xs text-red-600">{errors[`clase_desc_${i}`]}</span>}
-                </div>
-              ))}
-              {errors.clases && <p className="text-xs text-red-600">{errors.clases}</p>}
-              <button type="button" onClick={addClase} disabled={form.clases.length >= 25} className="mt-2 px-4 py-1 bg-blue-600 text-white rounded disabled:opacity-50">Añadir Clase</button>
             </div>
           </div>
           {/* Adjuntar Documentos */}

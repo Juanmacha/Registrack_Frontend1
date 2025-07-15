@@ -89,9 +89,9 @@ const Register = () => {
     try {
       // Mostrar alerta de carga
       const loadingAlert = alertService.loading("Registrando usuario...");
-      
+
       initializeMockData();
-      
+
       // Validar que el email no exista
       const existingUser = UserService.getByEmail(formData.email);
       if (existingUser) {
@@ -113,10 +113,10 @@ const Register = () => {
       };
 
       const createdUser = UserService.create(newUser);
-      
+
       // Cerrar alerta de carga
       alertService.close();
-      
+
       if (createdUser) {
         await alertService.registerSuccess();
         navigate("/login");
@@ -164,11 +164,16 @@ const Register = () => {
           <select
             name="documentType"
             onChange={handleChange}
+            value={formData.documentType}
             className="w-full pl-10 py-2 border border-blue-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="">Tipo de documento</option>
-            <option value="CC">Cédula</option>
-            <option value="TI">Tarjeta de identidad</option>
+            <option value="CC">Cédula de ciudadanía (CC)</option>
+            <option value="TI">Tarjeta de identidad (TI)</option>
+            <option value="CE">Cédula de extranjería (CE)</option>
+            <option value="PA">Pasaporte (PA)</option>
+            <option value="PEP">Permiso Especial de Permanencia (PEP)</option>
+            <option value="NIT">Número de Identificación Tributaria (NIT)</option>
           </select>
           {errors.documentType && <p className="text-xs text-red-600 mt-1">{errors.documentType}</p>}
         </div>

@@ -72,12 +72,6 @@ const GestionRoles = () => {
           <h1 className="text-2xl font-bold text-gray-800">Gestión de Roles</h1>
           <div className="flex gap-3">
             <button
-              className="btn btn-secondary px-4 py-2 text-sm rounded-md"
-              onClick={handleActualizarRoles}
-            >
-              <i className="bi bi-arrow-clockwise"></i> Actualizar
-            </button>
-            <button
               className="btn btn-primary px-4 py-2 text-sm rounded-md"
               onClick={() => setShowModal(true)}
             >

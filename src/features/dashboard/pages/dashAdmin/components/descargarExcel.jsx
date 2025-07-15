@@ -1,6 +1,7 @@
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const BotonDescargarExcel = ({ datos, nombreArchivo = "reporte.xlsx" }) => {
   const exportarExcel = () => {
@@ -10,6 +11,12 @@ const BotonDescargarExcel = ({ datos, nombreArchivo = "reporte.xlsx" }) => {
     const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, nombreArchivo);
+    Swal.fire({
+      icon: "success",
+      title: "¡Éxito!",
+      text: "Archivo Excel descargado exitosamente.",
+      confirmButtonColor: "#3085d6",
+    });
   };
 
   return (

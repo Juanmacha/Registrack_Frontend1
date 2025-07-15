@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const tiposServicio = [
   "Certificaciones",
@@ -73,6 +74,12 @@ const GraficaResumenServicios = () => {
     const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, `resumen_servicios_${periodo}.xlsx`);
+    Swal.fire({
+      icon: "success",
+      title: "¡Éxito!",
+      text: "Archivo Excel descargado exitosamente.",
+      confirmButtonColor: "#3085d6",
+    });
   };
 
   return (

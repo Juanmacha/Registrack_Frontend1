@@ -76,8 +76,8 @@ const Ayuda = () => {
         },
         {
           step: 3,
-          title: 'Acceder al dashboard',
-          description: 'Una vez autenticado, serás redirigido al panel principal',
+          title: 'Acceder al sistema ya logeado',
+          description: 'Una vez autenticado, serás redirigido al panel principal y podras adquirir servicios',
           image: '/images/iniciarsesionclick.png',
           tip: 'Mantén tu sesión activa para evitar tener que volver a iniciar sesión frecuentemente.'
         }
@@ -142,7 +142,7 @@ const Ayuda = () => {
           step: 3,
           title: 'Recibir actualizaciones',
           description: 'Recibe notificaciones sobre el progreso de tus solicitudes',
-          image: '/images/tracking-step3.png',
+          image: '/images/actualizaciondeprocesos.PNG',
           tip: 'Recibiras alertas por email sobre actualizaciones importantes.'
         }
       ]

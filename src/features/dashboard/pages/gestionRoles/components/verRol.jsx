@@ -48,12 +48,7 @@ const DetalleRolModal = ({ rol, onClose, modelosDisponibles }) => {
               <p className="text-sm text-gray-600">{rol.descripcion}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <i className="bi bi-x-lg text-xl"></i>
-          </button>
+          {/* Botón de cerrar eliminado */}
         </div>
 
         {/* Content */}
@@ -112,45 +107,6 @@ const DetalleRolModal = ({ rol, onClose, modelosDisponibles }) => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          {/* Resumen de permisos */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="text-sm font-semibold text-blue-800 mb-2">Resumen de Permisos</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="text-blue-600 font-medium">Total de recursos:</span>
-                <span className="ml-2 text-gray-800">{recursosMapeados.length}</span>
-              </div>
-              <div>
-                <span className="text-blue-600 font-medium">Permisos activos:</span>
-                <span className="ml-2 text-gray-800">
-                  {recursosMapeados.reduce((total, recurso) => 
-                    total + Object.values(recurso.permisos).filter(p => p).length, 0
-                  )}
-                </span>
-              </div>
-              <div>
-                <span className="text-blue-600 font-medium">Permisos totales:</span>
-                <span className="ml-2 text-gray-800">
-                  {recursosMapeados.reduce((total, recurso) => 
-                    total + Object.keys(recurso.permisos).length, 0
-                  )}
-                </span>
-              </div>
-              <div>
-                <span className="text-blue-600 font-medium">Porcentaje:</span>
-                <span className="ml-2 text-gray-800">
-                  {recursosMapeados.length > 0 
-                    ? Math.round((recursosMapeados.reduce((total, recurso) => 
-                        total + Object.values(recurso.permisos).filter(p => p).length, 0
-                      ) / recursosMapeados.reduce((total, recurso) => 
-                        total + Object.keys(recurso.permisos).length, 0
-                      )) * 100)
-                    : 0}%
-                </span>
-              </div>
             </div>
           </div>
         </div>

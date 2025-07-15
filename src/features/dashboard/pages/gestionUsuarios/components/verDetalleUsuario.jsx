@@ -46,12 +46,7 @@ const VerDetalleUsuario = ({ usuario, isOpen, onClose }) => {
               <h2 className="text-xl font-semibold text-gray-800">Detalle del Usuario</h2>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-900 hover:text-red-700 bg-gray-50"
-          >
-            <i className="bi bi-x-lg"></i>
-          </button>
+          {/* Botón de cerrar eliminado */}
         </div>
 
         {/* Content */}

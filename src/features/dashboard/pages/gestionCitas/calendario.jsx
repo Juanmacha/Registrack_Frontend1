@@ -685,7 +685,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Nombre */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-1" /> Nombre
+                    <FaUser className="inline text-gray-400 mr-1" /> Nombre <span className="text-gray-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -701,7 +701,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Apellido */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-1" /> Apellido
+                    <FaUser className="inline text-gray-400 mr-1" /> Apellido <span className="text-gray-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -717,7 +717,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Cédula */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaFileAlt className="inline text-gray-400 mr-1" /> Cédula
+                    <FaFileAlt className="inline text-gray-400 mr-1" /> Cédula <span className="text-gray-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -733,7 +733,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Teléfono */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaPhone className="inline text-gray-400 mr-1" /> Teléfono
+                    <FaPhone className="inline text-gray-400 mr-1" /> Teléfono <span className="text-gray-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -749,7 +749,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Tipo de Cita */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaBriefcase className="inline text-gray-400 mr-1" /> Tipo de Cita
+                    <FaBriefcase className="inline text-gray-400 mr-1" /> Tipo de Cita <span className="text-gray-500">*</span>
                   </label>
                   <select
                     name="tipoCita"
@@ -771,7 +771,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 </div>
                 {/* Hora Inicio */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Inicio</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Inicio <span className="text-gray-500">*</span></label>
                   <select
                     name="horaInicio"
                     onChange={handleInputChange}
@@ -789,7 +789,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 </div>
                 {/* Hora Fin */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Fin</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Hora de Fin <span className="text-gray-500">*</span></label>
                   <select
                     name="horaFin"
                     onChange={handleInputChange}
@@ -814,7 +814,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                 {/* Asesor */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaUser className="inline text-gray-400 mr-1" /> Asesor
+                    <FaUser className="inline text-gray-400 mr-1" /> Asesor <span className="text-gray-500">*</span>
                   </label>
                   <select
                     name="asesor"

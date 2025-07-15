@@ -30,7 +30,9 @@ const Tablapagos = () => {
   useEffect(() => {
     initializeMockData();
     const pagosData = PaymentService.getAll();
-    const filtrar = pagosData.filter(
+    // Filtrar pagos que no sean mock
+    const pagosFiltrados = pagosData.filter(p => !p.isMock);
+    const filtrar = pagosFiltrados.filter(
       (p) =>
         p.id_pago.toString().includes(busqueda) ||
         p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase())
@@ -138,32 +140,32 @@ const Tablapagos = () => {
         {/* Paginación */}
         <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
           <div className="text-sm text-gray-700">
-            Mostrando{" "}
+            Mostrando {" "}
             <span className="font-medium">
-              {(paginaActual - 1) * registrosPorPagina + 1}
+              {totalRegistros === 0 ? 0 : (paginaActual - 1) * registrosPorPagina + 1}
             </span>{" "}
-            a{" "}
+            a {" "}
             <span className="font-medium">
               {Math.min(paginaActual * registrosPorPagina, totalRegistros)}
             </span>{" "}
             de <span className="font-medium">{totalRegistros}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={() => setPaginaActual(paginaActual - 1)}
               disabled={paginaActual === 1}
-              className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center h-8 w-8"
+              className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
             >
-              <FaChevronLeft className="text-sm" />
+              <FaChevronLeft className="text-base" />
             </button>
             {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
               <button
                 key={pagina}
                 onClick={() => setPaginaActual(pagina)}
-                className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
                   paginaActual === pagina
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-blue-600 border border-blue-200"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                    : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
                 }`}
               >
                 {pagina}
@@ -172,9 +174,9 @@ const Tablapagos = () => {
             <button
               onClick={() => setPaginaActual(paginaActual + 1)}
               disabled={paginaActual === totalPaginas}
-              className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center h-8 w-8"
+              className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
             >
-              <FaChevronRight className="text-sm" />
+              <FaChevronRight className="text-base" />
             </button>
           </div>
         </div>

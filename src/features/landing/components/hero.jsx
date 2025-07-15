@@ -4,6 +4,7 @@ import { FaBalanceScale, FaMedal, FaRocket, FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { mockDataService } from "../../../utils/mockDataService.js";
 import authData from '../../auth/services/authData';
+import alertService from '../../../utils/alertService.js';
 
 // Formularios y Modal
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
@@ -239,20 +240,28 @@ const Hero = () => {
   const { servicios, loading } = useServicios();
   const { modalAbierto, servicioSeleccionado, tituloModal, abrirModal, cerrarModal } = useModal();
 
-  const handleAdquirir = (servicio) => {
+  const handleAdquirir = async (servicio) => {
     const user = authData.getUser && typeof authData.getUser === 'function'
       ? authData.getUser()
       : JSON.parse(localStorage.getItem('user'));
 
     if (!user) {
       localStorage.setItem('postLoginRedirect', window.location.pathname);
+      await alertService.warning(
+        "¡Atención!",
+        "Debes estar logueado para realizar esta opción.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
       navigate('/login');
-      alert('Debes estar logueado para realizar esta opción');
       return;
     }
 
     if (user.rol && user.rol.toLowerCase() === 'admin') {
-      alert('Esta acción solo está disponible para clientes.');
+      await alertService.warning(
+        "¡Atención!",
+        "Esta acción solo está disponible para clientes.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
       return;
     }
 

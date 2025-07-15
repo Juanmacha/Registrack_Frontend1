@@ -8,6 +8,7 @@ import { ClientService } from "../../../../utils/mockDataService"; // ✅ Nuevo 
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const GestionClientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -176,6 +177,12 @@ const GestionClientes = () => {
 
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "clientes.xlsx");
+    Swal.fire({
+      icon: "success",
+      title: "¡Éxito!",
+      text: "Archivo Excel descargado exitosamente.",
+      confirmButtonColor: "#3085d6",
+    });
   };
 
   const irAPagina = (pagina) => {
@@ -238,36 +245,46 @@ const GestionClientes = () => {
             {/* Paginación */}
             <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
               <div className="text-sm text-gray-700">
-                Mostrando{" "}
+                Mostrando {" "}
                 <span className="font-medium">
                   {clientesFiltrados.length === 0 ? 0 : indiceInicio + 1}
                 </span>{" "}
-                a{" "}
+                a {" "}
                 <span className="font-medium">
                   {Math.min(indiceFin, clientesFiltrados.length)}
                 </span>{" "}
-                de{" "}
+                de {" "}
                 <span className="font-medium">{clientesFiltrados.length}</span>{" "}
                 resultados
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => irAPagina(paginaActual - 1)}
                   disabled={paginaActual === 1}
-                  className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
                 >
-                  Anterior
+                  <i className="bi bi-chevron-left text-base"></i>
                 </button>
-                <span className="text-sm">
-                  Página {paginaActual} de {totalPaginas}
-                </span>
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
+                  <button
+                    key={pagina}
+                    onClick={() => irAPagina(pagina)}
+                    className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
+                      paginaActual === pagina
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
+                    }`}
+                  >
+                    {pagina}
+                  </button>
+                ))}
                 <button
                   onClick={() => irAPagina(paginaActual + 1)}
                   disabled={paginaActual === totalPaginas}
-                  className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
                 >
-                  Siguiente
+                  <i className="bi bi-chevron-right text-base"></i>
                 </button>
               </div>
             </div>

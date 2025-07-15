@@ -3,6 +3,7 @@
 import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 const DescargarExcel = ({ roles }) => {
   const exportarExcel = () => {
@@ -69,6 +70,12 @@ const DescargarExcel = ({ roles }) => {
     });
 
     saveAs(data, "roles.xlsx");
+    Swal.fire({
+      icon: "success",
+      title: "¡Éxito!",
+      text: "Archivo Excel descargado exitosamente.",
+      confirmButtonColor: "#3085d6",
+    });
   };
 
   return (

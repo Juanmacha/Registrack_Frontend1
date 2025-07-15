@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiKey, BiLock, BiHide, BiShow } from "react-icons/bi";
+import { UserService } from '../../../utils/mockDataService.js';
 
 const ResetPassword = () => {
   const [formData, setFormData] = useState({
@@ -36,8 +37,23 @@ const ResetPassword = () => {
       return;
     }
     setError("");
-    setSuccess(true);
-    // Aquí se llamaría al backend para guardar la nueva contraseña
+    // Actualizar contraseña en usuarios_mock
+    const email = localStorage.getItem("emailRecuperacion");
+    if (email) {
+      const user = UserService.getByEmail(email);
+      if (user) {
+        UserService.update(user.id, { password: newPassword });
+        localStorage.removeItem("emailRecuperacion");
+        setSuccess(true);
+        return;
+      } else {
+        setError("No se encontró el usuario para actualizar la contraseña.");
+        return;
+      }
+    } else {
+      setError("No se encontró el email para recuperación.");
+      return;
+    }
   };
 
   useEffect(() => {

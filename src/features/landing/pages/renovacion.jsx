@@ -18,9 +18,13 @@ const RenovacionMarca = () => {
   // Forzar scroll al inicio de la página
   useScrollToTop();
 
-  const handleAdquirirServicio = () => {
+  const handleAdquirirServicio = async () => {
     if (!user) {
-      alert("Debes iniciar sesión para adquirir este servicio.");
+      await alertService.warning(
+        "¡Atención!",
+        "Debes iniciar sesión para adquirir este servicio.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
       navigate("/login");
     } else {
       setMostrarModal(true);
@@ -61,7 +65,7 @@ const RenovacionMarca = () => {
               "Seguimiento del trámite y entrega de constancia.",
             ].map((item, index) => (
               <li key={index} className="flex items-start gap-3">
-                <div className="w-6 h-6 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full mt-1">
+                <div className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mt-1">
                   <FaCheck className="text-sm" />
                 </div>
                 <span>{item}</span>
@@ -71,7 +75,7 @@ const RenovacionMarca = () => {
 
           <button
             onClick={handleAdquirirServicio}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-md text-base transition"
+            className="bg-blue-700 text-white font-semibold px-6 py-3 rounded-md text-base hover:bg-blue-800 transition"
           >
             Adquirir Servicio
           </button>

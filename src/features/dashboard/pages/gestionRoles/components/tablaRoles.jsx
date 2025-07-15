@@ -66,9 +66,6 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
                       <span className="text-sm font-semibold text-blue-600">
                         {permisosActivos} permisos
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {Object.keys(rol.permisos || {}).length} recursos
-                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">

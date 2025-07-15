@@ -11,6 +11,8 @@ const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
   const handleNext = () => {
     if (currentStep < tutorialData.steps.length - 1) {
       setCurrentStep(currentStep + 1);
+    } else if (currentStep === tutorialData.steps.length - 1) {
+      onClose && onClose();
     }
   };
 
@@ -179,10 +181,10 @@ const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
 
           <button
             onClick={handleNext}
-            disabled={currentStep === tutorialData.steps.length - 1}
+            disabled={currentStep === tutorialData.steps.length - 1 && !onClose}
             className={`flex items-center px-6 py-3 rounded-lg transition ${
               currentStep === tutorialData.steps.length - 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#275FAA] text-white hover:bg-[#163366]'
                 : 'bg-[#275FAA] text-white hover:bg-[#163366]'
             }`}
           >

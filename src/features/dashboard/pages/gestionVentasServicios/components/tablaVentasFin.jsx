@@ -405,8 +405,8 @@ const TablaVentasFin = () => {
       {/* Paginación */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="text-sm text-gray-700">
-          Mostrando{" "}
-          <span className="font-medium">{(paginaActual - 1) * registrosPorPagina + 1}</span> a{" "}
+          Mostrando {" "}
+          <span className="font-medium">{total === 0 ? 0 : (paginaActual - 1) * registrosPorPagina + 1}</span> a {" "}
           <span className="font-medium">
             {Math.min(paginaActual * registrosPorPagina, total)}
           </span>{" "}

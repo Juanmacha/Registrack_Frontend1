@@ -24,7 +24,7 @@ const NavBarLanding = () => {
     const result = await alertService.logoutConfirm();
     if (result.isConfirmed) {
       authData.removeToken();
-      await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.");
+      await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.", { timer: 1800, timerProgressBar: true, showConfirmButton: false });
       navigate("/login");
     }
   };

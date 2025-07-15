@@ -662,7 +662,8 @@ export const PAGOS = [
     metodo_pago: METODOS_PAGO.TRANSFERENCIA,
     estado: true,
     comprobante_url: "https://example.com/comprobantes/1.pdf",
-    id_orden_servicio: "1"
+    id_orden_servicio: "1",
+    isMock: true
   },
   {
     id_pago: 2,
@@ -671,7 +672,8 @@ export const PAGOS = [
     metodo_pago: METODOS_PAGO.EFECTIVO,
     estado: false,
     comprobante_url: "https://example.com/comprobantes/2.pdf",
-    id_orden_servicio: "2"
+    id_orden_servicio: "2",
+    isMock: true
   },
   {
     id_pago: 3,
@@ -680,7 +682,8 @@ export const PAGOS = [
     metodo_pago: METODOS_PAGO.TARJETA,
     estado: true,
     comprobante_url: null,
-    id_orden_servicio: "3"
+    id_orden_servicio: "3",
+    isMock: true
   },
   {
     id_pago: 4,
@@ -689,7 +692,18 @@ export const PAGOS = [
     metodo_pago: METODOS_PAGO.TRANSFERENCIA,
     estado: true,
     comprobante_url: "https://example.com/comprobantes/4.pdf",
-    id_orden_servicio: "4"
+    id_orden_servicio: "4",
+    isMock: true
+  },
+    {
+    id_pago: 5,
+    monto: 135000.00,
+    fecha_pago: "2025-01-22T11:00:00",
+    metodo_pago: METODOS_PAGO.TRANSFERENCIA,
+    estado: true,
+    comprobante_url: "https://example.com/comprobantes/4.pdf",
+    id_orden_servicio: "6",
+    isMock: true
   }
 ];
 

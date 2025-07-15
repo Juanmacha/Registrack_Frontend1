@@ -189,47 +189,42 @@ const Empleados = () => {
             {/* === Paginación === */}
             <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
               <div className="text-sm text-gray-700">
-                Mostrando{" "}
-                <span className="font-medium">
-                  {empleadosFiltrados.length === 0 ? 0 : indiceInicio + 1}
-                </span>{" "}
-                a{" "}
-                <span className="font-medium">
-                  {Math.min(indiceFin, empleadosFiltrados.length)}
-                </span>{" "}
-                de{" "}
+                Mostrando {" "}
+                <span className="font-medium">{empleadosFiltrados.length === 0 ? 0 : indiceInicio + 1}</span>{" "}
+                a {" "}
+                <span className="font-medium">{Math.min(indiceFin, empleadosFiltrados.length)}</span>{" "}
+                de {" "}
                 <span className="font-medium">{empleadosFiltrados.length}</span>{" "}
                 resultados
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <button
-                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
                   onClick={() => irAPagina(paginaActual - 1)}
                   disabled={paginaActual === 1}
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
                 >
-                  <i className="bi bi-chevron-left"></i>
+                  <i className="bi bi-chevron-left text-base"></i>
                 </button>
-
-                {Array.from({ length: totalPaginas }, (_, i) => (
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
                   <button
-                    key={i}
-                    className={`h-8 w-8 rounded-full flex items-center justify-center ${paginaActual === i + 1
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-blue-600 border border-blue-200"
-                      }`}
-                    onClick={() => irAPagina(i + 1)}
+                    key={pagina}
+                    onClick={() => irAPagina(pagina)}
+                    className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
+                      paginaActual === pagina
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
+                    }`}
                   >
-                    {i + 1}
+                    {pagina}
                   </button>
                 ))}
-
                 <button
-                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
                   onClick={() => irAPagina(paginaActual + 1)}
                   disabled={paginaActual === totalPaginas}
+                  className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
                 >
-                  <i className="bi bi-chevron-right"></i>
+                  <i className="bi bi-chevron-right text-base"></i>
                 </button>
               </div>
             </div>
