@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Download, ArrowRight } from "lucide-react";
 import BotonDescargarExcel from "./descargarExcel";
 import BotonInfo from "./detalleInfo";
 import ModalDetalleServicio from "./modalInfo";
 import { Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 // Utilidad para avatar con iniciales
 const Avatar = ({ nombre, color = "#2563eb" }) => {
@@ -52,6 +56,7 @@ const TablaServicios = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [busquedaGlobal, setBusquedaGlobal] = useState("");
+  const navigate = useNavigate();
 
   const datos = [
     {
@@ -81,6 +86,43 @@ const TablaServicios = () => {
     setModalAbierto(true);
   };
 
+  const irAVentasProceso = () => {
+    // Navegar a la tabla de ventas en proceso
+    navigate("/admin/ventasServiciosProceso");
+  };
+
+  const descargarExcelInactivos = () => {
+    // Descargar Excel y luego navegar a ventas en proceso
+    const dataExcel = datosFiltrados.map(item => ({
+      Servicio: item.servicio,
+      Cliente: item.cliente,
+      Empleado: item.empleado,
+      Estado: item.estado,
+      "Días de Inactividad": item.inactividad
+    }));
+    
+    // Crear y descargar Excel
+    const libro = XLSX.utils.book_new();
+    const hoja = XLSX.utils.json_to_sheet(dataExcel);
+    XLSX.utils.book_append_sheet(libro, hoja, "ServiciosInactivos");
+    const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "servicios-inactivos-prolongados.xlsx");
+    
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: "success",
+      title: "¡Éxito!",
+      text: "Excel descargado. Redirigiendo a la tabla de ventas en proceso...",
+      confirmButtonColor: "#3085d6",
+      timer: 2000,
+      showConfirmButton: false
+    }).then(() => {
+      // Navegar después de descargar
+      irAVentasProceso();
+    });
+  };
+
   return (
     <>
       <div className="card-responsive hover-responsive z-40">
@@ -90,6 +132,16 @@ const TablaServicios = () => {
             <i className="bi bi-exclamation-triangle text-gray-600 text-xl"></i>
           </div>
           <h2 className="text-lg font-bold text-gray-800 tracking-wide">Servicios con Inactividad Prolongada</h2>
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={descargarExcelInactivos}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
+              title="Descargar Excel y ver tabla de ventas"
+            >
+              <Download size={16} />
+              Descargar Excel
+            </button>
+          </div>
         </div>
         {/* Barra de búsqueda global */}
         <div className="flex flex-col md:flex-row gap-4 px-6 py-4 bg-white">
@@ -152,12 +204,9 @@ const TablaServicios = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex gap-2 justify-center flex-wrap">
-                        <BotonDescargarExcel
-                          datos={[item]}
-                          nombreArchivo={`servicio-${index + 1}.xlsx`}
-                        />
+                        {/* Botón de información ahora navega */}
                         <BotonInfo
-                          onClick={() => abrirModal(item)}
+                          onClick={() => irAVentasProceso()}
                         />
                       </div>
                     </td>

@@ -107,9 +107,7 @@ const EditarEmpleadoModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-person text-gray-400 mr-2"></i>Nombre *
-              </label>
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombres *</label>
               <input
                 type="text"
                 name="nombre"
@@ -124,9 +122,7 @@ const EditarEmpleadoModal = ({
 
             {/* Apellidos */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-person-vcard text-gray-400 mr-2"></i>Apellidos *
-              </label>
+              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">Apellidos *</label>
               <input
                 type="text"
                 name="apellidos"

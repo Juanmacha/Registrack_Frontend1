@@ -1,6 +1,6 @@
 import React from "react";
 
-const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones }) => (
+const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones, onEditar }) => (
   <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
     <div className="overflow-x-auto w-full">
       <table className="table-auto w-full divide-y divide-gray-100 text-sm text-gray-700">
@@ -8,8 +8,7 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones }
           <tr>
             <th className="px-6 py-4 text-center">#</th>
             <th className="px-6 py-4 text-center">Documento</th>
-            <th className="px-6 py-4 text-center">Nombre</th>
-            <th className="px-6 py-4 text-center">Apellido</th>
+            <th className="px-6 py-4 text-center">Nombre Completo</th>
             <th className="px-6 py-4 text-center">Email</th>
             <th className="px-6 py-4 text-center">Nit Empresa</th>
             <th className="px-6 py-4 text-center">Marca</th>
@@ -24,8 +23,7 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones }
               <tr key={idx}>
                 <td className="px-6 py-4 text-center">{idx + 1}</td>
                 <td className="px-6 py-4 text-center">{c.documento}</td>
-                <td className="px-6 py-4 text-center">{c.nombre}</td>
-                <td className="px-6 py-4 text-center">{c.apellido}</td>
+                <td className="px-6 py-4 text-center">{c.nombre} {c.apellido}</td>
                 <td className="px-6 py-4 text-center">{c.email}</td>
                 <td className="px-6 py-4 text-center">{c.nitEmpresa}</td>
                 <td className="px-6 py-4 text-center">{c.marca}</td>
@@ -44,7 +42,7 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones }
                   </button>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <div className="flex justify-center">
+                  <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => onVer(idx)}
                       title="Ver detalle"
@@ -58,6 +56,20 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones }
                       disabled={deshabilitarAcciones}
                     >
                       <i className="bi bi-eye-fill text-base"></i>
+                    </button>
+                    <button
+                      onClick={() => onEditar(idx)}
+                      title="Editar"
+                      className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-center custom-hover"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderColor: "#275FAA",
+                        color: "#275FAA",
+                      }}
+                      disabled={deshabilitarAcciones}
+                    >
+                      <i className="bi bi-pencil"></i>
                     </button>
                   </div>
                 </td>

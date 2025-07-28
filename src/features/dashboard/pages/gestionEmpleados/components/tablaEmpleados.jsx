@@ -1,5 +1,4 @@
 import React from "react";
-import EliminarEmpleado from "./eliminarEmpleado";
 
 const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
   const getEstadoBadge = (estado) => {
@@ -27,8 +26,7 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
               <th className="px-6 py-4 text-center">#</th>
               <th className="px-6 py-4 text-center">Tipo de Documento</th>
               <th className="px-6 py-4 text-center">Documento</th>
-              <th className="px-6 py-4 text-center">Nombre</th>
-              <th className="px-6 py-4 text-center">Apellidos</th>
+              <th className="px-6 py-4 text-center">Nombre Completo</th>
               <th className="px-6 py-4 text-center">Email</th>
               <th className="px-6 py-4 text-center">Rol</th>
               <th className="px-6 py-4 text-center">Estado</th>
@@ -42,8 +40,7 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
                   <td className="px-6 py-4 text-center">{idx + 1}</td>
                   <td className="px-6 py-4 text-center">{item.tipoDocumento}</td>
                   <td className="px-6 py-4 text-center">{item.documento}</td>
-                  <td className="px-6 py-4 text-center">{item.nombre}</td>
-                  <td className="px-6 py-4 text-center">{item.apellidos}</td>
+                  <td className="px-6 py-4 text-center">{item.nombre} {item.apellidos}</td>
                   <td className="px-6 py-4 text-center">{item.email}</td>
                   <td className="px-6 py-4 text-center">{item.rol}</td>
                   <td className="px-6 py-4 text-center">
@@ -67,10 +64,6 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
                       >
                         <i className="bi bi-eye-fill"></i>
                       </button>
-                      <EliminarEmpleado
-                        empleado={item}
-                        onEliminar={onEliminar}
-                      />
                     </div>
                   </td>
                 </tr>

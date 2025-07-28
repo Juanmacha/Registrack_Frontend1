@@ -1,13 +1,14 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import authData from "../services/authData";
+import { useAuth } from "../../../shared/contexts/authContext";
 
 const AdminRoute = ({ children }) => {
-  if (!authData.isAuthenticated()) {
+  const { isAuthenticated, user } = useAuth();
+
+  if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 
-  const user = authData.getUser();
   if (!user || user.role !== "Administrador") {
     return <Navigate to="/" replace />;
   }

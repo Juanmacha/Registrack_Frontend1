@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Link as ScrollLink } from "react-scroll";
 import { CgProfile } from "react-icons/cg";
-import authData from "../../auth/services/authData";
+import { useAuth } from "../../../shared/contexts/authContext";
 import alertService from "../../../utils/alertService.js";
 
 const ACTIVE_CLASSES = "text-blue-700 font-semibold border-b-2 border-blue-700 bg-transparent";
@@ -15,15 +15,15 @@ const NavBarLanding = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Obtener usuario usando el servicio authData
-  const user = authData.getUser();
+  // Usar el contexto de autenticación unificado
+  const { user, logout: contextLogout } = useAuth();
   const isLanding = location.pathname === "/";
 
   const handleLogout = async () => {
     setUserMenuAbierto(false);
     const result = await alertService.logoutConfirm();
     if (result.isConfirmed) {
-      authData.removeToken();
+      contextLogout();
       await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.", { timer: 1800, timerProgressBar: true, showConfirmButton: false });
       navigate("/login");
     }

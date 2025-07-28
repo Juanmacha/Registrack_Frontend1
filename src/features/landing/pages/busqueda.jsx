@@ -5,21 +5,26 @@ import NavBarLanding from "../components/landingNavbar";
 import Footer from "../components/footer";
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
 import FormularioBusqueda from "../../../shared/components/formularioBusqueda";
+import DemoPasarelaPagoModal from '../components/DemoPasarelaPagoModal';
 import authData from "../../auth/services/authData";
 import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
 import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 import alertService from '../../../utils/alertService.js';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const BusquedaAntecedentes = () => {
   const navigate = useNavigate();
   const user = authData.getUser();
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarDemoPago, setMostrarDemoPago] = useState(false);
+  const [formParaPago, setFormParaPago] = useState(null);
   
   // Forzar scroll al inicio de la página
   useScrollToTop();
 
   const handleAdquirirServicio = async () => {
     if (!user) {
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
       await alertService.warning(
         "¡Atención!",
         "Debes iniciar sesión para adquirir este servicio.",
@@ -84,6 +89,7 @@ const BusquedaAntecedentes = () => {
       </section>
 
       <Footer />
+      <ScrollToTopButton />
 
       {/* MODAL */}
       {mostrarModal && (
@@ -91,8 +97,24 @@ const BusquedaAntecedentes = () => {
           isOpen={mostrarModal}
           onClose={() => setMostrarModal(false)}
           onGuardar={async (form) => {
+            setFormParaPago(form);
+            setMostrarDemoPago(true);
+          }}
+        />
+      )}
+      {/* DEMO PAGO */}
+      {mostrarDemoPago && (
+        <DemoPasarelaPagoModal
+          isOpen={mostrarDemoPago}
+          onClose={() => {
+            setMostrarDemoPago(false);
+            setFormParaPago(null);
+            setMostrarModal(false);
+          }}
+          monto={1848000}
+          datosPago={formParaPago}
+          onPagoExitoso={async (datos) => {
             const user = authData.getUser();
-            // Utilidad para convertir File a base64
             const fileToBase64 = file => new Promise((resolve, reject) => {
               if (!file) return resolve(null);
               const reader = new FileReader();
@@ -101,7 +123,7 @@ const BusquedaAntecedentes = () => {
               reader.readAsDataURL(file);
             });
             if (user && user.email) {
-              const formToSave = { ...form };
+              const formToSave = { ...formParaPago };
               const fileFields = [
                 'certificadoCamara',
                 'logotipoMarca',
@@ -114,8 +136,9 @@ const BusquedaAntecedentes = () => {
                 }
               }
               await crearVenta({ ...formToSave, email: user.email });
-              // Eliminada la alerta de éxito aquí
             }
+            setMostrarDemoPago(false);
+            setFormParaPago(null);
             setMostrarModal(false);
           }}
         />

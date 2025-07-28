@@ -9,6 +9,7 @@ import FormularioAmpliacion from "../../../shared/components/formularioAmpliacio
 import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
 import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 import alertService from '../../../utils/alertService.js';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const AmpliacionServicios = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const AmpliacionServicios = () => {
 
   const handleAdquirirServicio = async () => {
     if (!user) {
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
       await alertService.warning(
         "¡Atención!",
         "Debes iniciar sesión para adquirir este servicio.",
@@ -89,6 +91,7 @@ const AmpliacionServicios = () => {
       </section>
 
       <Footer />
+      <ScrollToTopButton />
 
       {/* MODAL */}
       {mostrarModal && (

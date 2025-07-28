@@ -5,7 +5,29 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import esLocale from "@fullcalendar/core/locales/es";
+// Configuración del locale español
+const esLocale = {
+  code: 'es',
+  week: {
+    dow: 1, // Lunes como primer día de la semana
+    doy: 4  // La semana que contiene Jan 4th es la primera semana del año
+  },
+  buttonText: {
+    prev: 'Ant',
+    next: 'Sig',
+    today: 'Hoy',
+    month: 'Mes',
+    week: 'Semana',
+    day: 'Día',
+    list: 'Lista'
+  },
+  weekText: 'Sm',
+  allDayText: 'Todo el día',
+  moreLinkText: function(n) {
+    return '+ ver más (' + n + ')';
+  },
+  noEventsText: 'No hay eventos para mostrar'
+};
 import { AppointmentService, EmployeeService } from "../../../../utils/mockDataService.js";
 import VerDetalleCita from "../gestionCitas/components/verDetallecita";
 import Swal from "sweetalert2";
@@ -30,6 +52,7 @@ const Calendario = () => {
     nombre: "",
     apellido: "",
     cedula: "",
+    tipoDocumento: "",
     telefono: "",
     tipoCita: "",
     horaInicio: "",
@@ -73,6 +96,55 @@ const Calendario = () => {
     } catch (error) {}
   }, [events]);
 
+  // ✅ NUEVO: useEffect para detectar solicitudes desde localStorage y abrir modal automáticamente
+  useEffect(() => {
+    const solicitudParaAgendar = localStorage.getItem('solicitudParaAgendar');
+    if (solicitudParaAgendar) {
+      try {
+        const solicitudData = JSON.parse(solicitudParaAgendar);
+        
+        // Separar nombre completo en nombre y apellido si es necesario
+        const nombreCompleto = solicitudData.clienteNombre || "";
+        const partesNombre = nombreCompleto.trim().split(' ');
+        const nombre = partesNombre[0] || "";
+        const apellido = partesNombre.slice(1).join(' ') || "";
+        
+        // Prellenar el formulario con los datos de la solicitud
+        setFormData({
+          nombre: nombre,
+          apellido: apellido,
+          cedula: solicitudData.clienteDocumento || "",
+          tipoDocumento: solicitudData.tipoDocumento || "",
+          telefono: solicitudData.telefono || "",
+          tipoCita: solicitudData.tipoSolicitud || "",
+          horaInicio: "",
+          horaFin: "",
+          asesor: "",
+          detalle: solicitudData.mensaje || "",
+        });
+
+        // Abrir el modal automáticamente
+        setShowModal(true);
+        
+        // Limpiar el localStorage para evitar que se abra nuevamente
+        localStorage.removeItem('solicitudParaAgendar');
+        
+        // Mostrar mensaje informativo
+        Swal.fire({
+          icon: 'info',
+          title: 'Datos cargados automáticamente',
+          text: `Se han cargado los datos de la solicitud de ${solicitudData.clienteNombre}. Solo necesitas seleccionar la hora y el asesor.`,
+          timer: 3000,
+          showConfirmButton: false
+        });
+        
+      } catch (error) {
+        console.error('Error al procesar solicitud para agendar:', error);
+        localStorage.removeItem('solicitudParaAgendar');
+      }
+    }
+  }, []); // Solo se ejecuta una vez al montar el componente
+
   const generarIdUnico = (cedula, fecha, hora) => `${cedula}_${fecha}_${hora}`;
 
   const handleDateSelect = (selectInfo) => {
@@ -92,6 +164,7 @@ const Calendario = () => {
     if (estado === "Programada") return { backgroundColor: "#22c55e" };
     if (estado === "Reprogramada") return { backgroundColor: "#2563eb" };
     if (estado === "Cita anulada") return { backgroundColor: "#6b7280" };
+    if (estado === "Iniciada") return { backgroundColor: "#f59e0b" }; // Nuevo color para citas iniciadas
     return { backgroundColor: "#fbbf24" };
   };
 
@@ -199,7 +272,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
 
 
   const initialValues = {
-    nombre: "", apellido: "", cedula: "", telefono: "",
+    nombre: "", apellido: "", cedula: "", tipoDocumento: "", telefono: "",
     horaInicio: "", horaFin: "", detalle: "", tipoCita: "", asesor: "",
   };
 
@@ -207,6 +280,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
     nombre: Yup.string().required("Requerido"),
     apellido: Yup.string().required("Requerido"),
     cedula: Yup.string().required("Requerido"),
+    tipoDocumento: Yup.string().required("Requerido"),
     telefono: Yup.string().required("Requerido"),
     tipoCita: Yup.string().required("Requerido"),
     horaInicio: Yup.string().required("Requerido"),
@@ -288,6 +362,18 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
       icon: <FaTrash className="text-white text-2xl" />,
     },
     {
+      label: "Finalizadas",
+      value: events.filter(e => e.extendedProps?.estado === "Finalizada").length,
+      color: "bg-yellow-500",
+      icon: <FaCalendarDay className="text-white text-2xl" />,
+    },
+    {
+      label: "Iniciadas",
+      value: events.filter(e => e.extendedProps?.estado === "Iniciada").length,
+      color: "bg-orange-500",
+      icon: <FaCalendarDay className="text-white text-2xl" />,
+    },
+    {
       label: "Total",
       value: events.length,
       color: "bg-blue-900 text-white",
@@ -298,17 +384,24 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
   function abrirModal(dateInfo = null) {
     setShowModal(true);
     setModalDate(dateInfo); // Aquí se guarda la fecha seleccionada
-    setFormData({
-      nombre: "",
-      apellido: "",
-      cedula: "",
-      telefono: "",
-      tipoCita: "",
-      horaInicio: dateInfo?.startStr ? dateInfo.startStr.split('T')[1]?.slice(0,5) : "",
-      horaFin: "",
-      asesor: "",
-      detalle: "",
-    });
+    
+    // Solo resetear el formulario si no viene de una solicitud
+    const solicitudParaAgendar = localStorage.getItem('solicitudParaAgendar');
+    if (!solicitudParaAgendar) {
+      setFormData({
+        nombre: "",
+        apellido: "",
+        cedula: "",
+        tipoDocumento: "",
+        telefono: "",
+        tipoCita: "",
+        horaInicio: dateInfo?.startStr ? dateInfo.startStr.split('T')[1]?.slice(0,5) : "",
+        horaFin: "",
+        asesor: "",
+        detalle: "",
+      });
+    }
+    
     setErrores({}); // Limpiar errores al abrir modal
     setTouched({}); // Limpiar campos tocados al abrir modal
   }
@@ -320,6 +413,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
       nombre: "",
       apellido: "",
       cedula: "",
+      tipoDocumento: "",
       telefono: "",
       tipoCita: "",
       horaInicio: "",
@@ -663,7 +757,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-gray-50 z-10">
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center sticky top-0 bg-gray-50 z-10">
               <div className="flex items-center space-x-3">
                 <div className="bg-blue-100 p-1.5 rounded-full">
                   <FaCalendarAlt className="text-blue-600 text-lg" />
@@ -675,9 +769,6 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                   </p>
                 </div>
               </div>
-              <button onClick={cerrarModal} className="text-gray-900 hover:text-red-700 bg-gray-50 p-1 rounded">
-                <span className="text-xl">&times;</span>
-              </button>
             </div>
             {/* Formulario en dos columnas */}
             <form onSubmit={handleGuardarCita} className="p-4 space-y-4">
@@ -714,10 +805,32 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
                   />
                   {touched.apellido && errores.apellido && <p className="text-red-600 text-xs mt-1">{errores.apellido}</p>}
                 </div>
-                {/* Cédula */}
+                {/* Tipo de documento */}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    <FaFileAlt className="inline text-gray-400 mr-1" /> Cédula <span className="text-gray-500">*</span>
+                    <FaFileAlt className="inline text-gray-400 mr-1" /> Tipo de documento <span className="text-gray-500">*</span>
+                  </label>
+                  <select
+                    name="tipoDocumento"
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    className="w-full px-2 py-1.5 border rounded-md shadow-sm bg-white focus:ring-2 focus:ring-blue-500 text-sm"
+                    value={formData.tipoDocumento}
+                    disabled={modoReprogramar}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="Cédula de ciudadanía">Cédula de ciudadanía</option>
+                    <option value="Cédula de extranjería">Cédula de extranjería</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                    <option value="NIT">NIT</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  {touched.tipoDocumento && errores.tipoDocumento && <p className="text-red-600 text-xs mt-1">{errores.tipoDocumento}</p>}
+                </div>
+                {/* Número de documento */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <FaFileAlt className="inline text-gray-400 mr-1" /> Número de documento <span className="text-gray-500">*</span>
                   </label>
                   <input
                     type="text"

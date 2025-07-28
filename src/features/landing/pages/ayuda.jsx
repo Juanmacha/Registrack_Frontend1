@@ -19,6 +19,7 @@ import {
 import TutorialModal from '../components/TutorialModal';
 import LandingNavbar from '../components/landingNavbar';
 import Footer from '../components/footer';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const Ayuda = () => {
   const [activeSection, setActiveSection] = useState('inicio');
@@ -271,7 +272,7 @@ const Ayuda = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50 font-sans">
       <LandingNavbar />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 lg:px-24 py-20 pt-20">
         {/* Header */}
@@ -302,6 +303,7 @@ const Ayuda = () => {
         </div>
       </div>
       <Footer />
+      <ScrollToTopButton />
 
       {/* Tutorial Modal */}
       <TutorialModal

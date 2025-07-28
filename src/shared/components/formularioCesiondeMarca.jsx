@@ -12,7 +12,8 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     tipoPersona: '',
     tipoDocumento: '',
     numeroDocumento: '',
-    nombreCompleto: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -24,7 +25,8 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     nitMarca: '',
     nombreMarca: '',
     cesionario: {
-      nombreCompleto: '',
+      nombres: '',
+      apellidos: '',
       tipoDocumento: '',
       numeroDocumento: '',
       email: '',
@@ -58,7 +60,8 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
         tipoPersona: '',
         tipoDocumento: '',
         numeroDocumento: '',
-        nombreCompleto: '',
+        nombres: '',
+        apellidos: '',
         email: '',
         telefono: '',
         direccion: '',
@@ -70,7 +73,8 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
         nitMarca: '',
         nombreMarca: '',
         cesionario: {
-          nombreCompleto: '',
+          nombres: '',
+          apellidos: '',
           tipoDocumento: '',
           numeroDocumento: '',
           email: '',
@@ -113,8 +117,10 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
         if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
         else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
         else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-        if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+        if (!f.nombres) e.nombres = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+        if (!f.apellidos) e.apellidos = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
         if (!f.email) e.email = 'Requerido';
         else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
         if (!f.telefono) e.telefono = 'Requerido';
@@ -135,36 +141,30 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
       if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
       else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
       else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-      if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+      if (!f.nombres) e.nombres = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+      if (!f.apellidos) e.apellidos = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
       if (!f.email) e.email = 'Requerido';
       else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
       if (!f.telefono) e.telefono = 'Requerido';
       else if (!/^[0-9]{7,15}$/.test(f.telefono)) e.telefono = 'Solo números, 7-15 dígitos';
       if (!f.direccion) e.direccion = 'Requerido';
       else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) e.direccion = 'Dirección inválida';
-      if (!f.poderRepresentante) e.poderRepresentante = 'Adjunta el poder';
-      if (!f.poderAutorizacion) e.poderAutorizacion = 'Adjunta el poder';
     }
     if (!f.pais) e.pais = 'Requerido';
     if (!f.nitMarca) e.nitMarca = 'Requerido';
     else if (!/^[0-9]{6,15}$/.test(f.nitMarca)) e.nitMarca = 'Solo números, 6-15 dígitos';
     if (!f.nombreMarca) e.nombreMarca = 'Requerido';
     else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
-    // Validar datos del cesionario
-    if (!f.cesionario.nombreCompleto) e.cesionario_nombreCompleto = 'Requerido';
-    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.cesionario.nombreCompleto)) e.cesionario_nombreCompleto = 'Solo letras, 2-50 caracteres';
-    if (!f.cesionario.tipoDocumento) e.cesionario_tipoDocumento = 'Requerido';
-    if (!f.cesionario.numeroDocumento) e.cesionario_numeroDocumento = 'Requerido';
-    else if (f.cesionario.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.cesionario.numeroDocumento)) e.cesionario_numeroDocumento = 'Solo números, 6-15 dígitos';
-    else if (f.cesionario.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.cesionario.numeroDocumento)) e.cesionario_numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-    if (!f.cesionario.email) e.cesionario_email = 'Requerido';
-    else if (!/^\S+@\S+\.\S+$/.test(f.cesionario.email)) e.cesionario_email = 'Correo inválido';
-    if (!f.cesionario.telefono) e.cesionario_telefono = 'Requerido';
-    else if (!/^[0-9]{7,15}$/.test(f.cesionario.telefono)) e.cesionario_telefono = 'Solo números, 7-15 dígitos';
-    if (!f.cesionario.direccion) e.cesionario_direccion = 'Requerido';
-    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.cesionario.direccion)) e.cesionario_direccion = 'Dirección inválida';
-    if (!f.documentoCesion) e.documentoCesion = 'Adjunta el documento de cesión';
+    // Validaciones del cesionario
+    if (!f.cesionario.nombres) e['cesionario.nombres'] = 'Requerido';
+    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.cesionario.nombres)) e['cesionario.nombres'] = 'Solo letras, 2-50 caracteres';
+    if (!f.cesionario.apellidos) e['cesionario.apellidos'] = 'Requerido';
+    else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.cesionario.apellidos)) e['cesionario.apellidos'] = 'Solo letras, 2-50 caracteres';
+    if (f.estado === 'Anulado' && (!f.motivoAnulacion || !f.motivoAnulacion.trim())) {
+      e.motivoAnulacion = 'Debes ingresar el motivo de anulación';
+    }
     return e;
   };
 
@@ -206,12 +206,12 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     }
     try {
       await onGuardar(form);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud de cesión se ha creado correctamente.'
-      });
-      onClose();
+      // Swal.fire({
+      //   icon: 'success',
+      //   title: 'Solicitud creada',
+      //   text: 'La solicitud de cesión se ha creado correctamente.'
+      // });
+      // onClose(); // El cierre lo maneja el padre tras el pago
     } catch (err) {
       Swal.fire({
         icon: 'error',
@@ -296,9 +296,14 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
                       {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                      <input type="text" name="nombreCompleto" value={form.nombreCompleto} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                      {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                      <label className="block text-sm font-medium mb-1">Nombres *</label>
+                      <input type="text" name="nombres" value={form.nombres} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                      {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                      <input type="text" name="apellidos" value={form.apellidos} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                      {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
@@ -359,9 +364,14 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
                   {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                  <input type="text" name="nombreCompleto" value={form.nombreCompleto} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                  {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                  <label className="block text-sm font-medium mb-1">Nombres *</label>
+                  <input type="text" name="nombres" value={form.nombres} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                  {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                  <input type="text" name="apellidos" value={form.apellidos} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                  {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
@@ -417,9 +427,14 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
             <h3 className="text-lg font-semibold text-blue-800 mb-4">Datos del Cesionario</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                <input type="text" name="nombreCompleto" value={form.cesionario.nombreCompleto} onChange={handleCesionarioChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.cesionario_nombreCompleto ? 'border-red-500' : ''}`} />
-                {errors.cesionario_nombreCompleto && <p className="text-xs text-red-600">{errors.cesionario_nombreCompleto}</p>}
+                <label className="block text-sm font-medium mb-1">Nombres *</label>
+                <input type="text" name="nombres" value={form.cesionario.nombres} onChange={handleCesionarioChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors['cesionario.nombres'] ? 'border-red-500' : ''}`} />
+                {errors['cesionario.nombres'] && <p className="text-xs text-red-600">{errors['cesionario.nombres']}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                <input type="text" name="apellidos" value={form.cesionario.apellidos} onChange={handleCesionarioChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors['cesionario.apellidos'] ? 'border-red-500' : ''}`} />
+                {errors['cesionario.apellidos'] && <p className="text-xs text-red-600">{errors['cesionario.apellidos']}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Tipo de Documento *</label>

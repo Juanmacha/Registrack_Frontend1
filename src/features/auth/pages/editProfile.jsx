@@ -12,12 +12,13 @@ const Profile = () => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Nuevo estado para mostrar/ocultar confirmación
   const navigate = useNavigate();
 
   useEffect(() => {
     const user = authData.getUser();
     setUsuario(user);
-    setFormData({ ...user, password: "" });
+    setFormData({ ...user, password: "", confirmPassword: "" }); // Agregar confirmPassword
   }, []);
 
   const validate = (data = formData) => {
@@ -27,6 +28,13 @@ const Profile = () => {
     if (!data.documentType?.trim()) errs.documentType = "Tipo requerido";
     if (!data.documentNumber?.trim()) errs.documentNumber = "Número requerido";
     if (data.password && data.password.length < 6) errs.password = "Mínimo 6 caracteres";
+    if (data.password) {
+      if (!data.confirmPassword) {
+        errs.confirmPassword = "Confirma la contraseña";
+      } else if (data.password !== data.confirmPassword) {
+        errs.confirmPassword = "Las contraseñas no coinciden";
+      }
+    }
     return errs;
   };
 
@@ -50,6 +58,7 @@ const Profile = () => {
     }
     const updated = { ...usuario, ...formData };
     if (!formData.password) delete updated.password;
+    delete updated.confirmPassword; // No guardar confirmPassword
     localStorage.setItem("usuario", JSON.stringify(updated));
     setUsuario(updated);
     mostrarMensajeExito("Perfil actualizado correctamente");
@@ -169,6 +178,27 @@ const Profile = () => {
             </div>
             <small className="text-gray-500">Deja en blanco si no deseas cambiar la contraseña</small>
             {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+            {/* Campo de Confirmar Contraseña */}
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                className="w-full border rounded px-3 py-2"
+                value={formData.confirmPassword || ''}
+                onChange={handleChange}
+                disabled={!formData.password}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="text-gray-600"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <BiHide /> : <BiShow />}
+              </button>
+            </div>
+            {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
           </div>
         </div>
 

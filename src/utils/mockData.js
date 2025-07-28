@@ -214,6 +214,17 @@ export const SERVICIOS = [
 
 export const USUARIOS = [
   {
+    id: "0",
+    firstName: "Admin",
+    lastName: "Demo",
+    documentType: TIPOS_DOCUMENTO.CEDULA,
+    documentNumber: "0000000000",
+    email: "admin@demo.com",
+    password: "admin123",
+    role: ROLES.ADMINISTRADOR,
+    estado: "activo"
+  },
+  {
     id: "1",
     firstName: "Juan",
     lastName: "Pérez",
@@ -711,6 +722,10 @@ export const PAGOS = [
 // CITAS
 // ============================================================================
 
+// ============================================================================
+// CITAS
+// ============================================================================
+
 export const CITAS = [
   {
     id: "1",
@@ -747,6 +762,80 @@ export const CITAS = [
       asesor: "Dr. Morales",
       estado: "Programada"
     }
+  }
+];
+
+// ============================================================================
+// SOLICITUDES DE CITAS
+// ============================================================================
+
+export const SOLICITUDES_CITAS = [
+  {
+    id: "1",
+    nombre: "Carlos Rodríguez",
+    email: "carlos.rodriguez@email.com",
+    telefono: "3001234567",
+    tipoDocumento: "Cédula de Ciudadanía",
+    numeroDocumento: "1234567890",
+    tipoSolicitud: "Consulta General",
+    mensaje: "Necesito información sobre el proceso de registro de marca para mi empresa de tecnología.",
+    estado: "Pendiente",
+    fechaCreacion: "2025-01-27T10:30:00.000Z",
+    usuarioId: null
+  },
+  {
+    id: "2",
+    nombre: "María González",
+    email: "maria.gonzalez@email.com",
+    telefono: "3109876543",
+    tipoDocumento: "Cédula de Ciudadanía",
+    numeroDocumento: "9876543210",
+    tipoSolicitud: "Renovación de Marca",
+    mensaje: "Mi marca está próxima a vencer y necesito asesoría para el proceso de renovación.",
+    estado: "Aprobada",
+    fechaCreacion: "2025-01-26T14:15:00.000Z",
+    usuarioId: "2",
+    observaciones: "Solicitud aprobada. Se programará cita para la próxima semana."
+  },
+  {
+    id: "3",
+    nombre: "Luis Martínez",
+    email: "luis.martinez@email.com",
+    telefono: "3201234567",
+    tipoDocumento: "Cédula de Ciudadanía",
+    numeroDocumento: "5555555555",
+    tipoSolicitud: "Búsqueda de Antecedentes",
+    mensaje: "Quiero verificar si el nombre de mi marca está disponible antes de iniciar el registro.",
+    estado: "Pendiente",
+    fechaCreacion: "2025-01-27T09:00:00.000Z",
+    usuarioId: "3"
+  },
+  {
+    id: "4",
+    nombre: "Ana Pérez",
+    email: "ana.perez@email.com",
+    telefono: "3157894561",
+    tipoDocumento: "Cédula de Ciudadanía",
+    numeroDocumento: "7777777777",
+    tipoSolicitud: "Cesión de Marca",
+    mensaje: "Necesito transferir los derechos de mi marca a otra persona. Requiero asesoría legal.",
+    estado: "Rechazada",
+    fechaCreacion: "2025-01-25T16:45:00.000Z",
+    usuarioId: null,
+    motivoRechazo: "Documentación incompleta. Debe presentar los documentos de identidad de ambas partes."
+  },
+  {
+    id: "5",
+    nombre: "Roberto Silva",
+    email: "roberto.silva@email.com",
+    telefono: "3008765432",
+    tipoDocumento: "Cédula de Ciudadanía",
+    numeroDocumento: "1111111111",
+    tipoSolicitud: "Presentación de Oposición",
+    mensaje: "Encontré una solicitud de marca muy similar a la mía. Necesito presentar una oposición.",
+    estado: "Pendiente",
+    fechaCreacion: "2025-01-27T11:20:00.000Z",
+    usuarioId: null
   }
 ];
 
@@ -856,6 +945,7 @@ export default {
   TIPOS_DOCUMENTO,
   ROLES,
   ESTADOS_PROCESO,
+  ESTADOS_CITA,
   METODOS_PAGO,
   SERVICIOS,
   USUARIOS,
@@ -865,12 +955,12 @@ export default {
   VENTAS_FINALIZADAS,
   PAGOS,
   CITAS,
+  SOLICITUDES_CITAS,
   ROLES_PERMISOS,
-  // Funciones de utilidad
   getServicioById,
   getUsuarioByEmail,
   getClienteByDocumento,
   getEmpleadoByDocumento,
   getVentasByCliente,
   tienePermiso
-}; 
+};

@@ -1,27 +1,17 @@
 // Servicio centralizado para manejo de datos mock
 // Conecta todas las entidades del sistema y proporciona métodos unificados
 
-import {
-  MOCK_CONFIG,
-  TIPOS_DOCUMENTO,
-  ROLES,
-  ESTADOS_PROCESO,
-  METODOS_PAGO,
-  SERVICIOS,
-  USUARIOS,
-  EMPLEADOS,
-  CLIENTES,
-  VENTAS_EN_PROCESO,
-  VENTAS_FINALIZADAS,
-  PAGOS,
-  CITAS,
-  ROLES_PERMISOS,
-  getServicioById,
-  getUsuarioByEmail,
-  getClienteByDocumento,
-  getEmpleadoByDocumento,
-  getVentasByCliente,
-  tienePermiso
+import { 
+  USUARIOS, 
+  EMPLEADOS, 
+  CLIENTES, 
+  VENTAS_EN_PROCESO, 
+  VENTAS_FINALIZADAS, 
+  PAGOS, 
+  CITAS, 
+  SOLICITUDES_CITAS,
+  ROLES_PERMISOS, 
+  SERVICIOS 
 } from './mockData.js';
 import alertService from './alertService.js';
 
@@ -37,6 +27,7 @@ const STORAGE_KEYS = {
   VENTAS_FINALIZADAS: 'ventas_finalizadas_mock',
   PAGOS: 'pagos_mock',
   CITAS: 'citas_mock',
+  SOLICITUDES_CITAS: 'solicitudes_citas_mock',
   ROLES: 'roles_mock',
   SERVICIOS: 'servicios_mock'
 };
@@ -178,6 +169,10 @@ export function initializeMockData() {
   
   if (getFromStorage(STORAGE_KEYS.CITAS).length === 0) {
     setToStorage(STORAGE_KEYS.CITAS, CITAS);
+  }
+  
+  if (getFromStorage(STORAGE_KEYS.SOLICITUDES_CITAS).length === 0) {
+    setToStorage(STORAGE_KEYS.SOLICITUDES_CITAS, SOLICITUDES_CITAS);
   }
   
   if (getFromStorage(STORAGE_KEYS.ROLES).length === 0) {
@@ -820,6 +815,161 @@ export const AppointmentService = {
 };
 
 // ============================================================================
+// SERVICIOS DE SOLICITUDES DE CITAS
+// ============================================================================
+
+export const SolicitudCitaService = {
+  // Obtener todas las solicitudes
+  getAll() {
+    return getFromStorage(STORAGE_KEYS.SOLICITUDES_CITAS);
+  },
+  
+  // Obtener solicitud por ID
+  getById(id) {
+    const solicitudes = this.getAll();
+    return solicitudes.find(solicitud => solicitud.id === id);
+  },
+  
+  // Crear nueva solicitud
+  create(solicitudData) {
+    const solicitudes = this.getAll();
+    const newSolicitud = {
+      id: Date.now().toString(),
+      ...solicitudData,
+      fechaCreacion: new Date().toISOString(),
+      estado: 'Pendiente'
+    };
+    solicitudes.push(newSolicitud);
+    setToStorage(STORAGE_KEYS.SOLICITUDES_CITAS, solicitudes);
+    
+    // Notificar cambio
+    DataChangeNotifier.notify('solicitudCita', 'create', newSolicitud);
+    
+    // ✅ NUEVO: Alerta automática de nueva solicitud
+    alertService.newAppointmentRequest(newSolicitud);
+    
+    return newSolicitud;
+  },
+  
+  // Actualizar solicitud
+  update(id, solicitudData) {
+    const solicitudes = this.getAll();
+    const index = solicitudes.findIndex(solicitud => solicitud.id === id);
+    if (index !== -1) {
+      const oldSolicitud = solicitudes[index];
+      solicitudes[index] = { ...solicitudes[index], ...solicitudData };
+      setToStorage(STORAGE_KEYS.SOLICITUDES_CITAS, solicitudes);
+      
+      // Notificar cambio
+      DataChangeNotifier.notify('solicitudCita', 'update', solicitudes[index]);
+      
+      // ✅ NUEVO: Alerta automática de cambio de estado
+      if (solicitudData.estado && solicitudData.estado !== oldSolicitud.estado) {
+        alertService.appointmentRequestStatusChanged(
+          solicitudes[index],
+          oldSolicitud.estado,
+          solicitudData.estado
+        );
+      }
+      
+      return solicitudes[index];
+    }
+    return null;
+  },
+  
+  // Aprobar solicitud
+  aprobar(id, observaciones = '') {
+    const result = this.update(id, {
+      estado: 'Aprobada',
+      fechaAprobacion: new Date().toISOString(),
+      observaciones
+    });
+    
+    if (result) {
+      // ✅ NUEVO: Crear cita automáticamente
+      const cita = AppointmentService.create({
+        ...result,
+        estado: 'programada',
+        fechaProgramada: result.fechaSolicitada,
+        observaciones: result.observaciones
+      });
+      
+      // ✅ NUEVO: Alerta de cita creada
+      alertService.appointmentCreatedFromRequest(cita, result);
+    }
+    
+    return result;
+  },
+  
+  // Rechazar solicitud
+  rechazar(id, motivo) {
+    return this.update(id, {
+      estado: 'Rechazada',
+      fechaRechazo: new Date().toISOString(),
+      motivoRechazo: motivo
+    });
+  },
+  
+  // Obtener solicitudes por estado
+  getByEstado(estado) {
+    const solicitudes = this.getAll();
+    return solicitudes.filter(solicitud => solicitud.estado === estado);
+  },
+  
+  // Obtener solicitudes por usuario
+  getByUsuario(email) {
+    const solicitudes = this.getAll();
+    return solicitudes.filter(solicitud => solicitud.email === email);
+  },
+  
+  // ✅ NUEVO: Obtener solicitudes pendientes
+  getPendientes() {
+    return this.getByEstado('Pendiente');
+  },
+  
+  // ✅ NUEVO: Obtener solicitudes del día
+  getSolicitudesHoy() {
+    const solicitudes = this.getAll();
+    const hoy = new Date().toISOString().split('T')[0];
+    return solicitudes.filter(solicitud => 
+      solicitud.fechaCreacion.startsWith(hoy)
+    );
+  },
+  
+  // ✅ NUEVO: Obtener estadísticas
+  getStats() {
+    const solicitudes = this.getAll();
+    const stats = {
+      total: solicitudes.length,
+      porEstado: {},
+      promedioTiempoRespuesta: 0
+    };
+    
+    // Conteo por estado
+    solicitudes.forEach(solicitud => {
+      stats.porEstado[solicitud.estado] = (stats.porEstado[solicitud.estado] || 0) + 1;
+    });
+    
+    // Calcular tiempo promedio de respuesta
+    const solicitudesRespondidas = solicitudes.filter(s => 
+      s.estado === 'Aprobada' || s.estado === 'Rechazada'
+    );
+    
+    if (solicitudesRespondidas.length > 0) {
+      const tiempoTotal = solicitudesRespondidas.reduce((total, s) => {
+        const fechaRespuesta = new Date(s.fechaAprobacion || s.fechaRechazo);
+        const fechaCreacion = new Date(s.fechaCreacion);
+        return total + (fechaRespuesta - fechaCreacion);
+      }, 0);
+      
+      stats.promedioTiempoRespuesta = tiempoTotal / solicitudesRespondidas.length;
+    }
+    
+    return stats;
+  }
+};
+
+// ============================================================================
 // SERVICIOS DE SERVICIOS
 // ============================================================================
 
@@ -1001,6 +1151,7 @@ export const mockDataService = {
   SaleService,
   PaymentService,
   AppointmentService,
+  SolicitudCitaService,
   ServiceService,
   RoleService,
   
@@ -1016,8 +1167,11 @@ export const mockDataService = {
   initialize: initializeMockData,
   
   // Búsqueda global
-  search: globalSearch
+  search: globalSearch,
+  
+  // Notificador de cambios
+  DataChangeNotifier
 };
 
 // Exportación por defecto para compatibilidad
-export default mockDataService; 
+export default mockDataService;

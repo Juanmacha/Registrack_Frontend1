@@ -11,7 +11,8 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     tipoSolicitante: 'Representante Autorizado',
     tipoDocumento: '',
     numeroDocumento: '',
-    nombreCompleto: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -40,7 +41,8 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
         tipoSolicitante: 'Representante Autorizado',
         tipoDocumento: '',
         numeroDocumento: '',
-        nombreCompleto: '',
+        nombres: '',
+        apellidos: '',
         email: '',
         telefono: '',
         direccion: '',
@@ -66,7 +68,7 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     const e = {};
     
     // ✅ NUEVO: Usar ValidationService para validaciones básicas
-    const requiredFields = ['expediente', 'tipoDocumento', 'numeroDocumento', 'nombreCompleto', 'email', 'telefono', 'direccion', 'pais', 'nitMarca', 'nombreMarca'];
+    const requiredFields = ['expediente', 'tipoDocumento', 'numeroDocumento', 'nombres', 'apellidos', 'email', 'telefono', 'direccion', 'pais', 'nitMarca', 'nombreMarca'];
     const requiredErrors = ValidationService.validateRequiredFields(f, requiredFields);
     Object.assign(e, requiredErrors);
     
@@ -92,8 +94,12 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
       }
     }
     
-    if (f.nombreCompleto && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) {
-      e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+    if (f.nombres && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) {
+      e.nombres = 'Solo letras, 2-50 caracteres';
+    }
+    
+    if (f.apellidos && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) {
+      e.apellidos = 'Solo letras, 2-50 caracteres';
     }
     
     if (f.direccion && !/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) {
@@ -169,12 +175,7 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     }
     try {
       await onGuardar(form);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud de búsqueda se ha creado correctamente.'
-      });
-      onClose();
+      // onClose(); // El cierre lo maneja el padre tras el pago
     } catch (err) {
       Swal.fire({
         icon: 'error',
@@ -235,9 +236,14 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
               {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-              <input type="text" name="nombreCompleto" value={form.nombreCompleto} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-              {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+              <label className="block text-sm font-medium mb-1">Nombres *</label>
+              <input type="text" name="nombres" value={form.nombres} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+              {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Apellidos *</label>
+              <input type="text" name="apellidos" value={form.apellidos} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+              {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>

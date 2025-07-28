@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -6,7 +6,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import BotonDescargarExcel from "./descargarExcel";
+import BotonDescargarPdf from "./descargarPdf";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -62,6 +62,7 @@ const GraficaIngresosPie = () => {
   const [anio, setAnio] = useState(2025);
   const [mes, setMes] = useState("Febrero");
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const chartRef = useRef(null);
 
   const datos = datosSimulados[anio]?.[mes] || datosSimulados[2025]["Febrero"];
   const total = datos.values.reduce((a, b) => a + b, 0);
@@ -110,13 +111,17 @@ const GraficaIngresosPie = () => {
 
   return (
     <div className="dashboard-chart-container flex flex-col lg:flex-row items-center justify-center gap-2 min-h-[400px] relative">
-      {/* Botón Excel en la esquina superior derecha absoluta del contenedor principal */}
+      {/* Botón PDF en la esquina superior derecha absoluta del contenedor principal */}
       <div className="absolute top-4 right-4 z-20">
-        <BotonDescargarExcel datos={datosExcel} nombreArchivo={`ingresos_pie_${mes}_${anio}.xlsx`} />
+        <BotonDescargarPdf 
+          datos={datosExcel} 
+          nombreArchivo={`ingresos_pie_${mes}_${anio}.pdf`} 
+          chartRef={chartRef}
+        />
       </div>
       {/* Panel izquierdo: gráfica dona */}
       <div className="flex-shrink-0 flex items-center justify-center lg:justify-end w-full lg:w-auto pr-0 lg:pr-32 dashboard-chart">
-        <div className="w-96 h-96">
+        <div className="w-96 h-96" ref={chartRef}>
           <Doughnut data={data} options={options} />
         </div>
       </div>

@@ -1,13 +1,14 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import authData from "../services/authData";
+import { useAuth } from "../../../shared/contexts/authContext";
 
 const EmployeeRoute = ({ children }) => {
-  if (!authData.isAuthenticated()) {
+  const { isAuthenticated, user } = useAuth();
+
+  if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 
-  const user = authData.getUser();
   if (!user || (user.role !== "Administrador" && user.role !== "Empleado")) {
     return <Navigate to="/" replace />;
   }
@@ -15,4 +16,4 @@ const EmployeeRoute = ({ children }) => {
   return children;
 };
 
-export default EmployeeRoute; 
+export default EmployeeRoute;

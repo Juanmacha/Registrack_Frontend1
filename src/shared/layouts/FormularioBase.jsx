@@ -9,6 +9,9 @@ import FormularioOposicion from "../components/formularioOposicion";
 import FormularioCesion from "../components/formularioCesiondeMarca";
 import FormularioAmpliacion from "../components/formularioAmpliacion";
 import FormularioRespuesta from "../components/formularioRespuesta";
+import DemoPasarelaPagoModal from '../../features/landing/components/DemoPasarelaPagoModal';
+import jsPDF from 'jspdf';
+import Swal from 'sweetalert2';
 
 // Mapeo de formularios por servicio
 const FORMULARIOS_POR_SERVICIO = {
@@ -25,12 +28,76 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
   const [step, setStep] = useState(1);
   const [tipoSolicitante, setTipoSolicitante] = useState("");
   const [tipoPersona, setTipoPersona] = useState("");
+  const [showPago, setShowPago] = useState(false);
+  const [datosPago, setDatosPago] = useState(null);
+  const [montoDemo, setMontoDemo] = useState(1848000); // Monto demo, puedes ajustarlo
 
   const siguientePaso = () => setStep(2);
   const pasoAnterior = () => setStep(1);
 
   // Determinar qué formulario renderizar en el paso 2
   const FormularioComponente = FORMULARIOS_POR_SERVICIO[tipoSolicitud];
+
+  // Lógica para generar y descargar comprobante PDF
+  const generarComprobantePDF = (datos) => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Proceso completado', 105, 20, { align: 'center' });
+    doc.setDrawColor(0, 200, 83);
+    doc.setFillColor(0, 200, 83);
+    doc.circle(105, 35, 10, 'F');
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Pago realizado con éxito', 105, 55, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    let y = 70;
+    const salto = 8;
+    const lines = [
+      `Servicio de oposición: ${datos.servicioId || ''}`,
+      `Nombre de la marca: ${datos.nombreMarca || ''}`,
+      `Nombre del representante: ${datos.representante || ''}`,
+      `Tipo de documento: ${datos.tipoDocumento || ''}`,
+      `N° Documento de identidad: ${datos.numeroDocumento || ''}`,
+      `Fecha de pago: ${datos.fecha ? new Date(datos.fecha).toLocaleDateString() : ''}`,
+      `Valor total del servicio: ${datos.monto ? datos.monto.toLocaleString('es-CO', { style: 'currency', currency: 'COP' }) : ''}`,
+      `Gasto legal: ${datos.gastoLegal || '928.000,00 COP'}`,
+      `Honorarios: ${datos.honorarios || '920.000,00 COP'}`,
+      `Numero de transacción: ${datos.transaccion || Math.floor(Math.random()*1000000000)}`
+    ];
+    lines.forEach(line => {
+      doc.text(line, 20, y);
+      y += salto;
+    });
+    doc.save('comprobante_pago.pdf');
+  };
+
+  // Cambiar el submit final para que solo abra el modal de pago
+  const handleFinalizar = async (formData) => {
+    setDatosPago(formData);
+    setShowPago(true);
+  };
+
+  // Cuando el pago es exitoso, crear la solicitud y generar el comprobante
+  const handlePagoExitoso = async (pagoInfo) => {
+    try {
+      await onGuardar(datosPago); // Crear la solicitud solo después del pago
+      generarComprobantePDF({ ...datosPago, ...pagoInfo });
+      Swal.fire({
+        icon: 'success',
+        title: 'Solicitud creada y pago realizado',
+        text: 'La solicitud se ha creado correctamente y el comprobante ha sido generado.'
+      });
+      setShowPago(false);
+      onClose();
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al guardar',
+        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
+      });
+    }
+  };
 
   return (
     <div className="modal-responsive">
@@ -166,11 +233,7 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
               <FormularioComponente 
                 isOpen={true}
                 onClose={onClose}
-                onGuardar={(data) => {
-                  // Aquí puedes manejar el guardado de la solicitud
-                  console.log('Datos de la solicitud:', data);
-                  onClose();
-                }}
+                onGuardar={handleFinalizar}
                 tipoSolicitud={tipoSolicitud}
               />
             ) : children || <Outlet />} {/* Fallback a children o Outlet si no hay formulario específico */}
@@ -182,12 +245,21 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
                 Atrás
               </button>
               <button
-                type="submit"
+                type="button"
                 className="btn-responsive bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                onClick={() => setShowPago(true)}
               >
-                Finalizar
+                Ir a pago
               </button>
             </div>
+            {/* Modal demo pasarela de pago */}
+            <DemoPasarelaPagoModal
+              isOpen={showPago}
+              onClose={() => setShowPago(false)}
+              monto={montoDemo}
+              datosPago={datosPago}
+              onPagoExitoso={handlePagoExitoso}
+            />
           </div>
         )}
       </div>

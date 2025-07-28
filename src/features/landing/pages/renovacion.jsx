@@ -9,6 +9,7 @@ import FormularioRenovacion from "../../../shared/components/formularioRenovacio
 import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
 import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 import alertService from '../../../utils/alertService.js';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const RenovacionMarca = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const RenovacionMarca = () => {
 
   const handleAdquirirServicio = async () => {
     if (!user) {
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
       await alertService.warning(
         "¡Atención!",
         "Debes iniciar sesión para adquirir este servicio.",
@@ -92,6 +94,7 @@ const RenovacionMarca = () => {
       </section>
 
       <Footer />
+      <ScrollToTopButton />
 
       {/* MODAL */}
       {mostrarModal && (

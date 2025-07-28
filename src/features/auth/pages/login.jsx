@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiEnvelope, BiLock, BiShow, BiHide } from "react-icons/bi";
-import authService from "../services/authService.js";
+import { useAuth } from "../../../shared/contexts/authContext";
 import alertService from "../../../utils/alertService.js";
 
 const validateEmail = (email) => {
@@ -19,6 +19,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const validate = (field, value) => {
     let e = { ...fieldErrors };
@@ -61,20 +62,38 @@ const Login = () => {
     try {
       // Mostrar alerta de carga
       const loadingAlert = alertService.loading("Iniciando sesión...");
-      // Autenticar usuario usando authService
-      const result = authService.login(formData);
+      
+      // Autenticar usuario usando AuthContext
+      const result = await login(formData.email, formData.password);
+      
       // Cerrar alerta de carga
       alertService.close();
+      
       if (result.success) {
         // Mostrar alerta de éxito
         await alertService.loginSuccess(`${result.user.name}`);
+        
+        // Redirección inteligente para rutas del landing
+        const redirect = localStorage.getItem('postLoginRedirect');
+        if (redirect &&
+          redirect.startsWith('/') &&
+          !redirect.startsWith('/admin') &&
+          !redirect.startsWith('/misprocesos') &&
+          !redirect.startsWith('/profile') &&
+          !redirect.startsWith('/ayuda')
+        ) {
+          localStorage.removeItem('postLoginRedirect');
+          navigate(redirect);
+          return;
+        }
+        
         // Redirigir según el rol
         if (result.user.role === "Administrador") {
           navigate("/admin/dashboard");
         } else if (result.user.role === "Empleado") {
           navigate("/admin/dashboard");
         } else {
-          navigate("/");
+          navigate("/"); // Clientes van al landing normal
         }
       } else {
         setError("Credenciales incorrectas. Intenta de nuevo.");

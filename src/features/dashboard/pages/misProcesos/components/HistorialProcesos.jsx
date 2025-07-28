@@ -1,10 +1,35 @@
 import React, { useState } from 'react';
 import { obtenerFechaCreacion, obtenerFechaFin, calcularDuracion } from '../services/procesosService.js';
 import { PAISES } from '../../../../../shared/utils/paises.js';
+import { usePayments } from '../../../../../shared/contexts/PaymentContext';
+import { generarComprobantePDF } from '../../../../../shared/utils/generarComprobantePDF';
 
 const DetalleProcesoModal = ({ proceso, onClose }) => {
   if (!proceso) return null;
   const paisObj = PAISES.find(p => p.nombre === proceso.pais);
+  const { pagos } = usePayments();
+  // Buscar pago simulado asociado por nombreMarca, tipoDocumento y numeroDocumento
+  const pagoAsociado = pagos.find(p =>
+    p.nombreMarca === proceso.nombreMarca &&
+    p.tipoDocumento === proceso.tipoDocumento &&
+    p.numeroDocumento === proceso.numeroDocumento
+  );
+  const handleDescargarComprobante = () => {
+    if (pagoAsociado) {
+      generarComprobantePDF({
+        servicioOposicion: pagoAsociado.servicioOposicion,
+        nombreMarca: pagoAsociado.nombreMarca,
+        nombreRepresentante: pagoAsociado.nombreRepresentante,
+        tipoDocumento: pagoAsociado.tipoDocumento,
+        numeroDocumento: pagoAsociado.numeroDocumento,
+        fechaPago: pagoAsociado.fechaPago,
+        valorTotal: pagoAsociado.valorTotal,
+        gastoLegal: pagoAsociado.gastoLegal,
+        honorarios: pagoAsociado.honorarios,
+        numeroTransaccion: pagoAsociado.numeroTransaccion,
+      });
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-60 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-8 relative border border-blue-200">
@@ -39,6 +64,16 @@ const DetalleProcesoModal = ({ proceso, onClose }) => {
           {proceso.poderRepresentante && <div>Poder Representante: <span className="text-blue-700">{typeof proceso.poderRepresentante === 'string' ? proceso.poderRepresentante : proceso.poderRepresentante?.name}</span></div>}
           {proceso.poderAutorizacion && <div>Poder Autorización: <span className="text-blue-700">{typeof proceso.poderAutorizacion === 'string' ? proceso.poderAutorizacion : proceso.poderAutorizacion?.name}</span></div>}
           {!proceso.certificadoCamara && !proceso.logotipoMarca && !proceso.poderRepresentante && !proceso.poderAutorizacion && <span className="text-gray-400 italic">Sin archivos</span>}
+          {pagoAsociado && (
+            <div className="mt-3">
+              <button
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold shadow"
+                onClick={handleDescargarComprobante}
+              >
+                Descargar comprobante de pago
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

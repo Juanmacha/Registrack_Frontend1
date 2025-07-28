@@ -15,6 +15,7 @@ import FormularioOposicion from "../../../shared/components/formularioOposicion"
 import FormularioCesion from "../../../shared/components/formularioCesiondeMarca";
 import FormularioAmpliacion from "../../../shared/components/formularioAmpliacion";
 import FormularioRespuesta from "../../../shared/components/formularioRespuesta";
+import ModalAgendarCita from './ModalAgendarCita';
 
 // Constantes
 const FORMULARIOS_POR_SERVICIO = {
@@ -239,6 +240,7 @@ const Hero = () => {
   const navigate = useNavigate();
   const { servicios, loading } = useServicios();
   const { modalAbierto, servicioSeleccionado, tituloModal, abrirModal, cerrarModal } = useModal();
+  const [modalCitaOpen, setModalCitaOpen] = useState(false);
 
   const handleAdquirir = async (servicio) => {
     const user = authData.getUser && typeof authData.getUser === 'function'
@@ -290,12 +292,19 @@ const Hero = () => {
               legales. ¡Haz que tu marca sea solo tuya, hoy!
             </p>
             <HeroFeatures />
-            <div className="w-full text-left pt-2">
+            <div className="w-full text-left pt-2 flex gap-3">
               <a href="#nosotros">
-                <button className="bg-blue-700 text-white px-8 mb-5 py-3 rounded-md text-lg hover:bg-blue-800 transition">
+                <button className="bg-blue-700 text-white px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-800 transition font-bold">
                   Conocer más
                 </button>
               </a>
+              <button
+                className="bg-blue-100 text-blue-800 px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow"
+                style={{ minWidth: 0 }}
+                onClick={() => setModalCitaOpen(true)}
+              >
+                No te quedes con dudas, agenda tu cita
+              </button>
             </div>
           </div>
           <HeroVideo />
@@ -358,6 +367,7 @@ const Hero = () => {
           ) : null;
         })()
       )}
+      <ModalAgendarCita isOpen={modalCitaOpen} onClose={() => setModalCitaOpen(false)} />
     </div>
   );
 };

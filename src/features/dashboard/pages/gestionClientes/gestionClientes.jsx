@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import TablaClientes from "./components/tablaClientes";
 import VerDetalleCliente from "./components/verDetalleCliente";
+import FormularioCliente from "./components/FormularioCliente";
 import { ClientService, initializeMockData } from "../../../../utils/mockDataService.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
@@ -20,6 +21,10 @@ const GestionClientes = () => {
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [mostrarModalVer, setMostrarModalVer] = useState(false);
   const [deshabilitarAcciones, setDeshabilitarAcciones] = useState(false);
+  const [mostrarModalFormulario, setMostrarModalFormulario] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [clienteEditar, setClienteEditar] = useState(null);
+  const rolUsuario = "administrador"; // Cambia a "empleado" para probar restricción
   const clientesPorPagina = 5;
 
   useEffect(() => {
@@ -33,7 +38,8 @@ const GestionClientes = () => {
   }
 
   const clientesFiltrados = clientes.filter((c) => {
-    const texto = `${c.documento} ${c.nombre} ${c.apellido} ${c.email} ${c.telefono} ${c.estado} ${c.nitEmpresa} ${c.nombreEmpresa} ${c.marca} ${c.tipoPersona}`;
+    const nombreCompleto = `${c.nombre} ${c.apellido}`;
+    const texto = `${c.documento} ${nombreCompleto} ${c.email} ${c.telefono} ${c.estado} ${c.nitEmpresa} ${c.nombreEmpresa} ${c.marca} ${c.tipoPersona}`;
     return normalizarTexto(texto).includes(normalizarTexto(busqueda));
   });
 
@@ -60,6 +66,35 @@ const GestionClientes = () => {
       const clientesActualizados = ClientService.getAll();
       setClientes(clientesActualizados);
     }
+  };
+
+  const handleCrearCliente = () => {
+    setModoEdicion(false);
+    setClienteEditar(null);
+    setMostrarModalFormulario(true);
+  };
+  const handleEditarCliente = (idx) => {
+    setModoEdicion(true);
+    setClienteEditar(clientesPagina[idx]);
+    setMostrarModalFormulario(true);
+  };
+  const handleGuardarCliente = (nuevoCliente) => {
+    if (modoEdicion) {
+      // Editar
+      const actualizado = ClientService.update(nuevoCliente.id, nuevoCliente);
+      if (actualizado) {
+        setClientes(ClientService.getAll());
+        Swal.fire({ icon: "success", title: "¡Cliente actualizado!", timer: 1500, showConfirmButton: false });
+      }
+    } else {
+      // Crear
+      const creado = ClientService.create(nuevoCliente);
+      if (creado) {
+        setClientes(ClientService.getAll());
+        Swal.fire({ icon: "success", title: "¡Cliente creado!", timer: 1500, showConfirmButton: false });
+      }
+    }
+    setMostrarModalFormulario(false);
   };
 
   const handleExportarExcel = () => {
@@ -113,6 +148,12 @@ const GestionClientes = () => {
 
           <div className="flex gap-3">
             <button
+              className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
+              onClick={handleCrearCliente}
+            >
+              <i className="bi bi-plus-square"></i> Crear Cliente
+            </button>
+            <button
               className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap"
               onClick={handleExportarExcel}
             >
@@ -126,6 +167,7 @@ const GestionClientes = () => {
           onVer={handleVer}
           onToggleEstado={handleToggleEstado}
           deshabilitarAcciones={deshabilitarAcciones}
+          onEditar={handleEditarCliente}
         />
 
         <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
@@ -173,6 +215,15 @@ const GestionClientes = () => {
             setDeshabilitarAcciones(false);
           }}
         />
+        {mostrarModalFormulario && (
+          <FormularioCliente
+            cliente={clienteEditar}
+            onGuardar={handleGuardarCliente}
+            onClose={() => setMostrarModalFormulario(false)}
+            modoEdicion={modoEdicion}
+            rolUsuario={rolUsuario}
+          />
+        )}
       </div>
     </div>
   );

@@ -13,7 +13,8 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
     tipoPersona: '',
     tipoDocumento: '',
     numeroDocumento: '',
-    nombreCompleto: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -48,7 +49,8 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
         tipoPersona: '',
         tipoDocumento: '',
         numeroDocumento: '',
-        nombreCompleto: '',
+        nombres: '',
+        apellidos: '',
         email: '',
         telefono: '',
         direccion: '',
@@ -92,8 +94,10 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
         if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
         else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
         else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-        if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+        if (!f.nombres) e.nombres = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+        if (!f.apellidos) e.apellidos = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
         if (!f.email) e.email = 'Requerido';
         else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
         if (!f.telefono) e.telefono = 'Requerido';
@@ -114,24 +118,25 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
       if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
       else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
       else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-      if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+      if (!f.nombres) e.nombres = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+      if (!f.apellidos) e.apellidos = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
       if (!f.email) e.email = 'Requerido';
       else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
       if (!f.telefono) e.telefono = 'Requerido';
       else if (!/^[0-9]{7,15}$/.test(f.telefono)) e.telefono = 'Solo números, 7-15 dígitos';
       if (!f.direccion) e.direccion = 'Requerido';
       else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,#-]{5,100}$/.test(f.direccion)) e.direccion = 'Dirección inválida';
-      if (!f.poderRepresentante) e.poderRepresentante = 'Adjunta el poder';
-      if (!f.poderAutorizacion) e.poderAutorizacion = 'Adjunta el poder';
     }
     if (!f.pais) e.pais = 'Requerido';
     if (!f.nitMarca) e.nitMarca = 'Requerido';
     else if (!/^[0-9]{6,15}$/.test(f.nitMarca)) e.nitMarca = 'Solo números, 6-15 dígitos';
     if (!f.nombreMarca) e.nombreMarca = 'Requerido';
     else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,&-]{2,80}$/.test(f.nombreMarca)) e.nombreMarca = 'Solo letras, números y básicos, 2-80 caracteres';
-    if (!f.certificadoRenovacion) e.certificadoRenovacion = 'Adjunta el certificado';
-    if (!f.logotipoMarca) e.logotipoMarca = 'Adjunta el logotipo';
+    if (f.estado === 'Anulado' && (!f.motivoAnulacion || !f.motivoAnulacion.trim())) {
+      e.motivoAnulacion = 'Debes ingresar el motivo de anulación';
+    }
     return e;
   };
 
@@ -179,12 +184,12 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
     }
     try {
       await onGuardar(form);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud de renovación se ha creado correctamente.'
-      });
-      onClose();
+      // Swal.fire({
+      //   icon: 'success',
+      //   title: 'Solicitud creada',
+      //   text: 'La solicitud de renovación se ha creado correctamente.'
+      // });
+      // onClose(); // El cierre lo maneja el padre tras el pago
     } catch (err) {
       Swal.fire({
         icon: 'error',
@@ -269,9 +274,14 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
                       {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                      <input type="text" name="nombreCompleto" value={form.nombreCompleto} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                      {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                      <label className="block text-sm font-medium mb-1">Nombres *</label>
+                      <input type="text" name="nombres" value={form.nombres} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                      {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                      <input type="text" name="apellidos" value={form.apellidos} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                      {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
@@ -332,9 +342,14 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
                   {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                  <input type="text" name="nombreCompleto" value={form.nombreCompleto} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                  {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                  <label className="block text-sm font-medium mb-1">Nombres *</label>
+                  <input type="text" name="nombres" value={form.nombres} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                  {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                  <input type="text" name="apellidos" value={form.apellidos} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                  {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>

@@ -24,7 +24,7 @@ export default function ModalVerDetalleServicio({ servicio, isOpen, onClose }) {
               <i className="bi bi-eye text-blue-600 text-2xl"></i>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-blue-800">Detalle del Servicio</h2>
+              <h2 className="text-2xl font-bold text-blue-800">VER DETALLE</h2>
               <p className="text-sm text-gray-500">ID: {servicio.id}</p>
             </div>
           </div>
@@ -56,13 +56,13 @@ export default function ModalVerDetalleServicio({ servicio, isOpen, onClose }) {
             <div className="bg-blue-50 rounded p-2 border border-blue-100 text-xs overflow-x-auto mt-1 mb-2">
               {renderObj(servicio.info_page_data)}
             </div>
-            <div className={labelClass}>Estados del Proceso</div>
+            <div className={labelClass}>PROCESOS DEL SERVICIO</div>
             <ol className="list-decimal ml-6 mt-1">
               {servicio.process_states && servicio.process_states.length > 0 ? servicio.process_states.map((ps) => (
                 <li key={ps.id} className="text-sm font-semibold text-blue-700">
                   <b>{ps.name}</b>
                 </li>
-              )) : <span className="italic text-gray-400">Sin estados</span>}
+              )) : <span className="italic text-gray-400">Sin procesos</span>}
             </ol>
           </div>
         </div>

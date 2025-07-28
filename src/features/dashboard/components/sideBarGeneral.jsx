@@ -10,7 +10,8 @@ import {
   TbBox,
   TbSettings,
   TbCircleCheck,
-  TbUserSquareRounded
+  TbUserSquareRounded,
+  TbCalendarEvent
 } from "react-icons/tb";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
@@ -26,14 +27,14 @@ const SideBarGeneral = () => {
 
   const menuItems = [
     { label: "Dashboard", icon: TbLayoutGrid, to: "/admin/dashboard" },
-    { label: "Usuarios", icon: TbUser, to: "/admin/gestionUsuarios" },
-    { label: "Empleados", icon: TbUsers, to: "/admin/empleados" },
-    // Solicitudes va como dropdown abajo
-    { label: "Citas", icon: TbCalendar, to: "/admin/calendario" },
-    { label: "Pagos", icon: TbCreditCard, to: "/admin/pagos" },
-    { label: "Clientes", icon: TbUserSquareRounded, to: "/admin/gestionClientes" },
-    { label: "Servicios", icon: TbBox, to: "/admin/servicios" }, // Cambiado a CiBoxList
     { label: "Configuración", icon: TbSettings, to: "/admin/roles" },
+    { label: "Usuarios", icon: TbUser, to: "/admin/gestionUsuarios" },
+    { label: "Servicios", icon: TbBox, to: "/admin/servicios" },
+    { label: "Empleados", icon: TbUsers, to: "/admin/empleados" },
+    { label: "Clientes", icon: TbUserSquareRounded, to: "/admin/gestionClientes" },
+    // Solicitudes va como dropdown abajo
+    { label: "Pagos", icon: TbCreditCard, to: "/admin/pagos" },
+    { label: "Citas", icon: TbCalendar, to: "/admin/calendario" },
   ];
 
   const handleToggleDropdown = () => setIsDropdownOpen(prev => !prev);
@@ -56,7 +57,7 @@ const SideBarGeneral = () => {
           </div>
           {/* Navegación */}
           <nav className="space-y-2 h-full overflow-y-hidden group-hover:overflow-y-auto pr-1">
-            {menuItems.slice(0, 3).map(({ label, icon: Icon, to }) => (
+            {menuItems.slice(0, 6).map(({ label, icon: Icon, to }) => (
               <Link to={to} key={to} className="no-underline block">
                 <div
                   className={`${baseLinkClasses} ${location.pathname === to ? activeLinkClasses : ""}`}
@@ -83,7 +84,7 @@ const SideBarGeneral = () => {
                 />
               </div>
               <div
-                className={`ml-4 overflow-hidden transition-all duration-300 ease-in-out ${isDropdownOpen ? "max-h-40 opacity-100 mt-1" : "max-h-0 opacity-0"}`}
+                className={`ml-4 overflow-hidden transition-all duration-300 ease-in-out ${isDropdownOpen ? "max-h-60 opacity-100 mt-1" : "max-h-0 opacity-0"}`}
               >
                 <Link to="/admin/ventasServiciosProceso" className="no-underline block">
                   <div
@@ -101,9 +102,17 @@ const SideBarGeneral = () => {
                     <span className="text-gray-700 text-[0.95rem] font-medium hidden group-hover:inline">Terminadas</span>
                   </div>
                 </Link>
+                <Link to="/admin/solicitudesCitas" className="no-underline block">
+                  <div
+                    className={`${baseLinkClasses} ${location.pathname === "/admin/solicitudesCitas" ? activeLinkClasses : ""}`}
+                  >
+                    <TbCalendarEvent className={iconClass} />
+                    <span className="text-gray-700 text-[0.95rem] font-medium hidden group-hover:inline">Solicitudes de citas</span>
+                  </div>
+                </Link>
               </div>
             </div>
-            {menuItems.slice(3).map(({ label, icon: Icon, to }) => (
+            {menuItems.slice(6).map(({ label, icon: Icon, to }) => (
               <Link to={to} key={to} className="no-underline block">
                 <div
                   className={`${baseLinkClasses} ${location.pathname === to ? activeLinkClasses : ""}`}

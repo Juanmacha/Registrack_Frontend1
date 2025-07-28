@@ -375,157 +375,138 @@ const TablaVentasProceso = ({ adquirir }) => {
           <table className="table-auto w-full divide-y divide-gray-100">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 font-semibold text-center">Titular</th>
-                <th className="px-6 py-4 font-semibold text-center">Expediente</th>
-                <th className="px-6 py-4 font-semibold text-center">Solicitud</th>
-                <th className="px-6 py-4 font-semibold text-center">Marca</th>
-                <th className="px-6 py-4 font-semibold text-center">Encargado</th>
-                <th className="px-6 py-4 font-semibold text-center">Cita</th>
-                <th className="px-6 py-4 font-semibold text-center">Estado</th>
-                <th className="px-6 py-4 font-semibold text-center">Acciones</th>
+                <th className="px-4 py-3 text-center">#</th>
+                <th className="px-4 py-3 text-center">Titular</th>
+                <th className="px-4 py-3 text-center">Tipo de Documento</th>
+                <th className="px-4 py-3 text-center">País</th>
+                <th className="px-4 py-3 text-center">Teléfono</th>
+                <th className="px-4 py-3 text-center">Dirección</th>
+                <th className="px-4 py-3 text-center">Tipo de Solicitud</th>
+                <th className="px-4 py-3 text-center">Proceso</th>
+                <th className="px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-              {datosPagina.map((item) => {
-                const { color, texto } = getEstadoBadge(item.estado);
-                return (
-                  <tr key={item.id} className="hover:bg-blue-50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.titular}`}
-                          alt={item.titular}
-                          className="w-10 h-10 rounded-full border-2 border-blue-200 shadow-sm"
-                        />
-                        <div>
-                          <div className="font-semibold text-gray-800">{item.titular}</div>
-                          <div className="text-xs text-gray-500">{item.tipoPersona}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">{item.expediente}</td>
-                    <td className="px-6 py-4 text-center">{item.tipoSolicitud}</td>
-                    <td className="px-6 py-4 text-center">{item.marca}</td>
-                    <td className="px-6 py-4 text-center">{item.encargado}</td>
-                    <td className="px-6 py-4 text-center">
-                      {item.proximaCita || (
-                        <span className="text-xs italic text-gray-400">Sin citas</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto}</span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex gap-1 justify-center flex-nowrap">
-                        <button
-                          className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
-                          onClick={() => {
-                            setDatoSeleccionado(item);
-                            setModalEditarOpen(true);
-                            setModoCrear(false);
-                          }}
-                          title="Editar"
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                          onClick={() => {
-                            setDatoSeleccionado(item);
-                            setModalObservacionOpen(true);
-                          }}
-                          title="Observaciones"
-                        >
-                          <i className="bi bi-chat-dots"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                          onClick={() => {
-                            setDatoSeleccionado(item);
-                            setModalDetalleOpen(true);
-                          }}
-                          title="Ver detalle"
-                        >
-                          <i className="bi bi-eye-fill"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-warning rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#F2994A", color: "#F2994A" }}
-                          onClick={async () => {
-                            const zip = new JSZip();
-                            // Archivos a incluir
-                            const files = [
-                              { file: item.certificadoCamara, label: "Certificado_Camara" },
-                              { file: item.logotipoMarca, label: "Logotipo_Marca" },
-                              { file: item.poderRepresentante, label: "Poder_Representante" },
-                              { file: item.poderAutorizacion, label: "Poder_Autorizacion" },
-                            ];
-                            let added = 0;
-                            for (const { file, label } of files) {
-                              if (file && typeof file !== "string" && file.name && file instanceof File) {
-                                // Si es un File (input file)
-                                zip.file(label + "_" + file.name, file);
-                                added++;
-                              } else if (file && typeof file === "string" && file.startsWith("data:")) {
-                                // Si es base64
-                                const arr = file.split(",");
-                                const mime = arr[0].match(/:(.*?);/)[1];
-                                const bstr = atob(arr[1]);
-                                let n = bstr.length;
-                                const u8arr = new Uint8Array(n);
-                                while (n--) u8arr[n] = bstr.charCodeAt(n);
-                                zip.file(label + "." + mime.split("/")[1], u8arr);
-                                added++;
-                              }
+              {datosPagina.map((item, idx) => (
+                <tr key={item.id}>
+                  <td className="px-4 py-3 text-center">{inicio + idx + 1}</td>
+                  <td className="px-4 py-3 text-center">{item.titular || item.nombreCompleto || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.tipoDocumento || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.pais || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.telefono || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.direccion || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.tipoSolicitud || ''}</td>
+                  <td className="px-4 py-3 text-center">{item.estado || ''}</td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex gap-1 justify-center flex-nowrap">
+                      <button
+                        className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
+                        onClick={() => {
+                          setDatoSeleccionado(item);
+                          setModalEditarOpen(true);
+                          setModoCrear(false);
+                        }}
+                        title="Editar"
+                      >
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
+                        onClick={() => {
+                          setDatoSeleccionado(item);
+                          setModalObservacionOpen(true);
+                        }}
+                        title="Observaciones"
+                      >
+                        <i className="bi bi-chat-dots"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
+                        onClick={() => {
+                          setDatoSeleccionado(item);
+                          setModalDetalleOpen(true);
+                        }}
+                        title="Ver detalle"
+                      >
+                        <i className="bi bi-eye-fill"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-warning rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#F2994A", color: "#F2994A" }}
+                        onClick={async () => {
+                          const zip = new JSZip();
+                          // Archivos a incluir
+                          const files = [
+                            { file: item.certificadoCamara, label: "Certificado_Camara" },
+                            { file: item.logotipoMarca, label: "Logotipo_Marca" },
+                            { file: item.poderRepresentante, label: "Poder_Representante" },
+                            { file: item.poderAutorizacion, label: "Poder_Autorizacion" },
+                          ];
+                          let added = 0;
+                          for (const { file, label } of files) {
+                            if (file && typeof file !== "string" && file.name && file instanceof File) {
+                              // Si es un File (input file)
+                              zip.file(label + "_" + file.name, file);
+                              added++;
+                            } else if (file && typeof file === "string" && file.startsWith("data:")) {
+                              // Si es base64
+                              const arr = file.split(",");
+                              const mime = arr[0].match(/:(.*?);/)[1];
+                              const bstr = atob(arr[1]);
+                              let n = bstr.length;
+                              const u8arr = new Uint8Array(n);
+                              while (n--) u8arr[n] = bstr.charCodeAt(n);
+                              zip.file(label + "." + mime.split("/")[1], u8arr);
+                              added++;
                             }
-                            if (added === 0) {
-                              Swal.fire({
-                                icon: "info",
-                                title: "Sin archivos",
-                                text: "No hay documentos adjuntos para descargar en esta venta.",
-                                customClass: { popup: "swal2-border-radius" }
-                              });
-                              return;
-                            }
-                            const content = await zip.generateAsync({ type: "blob" });
-                            saveAs(content, `Documentos_Venta_${item.id || item.expediente || ""}.zip`);
-                          }}
-                          title="Descargar documentos ZIP"
-                        >
-                          <i className="bi bi-file-earmark-zip"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
-                          onClick={() => {
-                            setDatoSeleccionado(item);
-                            setEmpleadoSeleccionado(item.encargado || "");
-                            setModalAsignarEncargadoOpen(true);
-                          }}
-                          title="Asignar encargado"
-                        >
-                          <i className="bi bi-person-badge"></i>
-                        </button>
-                        <button
-                          className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#DC3545", color: "#DC3545" }}
-                          onClick={() => {
-                            setDatoSeleccionado(item);
-                            setModalAnularOpen(true);
-                            setMotivoAnular("");
-                          }}
-                          title="Eliminar"
-                        >
-                          <i className="bi bi-x-circle"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                          }
+                          if (added === 0) {
+                            Swal.fire({
+                              icon: "info",
+                              title: "Sin archivos",
+                              text: "No hay documentos adjuntos para descargar en esta venta.",
+                              customClass: { popup: "swal2-border-radius" }
+                            });
+                            return;
+                          }
+                          const content = await zip.generateAsync({ type: "blob" });
+                          saveAs(content, `Documentos_Venta_${item.id || item.expediente || ""}.zip`);
+                        }}
+                        title="Descargar documentos ZIP"
+                      >
+                        <i className="bi bi-file-earmark-zip"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
+                        onClick={() => {
+                          setDatoSeleccionado(item);
+                          setEmpleadoSeleccionado(item.encargado || "");
+                          setModalAsignarEncargadoOpen(true);
+                        }}
+                        title="Asignar encargado"
+                      >
+                        <i className="bi bi-person-badge"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                        style={{ width: "32px", height: "32px", borderColor: "#DC3545", color: "#DC3545" }}
+                        onClick={() => {
+                          setDatoSeleccionado(item);
+                          setModalAnularOpen(true);
+                          setMotivoAnular("");
+                        }}
+                        title="Eliminar"
+                      >
+                        <i className="bi bi-x-circle"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

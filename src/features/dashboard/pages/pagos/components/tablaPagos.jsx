@@ -5,6 +5,8 @@ import getEstadoPagoBadge from "../services/getEstadoPagoBadge";
 import VerDetallePago from "../components/verDetallePagos";
 import DescargarExcelPagos from "../components/descargarExcelPagos";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { usePayments } from '../../../../../shared/contexts/PaymentContext';
+import { generarComprobantePDF } from '../../../../../shared/utils/generarComprobantePDF';
 
 const Tablapagos = () => {
   const [datos, setDatos] = useState([]);
@@ -16,6 +18,8 @@ const Tablapagos = () => {
 
   const [detalleSeleccionado, setDetalleSeleccionado] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
+
+  const { pagos: pagosSimulados = [] } = usePayments() || {};
 
   const abrirDetalle = (pago) => {
     setDetalleSeleccionado(pago);
@@ -31,11 +35,13 @@ const Tablapagos = () => {
     initializeMockData();
     const pagosData = PaymentService.getAll();
     // Filtrar pagos que no sean mock
-    const pagosFiltrados = pagosData.filter(p => !p.isMock);
-    const filtrar = pagosFiltrados.filter(
+    const pagosFiltrados = pagosData; // Ahora muestra todos los pagos, incluyendo los mock
+    // Mezclar pagos simulados con los existentes
+    const todosLosPagos = [...pagosSimulados, ...pagosFiltrados];
+    const filtrar = todosLosPagos.filter(
       (p) =>
-        p.id_pago.toString().includes(busqueda) ||
-        p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase())
+        (p.id_pago ? p.id_pago.toString().includes(busqueda) : true) ||
+        (p.metodo_pago ? p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase()) : false)
     );
     const total = filtrar.length;
     const paginas = Math.ceil(total / registrosPorPagina);
@@ -44,11 +50,26 @@ const Tablapagos = () => {
     setDatos(datosPaginados);
     setTotalPaginas(paginas);
     setTotalRegistros(total);
-  }, [paginaActual, busqueda]);
+  }, [paginaActual, busqueda, pagosSimulados]);
 
   const handleBusquedaChange = (e) => {
     setBusqueda(e.target.value);
     setPaginaActual(1);
+  };
+
+  const handleDescargarComprobante = (pago) => {
+    generarComprobantePDF({
+      servicioOposicion: pago.servicioOposicion,
+      nombreMarca: pago.nombreMarca,
+      nombreRepresentante: pago.nombreRepresentante,
+      tipoDocumento: pago.tipoDocumento,
+      numeroDocumento: pago.numeroDocumento,
+      fechaPago: pago.fechaPago,
+      valorTotal: pago.valorTotal,
+      gastoLegal: pago.gastoLegal,
+      honorarios: pago.honorarios,
+      numeroTransaccion: pago.numeroTransaccion,
+    });
   };
 
   return (
@@ -79,54 +100,50 @@ const Tablapagos = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700 text-center">
-              {datos.map((item) => {
+              {datos.map((item, idx) => {
                 const { color, texto } = getEstadoPagoBadge(item.estado);
+                const esSimulado = !!item.numeroTransaccion;
                 return (
-                  <tr key={item.id_pago}>
-                    <td className="px-6 py-4">{item.id_pago}</td>
-                    <td className="px-6 py-4">${item.monto.toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      {new Date(item.fecha_pago).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">{item.metodo_pago}</td>
-                    <td className="px-6 py-4">{item.id_orden_servicio}</td>
+                  <tr key={item.id_pago || item.numeroTransaccion || idx}>
+                    <td className="px-6 py-4">{item.id_pago || item.numeroTransaccion}</td>
+                    <td className="px-6 py-4">${item.monto?.toLocaleString?.() || item.valorTotal?.toLocaleString?.() || ''}</td>
+                    <td className="px-6 py-4">{item.fecha_pago ? new Date(item.fecha_pago).toLocaleDateString() : item.fechaPago}</td>
+                    <td className="px-6 py-4">{item.metodo_pago || 'Demo'}</td>
+                    <td className="px-6 py-4">{item.id_orden_servicio || '-'}</td>
                     <td className="px-6 py-4 text-center">
-                      <span
-                        style={{ color, fontWeight: 600, fontSize: "14px" }}
-                      >
-                        {texto}
-                      </span>
+                      <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto || (esSimulado ? 'Pagado' : '')}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 justify-center flex-wrap">
                         <button
                           onClick={() => abrirDetalle(item)}
                           className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            borderColor: "#1E4A85",
-                            color: "#1E4A85",
-                          }}
+                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
                           title="Ver detalle"
                         >
                           <i className="bi bi-eye-fill"></i>
                         </button>
-                        {item.comprobante_url && (
-                          <a
-                            href={item.comprobante_url}
-                            download={`comprobante_pago_${item.id_pago}.pdf`}
+                        {esSimulado ? (
+                          <button
+                            onClick={() => handleDescargarComprobante(item)}
                             className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              borderColor: "#6C757D",
-                              color: "#6C757D",
-                            }}
+                            style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
                             title="Descargar comprobante"
                           >
                             <i className="bi bi-download"></i>
-                          </a>
+                          </button>
+                        ) : (
+                          item.comprobante_url && (
+                            <a
+                              href={item.comprobante_url}
+                              download={`comprobante_pago_${item.id_pago}.pdf`}
+                              className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
+                              style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
+                              title="Descargar comprobante"
+                            >
+                              <i className="bi bi-download"></i>
+                            </a>
+                          )
                         )}
                       </div>
                     </td>
@@ -162,11 +179,10 @@ const Tablapagos = () => {
               <button
                 key={pagina}
                 onClick={() => setPaginaActual(pagina)}
-                className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
-                  paginaActual === pagina
+                className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${paginaActual === pagina
                     ? "bg-blue-600 text-white border-blue-600 shadow-md"
                     : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
-                }`}
+                  }`}
               >
                 {pagina}
               </button>

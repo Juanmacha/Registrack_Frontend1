@@ -9,6 +9,7 @@ import FormularioCertificacion from "../../../shared/components/formularioCertif
 import { useScrollToTop } from "../../../utils/hooks/useScrollToTop";
 import { crearVenta } from '../../dashboard/pages/gestionVentasServicios/services/ventasService';
 import alertService from '../../../utils/alertService.js';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 const Certificaciones = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Certificaciones = () => {
 
   const handleAdquirirCertificacion = async () => {
     if (!user) {
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
       await alertService.warning(
         "¡Atención!",
         "Debes iniciar sesión para poder adquirir un servicio.",
@@ -86,6 +88,7 @@ const Certificaciones = () => {
       </section>
 
       <Footer />
+      <ScrollToTopButton />
 
       {/* MODAL */}
       {mostrarModal && (

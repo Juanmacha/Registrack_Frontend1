@@ -52,7 +52,7 @@ import CrearSolicitudPage from '../features/landing/pages/CrearSolicitudPage';
 // Componentes de prueba
 import TestSincronizacion from '../components/TestSincronizacion';
 import TestSimple from '../components/TestSimple';
-
+import SolicitudesCitas from '../features/dashboard/pages/solicitudesCitas/SolicitudesCitas';
 
 const AppRoutes = () => {
   return (
@@ -100,6 +100,7 @@ const AppRoutes = () => {
         <Route path="roles" element={<Roles />} />
         <Route path="empleados" element={<Empleados />} />
         <Route path='servicios' element={<Servicios/>}/>
+        <Route path="solicitudesCitas" element={<SolicitudesCitas />} />
       </Route>
 
       {/* ✅ Redirección temporal por compatibilidad */}

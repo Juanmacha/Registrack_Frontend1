@@ -91,6 +91,14 @@ function GestionarProcessStates({ servicio, isOpen, onClose, onSave }) {
               <li key={s.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
                 <span className="font-bold text-blue-700 mr-1">{idx + 1}.</span>
                 <span className="font-medium text-gray-800 flex-1">{s.name}</span>
+                {/* Icono 'i' con tooltip al hacer hover */}
+                <div className="relative group ml-1 flex items-center">
+                  <i className="bi bi-info-circle text-lg text-blue-600 hover:text-blue-900 cursor-pointer"/>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-7 z-20 hidden group-hover:block bg-white border border-blue-200 shadow-lg rounded px-4 py-2 text-sm text-gray-700 min-w-[220px] whitespace-pre-line">
+                    Explicación del proceso: <b>{s.name}</b>.
+                    <br />Aquí irá la descripción específica.
+                  </div>
+                </div>
                 <div className="flex gap-1">
                   <button 
                     onClick={() => moveState(idx, 'up')} 

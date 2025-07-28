@@ -117,7 +117,8 @@ const GestionUsuarios = () => {
   }
 
   const usuariosFiltrados = usuarios.filter((u) => {
-    const texto = `${u.documentType} ${u.documentNumber} ${u.firstName} ${u.lastName} ${u.email} ${u.role}`;
+    const nombreCompleto = `${u.firstName} ${u.lastName}`;
+    const texto = `${u.documentType} ${u.documentNumber} ${nombreCompleto} ${u.email} ${u.role}`;
     return normalizarTexto(texto).includes(normalizarTexto(busqueda));
   });
 

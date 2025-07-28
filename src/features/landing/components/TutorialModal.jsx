@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
 
 const TutorialModal = ({ isOpen, onClose, tutorialData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [failedImages, setFailedImages] = useState(new Set());
+
+  useEffect(() => {
+    if (isOpen) setCurrentStep(0);
+  }, [isOpen]);
 
   if (!isOpen || !tutorialData) return null;
 

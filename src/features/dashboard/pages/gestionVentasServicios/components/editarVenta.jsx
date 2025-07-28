@@ -14,6 +14,8 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
   const [errors, setErrors] = useState({});
   const [justificacionCambioEstado, setJustificacionCambioEstado] = useState("");
   const [estadoAnterior, setEstadoAnterior] = useState("");
+  // 1. Agregar estado para el proceso seleccionado para mostrar el modal/tooltip
+  const [procesoInfo, setProcesoInfo] = useState(null);
 
   useEffect(() => {
     if (isOpen && datos) {
@@ -54,8 +56,10 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
         if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
         else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
         else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-        if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+        if (!f.nombres) e.nombres = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+        if (!f.apellidos) e.apellidos = 'Requerido';
+        else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
         if (!f.email) e.email = 'Requerido';
         else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
         if (!f.telefono) e.telefono = 'Requerido';
@@ -76,8 +80,10 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
       if (!f.numeroDocumento) e.numeroDocumento = 'Requerido';
       else if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Solo números, 6-15 dígitos';
       else if (f.tipoDocumento === 'Pasaporte' && !/^[A-Za-z0-9]{6,20}$/.test(f.numeroDocumento)) e.numeroDocumento = 'Pasaporte: solo letras y números, 6-20 caracteres';
-      if (!f.nombreCompleto) e.nombreCompleto = 'Requerido';
-      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombreCompleto)) e.nombreCompleto = 'Solo letras, 2-50 caracteres';
+      if (!f.nombres) e.nombres = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.nombres)) e.nombres = 'Solo letras, 2-50 caracteres';
+      if (!f.apellidos) e.apellidos = 'Requerido';
+      else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$/.test(f.apellidos)) e.apellidos = 'Solo letras, 2-50 caracteres';
       if (!f.email) e.email = 'Requerido';
       else if (!/^\S+@\S+\.\S+$/.test(f.email)) e.email = 'Correo inválido';
       if (!f.telefono) e.telefono = 'Requerido';
@@ -254,9 +260,14 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
                       {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                      <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                      {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                      <label className="block text-sm font-medium mb-1">Nombres *</label>
+                      <input type="text" name="nombres" value={form.nombres || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                      {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                      <input type="text" name="apellidos" value={form.apellidos || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                      {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
@@ -317,9 +328,14 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
                   {errors.numeroDocumento && <p className="text-xs text-red-600">{errors.numeroDocumento}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nombre Completo *</label>
-                  <input type="text" name="nombreCompleto" value={form.nombreCompleto || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombreCompleto ? 'border-red-500' : ''}`} />
-                  {errors.nombreCompleto && <p className="text-xs text-red-600">{errors.nombreCompleto}</p>}
+                  <label className="block text-sm font-medium mb-1">Nombres *</label>
+                  <input type="text" name="nombres" value={form.nombres || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.nombres ? 'border-red-500' : ''}`} />
+                  {errors.nombres && <p className="text-xs text-red-600">{errors.nombres}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Apellidos *</label>
+                  <input type="text" name="apellidos" value={form.apellidos || ''} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.apellidos ? 'border-red-500' : ''}`} />
+                  {errors.apellidos && <p className="text-xs text-red-600">{errors.apellidos}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Correo Electrónico *</label>
@@ -427,11 +443,17 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
             <label className="block text-sm font-medium mb-1">Estado *</label>
             <select name="estado" value={form.estado || ''} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
               <option value="">Seleccionar</option>
-              {estadosCert.map((e, index) => (
-                <option key={e} value={e}>
-                  {index + 1}. {e}
-                </option>
-              ))}
+              {/* Render de procesos disponibles con icono 'i' */}
+              <div className="flex flex-col gap-2 mt-2">
+                {estadosCert.map((proceso, idx) => (
+                  <div key={proceso} className="flex items-center gap-2">
+                    <span>{proceso}</span>
+                    <button type="button" title="Información del proceso" className="text-blue-500" onClick={() => setProcesoInfo(proceso)}>
+                      <i className="bi bi-info-circle"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
             </select>
             {errors.estado && <p className="text-xs text-red-600">{errors.estado}</p>}
           </div>
@@ -473,6 +495,29 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
           </div>
         </form>
       </div>
+      {/* 3. Modal/tooltip para mostrar la información del proceso seleccionado */}
+      {procesoInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2">
+              <i className="bi bi-info-circle text-blue-500"></i> Información del Proceso
+            </h3>
+            <p className="text-gray-700 mb-4">
+              {/* Texto fijo por proceso */}
+              {procesoInfo === 'En revisión' && 'Este proceso corresponde a la etapa de revisión documental.'}
+              {procesoInfo === 'Pendiente' && 'El proceso está pendiente de acción por parte del solicitante o encargado.'}
+              {procesoInfo === 'Pendiente firma' && 'El proceso requiere la firma de los documentos correspondientes.'}
+              {procesoInfo === 'Finalizado' && 'El proceso ha sido completado exitosamente.'}
+              {procesoInfo === 'Anulado' && 'El proceso ha sido anulado y no continuará.'}
+              {/* Puedes agregar más textos fijos según los procesos */}
+              {!['En revisión','Pendiente','Pendiente firma','Finalizado','Anulado'].includes(procesoInfo) && 'Información no disponible para este proceso.'}
+            </p>
+            <div className="flex justify-end">
+              <button onClick={() => setProcesoInfo(null)} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

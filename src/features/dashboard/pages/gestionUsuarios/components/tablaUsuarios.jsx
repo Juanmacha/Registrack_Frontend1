@@ -16,7 +16,8 @@ const TablaUsuarios = ({
 
   useEffect(() => {
     const filtrados = usuarios.filter((u) => {
-      const texto = `${u.documentType} ${u.documentNumber} ${u.firstName} ${u.lastName} ${u.email} ${u.role}`.toLowerCase();
+      const nombreCompleto = `${u.firstName} ${u.lastName}`;
+      const texto = `${u.documentType} ${u.documentNumber} ${nombreCompleto} ${u.email} ${u.role}`.toLowerCase();
       return texto.includes(busqueda.toLowerCase());
     });
     setUsuariosFiltrados(filtrados);
@@ -40,8 +41,7 @@ const TablaUsuarios = ({
                 <th className="px-6 py-4 text-center">#</th>
                 <th className="px-6 py-4 text-center">Tipo Doc</th>
                 <th className="px-6 py-4 text-center">Documento</th>
-                <th className="px-6 py-4 text-center">Nombre</th>
-                <th className="px-6 py-4 text-center">Apellido</th>
+                <th className="px-6 py-4 text-center">Nombre Completo</th>
                 <th className="px-6 py-4 text-center">Email</th>
                 <th className="px-6 py-4 text-center">Rol</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
@@ -53,8 +53,7 @@ const TablaUsuarios = ({
                   <td className="px-6 py-4 text-center">{inicio + idx + 1}</td>
                   <td className="px-6 py-4 text-center">{u.documentType}</td>
                   <td className="px-6 py-4 text-center">{u.documentNumber}</td>
-                  <td className="px-6 py-4 text-center">{u.firstName}</td>
-                  <td className="px-6 py-4 text-center">{u.lastName}</td>
+                  <td className="px-6 py-4 text-center">{u.firstName} {u.lastName}</td>
                   <td className="px-6 py-4 text-center">{u.email}</td>
                   <td className="px-6 py-4 text-center">
                     <span

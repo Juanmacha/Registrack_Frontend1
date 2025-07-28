@@ -1,0 +1,83 @@
+import React, { useEffect, useState } from "react";
+import PaymentService from "./PaymentService"; // Asegúrate de que la ruta sea correcta
+
+const PagosComponent = () => {
+  const [datos, setDatos] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [registrosPorPagina] = useState(10);
+  const [totalPaginas, setTotalPaginas] = useState(0);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [busqueda, setBusqueda] = useState("");
+
+  useEffect(() => {
+    initializeMockData();
+    const pagosData = PaymentService.getAll();
+    // Elimina el filtro de isMock para mostrar todos los pagos
+    const filtrar = pagosData.filter(
+      (p) =>
+        p.id_pago.toString().includes(busqueda) ||
+        p.metodo_pago.toLowerCase().includes(busqueda.toLowerCase())
+    );
+    const total = filtrar.length;
+    const paginas = Math.ceil(total / registrosPorPagina);
+    const inicio = (paginaActual - 1) * registrosPorPagina;
+    const datosPaginados = filtrar.slice(inicio, inicio + registrosPorPagina);
+    setDatos(datosPaginados);
+    setTotalPaginas(paginas);
+    setTotalRegistros(total);
+  }, [paginaActual, busqueda]);
+
+  const initializeMockData = () => {
+    // Tu lógica para inicializar datos mock
+  };
+
+  return (
+    <div>
+      <h1>Pagos</h1>
+      <input
+        type="text"
+        placeholder="Buscar..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+      <table>
+        <thead>
+          <tr>
+            <th>ID Pago</th>
+            <th>Método de Pago</th>
+            {/* Otras cabeceras de columna según sea necesario */}
+          </tr>
+        </thead>
+        <tbody>
+          {datos.map((pago) => (
+            <tr key={pago.id_pago}>
+              <td>{pago.id_pago}</td>
+              <td>{pago.metodo_pago}</td>
+              {/* Otras celdas de datos según sea necesario */}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div>
+        <p>
+          Página {paginaActual} de {totalPaginas}
+        </p>
+        <button
+          onClick={() => setPaginaActual(paginaActual - 1)}
+          disabled={paginaActual === 1}
+        >
+          Anterior
+        </button>
+        <button
+          onClick={() => setPaginaActual(paginaActual + 1)}
+          disabled={paginaActual === totalPaginas}
+        >
+          Siguiente
+        </button>
+      </div>
+      <p>Total de registros: {totalRegistros}</p>
+    </div>
+  );
+};
+
+export default PagosComponent;

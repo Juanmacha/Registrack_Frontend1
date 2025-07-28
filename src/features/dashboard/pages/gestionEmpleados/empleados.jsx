@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TablaEmpleados from "./components/tablaEmpleados";
 import { EmployeeService, initializeMockData } from "../../../../utils/mockDataService.js";
-import CrearEmpleadoModal from "./components/crearEmpleado";
 import EditarEmpleadoModal from "./components/editarEmpleado";
 import VerEmpleadoModal from "./components/verEmpleado";
 import EliminarEmpleado from "./components/eliminarEmpleado";
@@ -13,18 +12,6 @@ const Empleados = () => {
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const empleadosPorPagina = 5;
-
-  const [nuevoEmpleado, setNuevoEmpleado] = useState({
-    nombre: "",
-    apellidos: "",
-    documento: "",
-    tipoDocumento: "", // agregado
-    rol: "",
-    email: "", // cambiado de correo a email
-    estado: "activo",
-  });
-
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [empleadoEditando, setEmpleadoEditando] = useState(null);
@@ -51,32 +38,6 @@ const Empleados = () => {
     const empleadosData = EmployeeService.getAll();
     setDatosEmpleados(empleadosData);
   }, []);
-
-  const handleAbrirCrear = () => {
-    setNuevoEmpleado({
-      nombre: "",
-      apellidos: "",
-      documento: "",
-      tipoDocumento: "", // aquí lo agregas
-      rol: "",
-      email: "",
-      estado: "activo",
-    });
-    setMostrarFormulario(true);
-  };
-
-  const handleGuardarEmpleado = (empleado) => {
-    const nuevoEmpleadoCreado = EmployeeService.create(empleado);
-    if (nuevoEmpleadoCreado) {
-      const empleadosActualizados = EmployeeService.getAll();
-      setDatosEmpleados(empleadosActualizados);
-    }
-    setMostrarFormulario(false);
-  };
-
-  const handleCancelar = () => {
-    setMostrarFormulario(false);
-  };
 
   const normalizarTexto = (texto) =>
     texto
@@ -144,24 +105,9 @@ const Empleados = () => {
               />
 
               <div className="flex gap-3">
-                <button
-                  className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
-                  onClick={handleAbrirCrear}
-                >
-                  <i className="bi bi-plus-square"></i> Crear Empleado
-                </button>
                 <DescargarExcelEmpleados empleados={datosEmpleados} />
               </div>
             </div>
-            {mostrarFormulario && (
-              <CrearEmpleadoModal
-                showModal={mostrarFormulario}
-                setShowModal={setMostrarFormulario}
-                nuevoEmpleado={nuevoEmpleado}
-                setNuevoEmpleado={setNuevoEmpleado}
-                handleSubmit={handleGuardarEmpleado}
-              />
-            )}
             {mostrarEditar && empleadoEditando && (
               <EditarEmpleadoModal
                 showModal={mostrarEditar}

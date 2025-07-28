@@ -5,12 +5,13 @@ import Swal from "sweetalert2";
 
 const BotonDescargarExcel = ({ datos, nombreArchivo = "reporte.xlsx" }) => {
   const exportarExcel = () => {
-    const hoja = XLSX.utils.json_to_sheet(datos);
     const libro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(libro, hoja, "Servicios");
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    XLSX.utils.book_append_sheet(libro, hoja, "Datos");
     const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, nombreArchivo);
+    
     Swal.fire({
       icon: "success",
       title: "¡Éxito!",
@@ -36,6 +37,7 @@ const BotonDescargarExcel = ({ datos, nombreArchivo = "reporte.xlsx" }) => {
       onMouseLeave={(e) =>
         (e.currentTarget.style.backgroundColor = "transparent")
       }
+      title="Descargar Excel"
     >
       <i
         className="bi bi-file-earmark-excel-fill"
