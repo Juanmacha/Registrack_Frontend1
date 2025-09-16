@@ -3,26 +3,20 @@ import eliminarRol from "./eliminarRol";
 // import { getEstadoBadge } from "../services/rolesG"; // Removed this import
 import { RoleService } from "../../../../../utils/mockDataService";
 
+const CustomCheckbox = ({ isChecked, onChange }) => {
+  return (
+    <label className="flex items-center justify-center cursor-pointer">
+      <div className="relative">
+        <input type="checkbox" className="sr-only" checked={isChecked} onChange={onChange} />
+        <div className={`block w-10 h-6 rounded-full ${isChecked ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-full' : ''}`}></div>
+      </div>
+    </label>
+  );
+};
+
 const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onToggleEstado }) => {
   // Removed local toggleEstado function
-
-  const getEstadoBadge = (estado, item, onToggleEstado) => {
-    const colorClasses =
-      { 
-        activo: "bg-green-100 text-green-800",
-        inactivo: "bg-red-100 text-red-800",
-        eliminado: "bg-yellow-100 text-yellow-800",
-      }[estado.toLowerCase()] || "bg-gray-100 text-gray-700";
-
-    return (
-      <span
-        className={`px-3 py-1 text-xs font-semibold rounded-full cursor-pointer ${colorClasses}`}
-        onClick={() => onToggleEstado(item)}
-      >
-        {estado}
-      </span>
-    );
-  };
 
   // Contar permisos activos
   const contarPermisosActivos = (permisos) => {
@@ -73,7 +67,10 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onTog
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {getEstadoBadge(rol.estado, rol, onToggleEstado)}
+                    <CustomCheckbox
+                      isChecked={rol.estado.toLowerCase() === 'activo'}
+                      onChange={() => onToggleEstado(rol)}
+                    />
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-2 justify-center flex-wrap">

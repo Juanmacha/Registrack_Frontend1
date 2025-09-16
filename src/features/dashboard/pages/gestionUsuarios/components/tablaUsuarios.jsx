@@ -2,6 +2,18 @@ import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+const CustomCheckbox = ({ isChecked, onChange, disabled }) => {
+  return (
+    <label className={`flex items-center justify-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+      <div className="relative">
+        <input type="checkbox" className="sr-only" checked={isChecked} onChange={onChange} disabled={disabled} />
+        <div className={`block w-10 h-6 rounded-full ${isChecked ? 'bg-green-500' : (disabled ? 'bg-gray-200' : 'bg-gray-300')}`}></div>
+        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-full' : ''}`}></div>
+      </div>
+    </label>
+  );
+};
+
 const TablaUsuarios = ({
   usuarios = [],
   handleDelete,
@@ -69,17 +81,11 @@ const TablaUsuarios = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <button
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
-                        u.estado?.toLowerCase() === "activo"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                      onClick={() => onToggleEstado(u)}
+                    <CustomCheckbox
+                      isChecked={u.estado?.toLowerCase() === 'activo'}
+                      onChange={() => onToggleEstado(u)}
                       disabled={deshabilitarAcciones}
-                    >
-                      {u.estado || "Inactivo"}
-                    </button>
+                    />
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-2 justify-center flex-wrap">

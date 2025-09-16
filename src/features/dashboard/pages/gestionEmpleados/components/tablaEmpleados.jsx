@@ -1,23 +1,18 @@
 import React from "react";
 
-const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar, onToggleEstado, deshabilitarAcciones = false }) => {
-  const getEstadoBadge = (estado, item, onToggleEstado) => {
-    const colorClasses =
-      { 
-        activo: "bg-green-100 text-green-800",
-        inactivo: "bg-red-100 text-red-800",
-        eliminado: "bg-yellow-100 text-yellow-800",
-      }[estado.toLowerCase()] || "bg-gray-100 text-gray-700";
+const CustomCheckbox = ({ isChecked, onChange, disabled }) => {
+  return (
+    <label className={`flex items-center justify-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+      <div className="relative">
+        <input type="checkbox" className="sr-only" checked={isChecked} onChange={onChange} disabled={disabled} />
+        <div className={`block w-10 h-6 rounded-full ${isChecked ? 'bg-green-500' : (disabled ? 'bg-gray-200' : 'bg-gray-300')}`}></div>
+        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-full' : ''}`}></div>
+      </div>
+    </label>
+  );
+};
 
-    return (
-      <span
-        className={`px-3 py-1 text-xs font-semibold rounded-full cursor-pointer ${colorClasses}`}
-        onClick={() => onToggleEstado(item)}
-      >
-        {estado}
-      </span>
-    );
-  };
+const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar, onToggleEstado, deshabilitarAcciones = false }) => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
@@ -47,7 +42,11 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar, onToggleEstado
                   <td className="px-6 py-4 text-center">{item.email}</td>
                   <td className="px-6 py-4 text-center">{item.rol}</td>
                   <td className="px-6 py-4 text-center">
-                    {getEstadoBadge(item.estado, item, onToggleEstado)}
+                    <CustomCheckbox
+                      isChecked={item.estado.toLowerCase() === 'activo'}
+                      onChange={() => onToggleEstado(item)}
+                      disabled={deshabilitarAcciones}
+                    />
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-1 flex-nowrap">
