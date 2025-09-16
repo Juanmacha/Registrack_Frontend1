@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSidebar } from "../../../../shared/contexts/SidebarContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import FullCalendar from "@fullcalendar/react";
@@ -48,6 +49,7 @@ const Calendario = () => {
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [busqueda, setBusqueda] = useState("");
   const calendarRef = useRef(null);
+  const { isSidebarExpanded } = useSidebar();
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -85,7 +87,19 @@ const Calendario = () => {
     } catch (error) {
       // No hacer nada, así no se borra el localStorage
     }
+
+    // Forzar el re-renderizado del calendario después de que el DOM esté estable
+    if (calendarRef.current) {
+      calendarRef.current.getApi().updateSize();
+    }
   }, []);
+
+  useEffect(() => {
+    // Este useEffect se ejecutará cada vez que isSidebarExpanded cambie
+    if (calendarRef.current) {
+      calendarRef.current.getApi().updateSize();
+    }
+  }, [isSidebarExpanded]);
 
   useEffect(() => {
     try {
@@ -653,8 +667,24 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
               className="pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
             />
           </div>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center gap-2 font-medium shadow" onClick={exportarExcelMesActual}>
-            <FaDownload /> Exportar Excel
+          <button
+            className="rounded-circle p-0 d-flex align-items-center justify-content-center"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "transparent",
+              transition: "background-color 0.3s",
+              border: "1px solid green",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+            onClick={exportarExcelMesActual}
+            title="Descargar Excel"
+          >
+            <i
+              className="bi bi-file-earmark-excel-fill"
+              style={{ color: "#107C41", fontSize: "18px" }}
+            ></i>
           </button>
           <button className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-md flex items-center gap-2 font-semibold shadow" onClick={() => abrirModal()}>
             <FaCalendarAlt /> Nueva Cita

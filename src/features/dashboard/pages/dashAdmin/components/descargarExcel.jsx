@@ -31,12 +31,8 @@ const BotonDescargarExcel = ({ datos, nombreArchivo = "reporte.xlsx" }) => {
         transition: "background-color 0.3s",
         border: "1px solid green",
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.backgroundColor = "#86ed53")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.backgroundColor = "transparent")
-      }
+      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
+      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
       title="Descargar Excel"
     >
       <i

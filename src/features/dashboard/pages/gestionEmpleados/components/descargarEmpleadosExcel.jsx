@@ -62,11 +62,11 @@ const DescargarExcelEmpleados = ({ empleados }) => {
 
   return (
     <button
-      className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md flex items-center gap-2"
+      className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
       onClick={exportarExcel}
+      title="Descargar Excel"
     >
-      <i className="bi bi-file-earmark-excel-fill"></i>
-      Descargar Excel
+      <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
     </button>
   );
 };

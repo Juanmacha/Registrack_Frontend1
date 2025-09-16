@@ -1,16 +1,19 @@
 import React from "react";
 
-const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
-  const getEstadoBadge = (estado) => {
-    const color =
+const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar, onToggleEstado, deshabilitarAcciones = false }) => {
+  const getEstadoBadge = (estado, item, onToggleEstado) => {
+    const colorClasses =
       { 
-        Activo: "text-green-800",
-        Inactivo: "text-red-800",
-        Eliminado: "text-yellow-800",
-      }[estado] || "text-gray-700";
+        activo: "bg-green-100 text-green-800",
+        inactivo: "bg-red-100 text-red-800",
+        eliminado: "bg-yellow-100 text-yellow-800",
+      }[estado.toLowerCase()] || "bg-gray-100 text-gray-700";
 
     return (
-      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${color}`}>
+      <span
+        className={`px-3 py-1 text-xs font-semibold rounded-full cursor-pointer ${colorClasses}`}
+        onClick={() => onToggleEstado(item)}
+      >
         {estado}
       </span>
     );
@@ -44,7 +47,7 @@ const TablaEmpleados = ({ empleados, onVer, onEditar, onEliminar }) => {
                   <td className="px-6 py-4 text-center">{item.email}</td>
                   <td className="px-6 py-4 text-center">{item.rol}</td>
                   <td className="px-6 py-4 text-center">
-                    {getEstadoBadge(item.estado)}
+                    {getEstadoBadge(item.estado, item, onToggleEstado)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex justify-center gap-1 flex-nowrap">

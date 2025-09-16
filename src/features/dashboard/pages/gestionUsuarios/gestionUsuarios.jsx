@@ -90,6 +90,34 @@ const GestionUsuarios = () => {
     });
   };
 
+  const handleToggleEstado = (usuario) => {
+    const nuevoEstado = usuario.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
+    console.log("handleToggleEstado: Intentando cambiar estado para usuario:", usuario.id, "a", nuevoEstado);
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: `¿Deseas cambiar el estado de ${usuario.firstName} ${usuario.lastName} a ${nuevoEstado}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, cambiar estado",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const usuarioActualizado = UserService.update(usuario.id, { estado: nuevoEstado });
+        if (usuarioActualizado) {
+          const usuariosActualizados = UserService.getAll();
+          setUsuarios(usuariosActualizados);
+          console.log("handleToggleEstado: Usuarios actualizados después de cambio de estado:", usuariosActualizados);
+          Swal.fire("¡Éxito!", `El estado del usuario ha sido cambiado a ${nuevoEstado}.`, "success");
+        } else {
+          console.error("handleToggleEstado: Fallo al actualizar el usuario en UserService.");
+          Swal.fire("Error", "No se pudo actualizar el estado del usuario.", "error");
+        }
+      }
+    });
+  };
+
   const handleDelete = (usuario) => {
     Swal.fire({
       title: "¿Estás seguro?",
@@ -195,6 +223,7 @@ const GestionUsuarios = () => {
           handleDelete={handleDelete}
           onVer={handleVer}
           onEditar={handleEditar}
+          onToggleEstado={handleToggleEstado}
           deshabilitarAcciones={mostrarModal || mostrarModalVer}
           mostrarBusqueda={false}
           mostrarPaginacion={false}

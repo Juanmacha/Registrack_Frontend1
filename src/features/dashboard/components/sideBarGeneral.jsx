@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TbLayoutGrid,
   TbUser,
@@ -15,10 +15,12 @@ import {
 } from "react-icons/tb";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
+import { useSidebar } from "../../../shared/contexts/SidebarContext";
 
 const SideBarGeneral = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const location = useLocation();
+  const { setIsSidebarExpanded } = useSidebar();
 
   const iconClass = "text-gray-600 w-5 h-5 flex-shrink-0";
   const baseLinkClasses =
@@ -38,12 +40,17 @@ const SideBarGeneral = () => {
   ];
 
   const handleToggleDropdown = () => setIsDropdownOpen(prev => !prev);
-  const handleSidebarLeave = () => setIsDropdownOpen(false);
+  const handleSidebarEnter = () => setIsSidebarExpanded(true);
+  const handleSidebarLeave = () => {
+    setIsDropdownOpen(false);
+    setIsSidebarExpanded(false);
+  };
 
   return (
     <div className="h-screen">
       <div
         className="flex flex-col group transition-all duration-300 h-full"
+        onMouseEnter={handleSidebarEnter}
         onMouseLeave={handleSidebarLeave}
       >
         <aside className="sidebar-responsive w-20 group-hover:w-64 transition-all duration-300 ease-in-out text-gray-900 p-3 h-full">
@@ -128,5 +135,4 @@ const SideBarGeneral = () => {
     </div>
   );
 };
-
 export default SideBarGeneral;

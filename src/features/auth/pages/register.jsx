@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck } from "react-icons/bi";
+import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck, BiShow, BiHide } from "react-icons/bi";
 import { UserService, initializeMockData } from "../../../utils/mockDataService.js";
 import alertService from "../../../utils/alertService.js";
 
@@ -15,6 +15,8 @@ const Register = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -203,25 +205,37 @@ const Register = () => {
         <div className="relative">
           <BiLock className="absolute left-3 top-3 text-blue-700" />
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             placeholder="Contraseña"
             onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full pl-10 pr-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
+          <span
+            className="absolute right-3 top-3 text-blue-700 cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <BiHide /> : <BiShow />}
+          </span>
         </div>
 
         <div className="relative">
           <BiLock className="absolute left-3 top-3 text-blue-700" />
           <input
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
             placeholder="Confirmar contraseña"
             onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full pl-10 pr-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
+          <span
+            className="absolute right-3 top-3 text-blue-700 cursor-pointer"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? <BiHide /> : <BiShow />}
+          </span>
         </div>
 
         <button

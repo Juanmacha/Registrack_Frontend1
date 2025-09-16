@@ -19,7 +19,7 @@ const ScrollToTopButton = () => {
     <button
       onClick={scrollToTop}
       aria-label="Subir al inicio"
-      className="fixed bottom-8 right-8 z-50 bg-white border-2 border-blue-600 shadow-lg rounded-full p-3 flex items-center justify-center transition-colors duration-200 hover:bg-blue-600 group"
+      className="fixed bottom-8 right-8 z-50 bg-white border-2 border-blue-600 shadow-lg rounded-full p-3 flex items-center justify-center transition-all duration-300 hover:bg-blue-600 hover:scale-105 group"
       style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.10)' }}
     >
       <svg

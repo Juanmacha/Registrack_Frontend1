@@ -9,13 +9,37 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
     return null;
   }
 
+  const [formData, setFormData] = useState({
+    id: "",
+    nombre: "",
+    descripcion: "",
+    estado: "activo", // Añadir estado al formData
+    permisos: {},
+  });
+
+  useEffect(() => {
+    if (rolEditable) {
+      setFormData({
+        id: rolEditable.id,
+        nombre: rolEditable.nombre,
+        descripcion: rolEditable.descripcion || "",
+        estado: rolEditable.estado ? rolEditable.estado.toLowerCase() : "activo", // Asegurar minúsculas
+        permisos: rolEditable.permisos || {},
+      });
+    }
+  }, [rolEditable]);
+
+  if (!rolEditable) {
+    return null;
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Guardando cambios para rol:", rolEditable);
+    console.log("Guardando cambios para rol:", formData);
 
     // Usar RoleService para actualizar el rol
-    const rolActualizado = RoleService.update(rolEditable.id, rolEditable);
+    const rolActualizado = RoleService.update(formData.id, formData);
     if (rolActualizado) {
       setRoles(RoleService.getAll());
       setRolEditable(null);
@@ -26,7 +50,7 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
   };
 
   const handleCheckboxChange = (recurso, accion) => {
-    setRolEditable((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       permisos: {
         ...prev.permisos,
@@ -36,6 +60,11 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
         },
       },
     }));
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Mapear los recursos del sistema centralizado
@@ -58,12 +87,12 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <img
-              src={`https://api.dicebear.com/7.x/initials/svg?seed=${rolEditable.nombre}`}
-              alt={rolEditable.nombre}
+              src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.nombre}`}
+              alt={formData.nombre}
               className="w-12 h-12 rounded-full"
             />
             <div>
-              <h2 className="text-xl font-bold text-gray-800">Editar Rol: {rolEditable.nombre}</h2>
+              <h2 className="text-xl font-bold text-gray-800">Editar Rol: {formData.nombre}</h2>
               <p className="text-sm text-gray-600">Modifica los permisos del rol</p>
             </div>
           </div>
@@ -83,8 +112,8 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
                   </label>
                   <input
                     type="text"
-                    value={rolEditable.nombre}
-                    onChange={(e) => setRolEditable({ ...rolEditable, nombre: e.target.value })}
+                    value={formData.nombre}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -95,10 +124,25 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
                   </label>
                   <input
                     type="text"
-                    value={rolEditable.descripcion || ''}
-                    onChange={(e) => setRolEditable({ ...rolEditable, descripcion: e.target.value })}
+                    value={formData.descripcion || ''}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+                {/* Nuevo campo de estado */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Estado
+                  </label>
+                  <select
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="activo">Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -127,7 +171,7 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
                           <td key={accion} className="px-4 py-3 text-center border-b">
                             <input
                               type="checkbox"
-                              checked={!!rolEditable.permisos?.[recurso.key]?.[accion]}
+                              checked={!!formData.permisos?.[recurso.key]?.[accion]}
                               onChange={() => handleCheckboxChange(recurso.key, accion)}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                             />

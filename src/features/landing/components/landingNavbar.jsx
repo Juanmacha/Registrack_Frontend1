@@ -49,22 +49,22 @@ const NavBarLanding = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="navbar-container w-full bg-white fixed top-0 left-0 z-50">
-      <div className="max-w-screen-xl mx-auto h-28 flex items-center px-6 relative">
+    <nav className="navbar-container w-full bg-white fixed top-0 left-0 z-50 shadow-md">
+      <div className="max-w-screen-xl mx-auto h-24 flex items-center justify-between px-4 sm:px-6 lg:px-8 relative">
         {/* Columna izquierda: Logo */}
         <div className="flex items-center flex-shrink-0">
           <Link to="/">
             <img
               src="/images/logoNombre.png"
               alt="Logo"
-              className="navbar-logo h-20 w-auto object-contain cursor-pointer"
+              className="navbar-logo h-16 sm:h-20 w-auto object-contain cursor-pointer"
             />
           </Link>
         </div>
 
         {/* Columna central: Opciones centradas */}
-        <div className="flex-1 flex justify-center">
-          <div className="navbar-menu flex gap-10 text-lg">
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="navbar-menu flex gap-6 lg:gap-10 text-lg">
             {!user ? (
               <>
                 <ScrollLink
@@ -153,18 +153,18 @@ const NavBarLanding = () => {
         </div>
 
         {/* Columna derecha: Botones de sesión o perfil */}
-        <div className="flex gap-4 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-4 flex-shrink-0">
           {!user ? (
             <>
               <Link
                 to="/login"
-                className="no-underline px-6 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded transition hover:bg-blue-100"
+                className="no-underline px-5 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded-md transition hover:bg-blue-50"
               >
                 Iniciar Sesión
               </Link>
               <Link
                 to="/register"
-                className="no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded transition hover:bg-blue-800"
+                className="no-underline px-5 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800"
               >
                 Regístrate
               </Link>
@@ -202,20 +202,20 @@ const NavBarLanding = () => {
         </div>
 
         {/* Botón hamburguesa */}
-        <div className="navbar-mobile md:hidden ml-4">
+        <div className="md:hidden">
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
             className="text-gray-700 hover:text-blue-600 focus:outline-none"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={menuAbierto ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
             </svg>
           </button>
         </div>
 
         {/* Menú desplegable para móviles */}
         {menuAbierto && (
-          <div className="navbar-menu md:hidden absolute top-28 left-0 w-full bg-white shadow-md flex flex-col items-center gap-4 py-4 z-40">
+          <div className="md:hidden absolute top-24 left-0 w-full bg-white shadow-md flex flex-col items-center gap-4 py-4 z-40">
             {!user ? (
               <>
                 <ScrollLink
@@ -261,20 +261,22 @@ const NavBarLanding = () => {
                 >
                   Ayuda
                 </Link>
-                <Link
-                  to="/login"
-                  className="text-blue-700 font-semibold"
-                  onClick={() => setMenuAbierto(false)}
-                >
-                  Iniciar Sesión
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800"
-                  onClick={() => setMenuAbierto(false)}
-                >
-                  Regístrate
-                </Link>
+                <div className="flex flex-col items-center gap-4 mt-4 w-full px-6">
+                  <Link
+                    to="/login"
+                    className="w-full text-center no-underline px-6 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded-md transition hover:bg-blue-50"
+                    onClick={() => setMenuAbierto(false)}
+                  >
+                    Iniciar Sesión
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="w-full text-center no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800"
+                    onClick={() => setMenuAbierto(false)}
+                  >
+                    Regístrate
+                  </Link>
+                </div>
               </>
             ) : (
               <>
@@ -328,22 +330,24 @@ const NavBarLanding = () => {
                 >
                   Ayuda
                 </Link>
-                <Link
-                  to="/profile"
-                  className="text-blue-700"
-                  onClick={() => setMenuAbierto(false)}
-                >
-                  Perfil
-                </Link>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setMenuAbierto(false);
-                  }}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                >
-                  Cerrar Sesión
-                </button>
+                <div className="flex flex-col items-center gap-4 mt-4 w-full px-6">
+                  <Link
+                    to="/profile"
+                    className="w-full text-center text-blue-700 font-semibold"
+                    onClick={() => setMenuAbierto(false)}
+                  >
+                    Perfil
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMenuAbierto(false);
+                    }}
+                    className="w-full text-center bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
               </>
             )}
           </div>

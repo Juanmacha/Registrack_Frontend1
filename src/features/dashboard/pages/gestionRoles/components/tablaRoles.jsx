@@ -1,16 +1,27 @@
 import React from "react";
 import eliminarRol from "./eliminarRol";
-import { getEstadoBadge } from "../services/rolesG";
+// import { getEstadoBadge } from "../services/rolesG"; // Removed this import
 import { RoleService } from "../../../../../utils/mockDataService";
 
-const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => {
-  // Cambiar estado del rol (Activo/Inactivo)
-  const toggleEstado = (rol) => {
-    const nuevoEstado = rol.estado === "Activo" ? "Inactivo" : "Activo";
-    const rolActualizado = RoleService.update(rol.id, { estado: nuevoEstado });
-    if (rolActualizado) {
-      setRoles(RoleService.getAll());
-    }
+const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onToggleEstado }) => {
+  // Removed local toggleEstado function
+
+  const getEstadoBadge = (estado, item, onToggleEstado) => {
+    const colorClasses =
+      { 
+        activo: "bg-green-100 text-green-800",
+        inactivo: "bg-red-100 text-red-800",
+        eliminado: "bg-yellow-100 text-yellow-800",
+      }[estado.toLowerCase()] || "bg-gray-100 text-gray-700";
+
+    return (
+      <span
+        className={`px-3 py-1 text-xs font-semibold rounded-full cursor-pointer ${colorClasses}`}
+        onClick={() => onToggleEstado(item)}
+      >
+        {estado}
+      </span>
+    );
   };
 
   // Contar permisos activos
@@ -33,8 +44,7 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
         <table className="table-auto w-full divide-y divide-gray-100">
           <thead className="text-left text-sm text-gray-500 bg-gray-50">
             <tr>
-              <th className="px-6 py-4 font-medium text-center">Rol</th>
-              <th className="px-6 py-4 font-medium text-center">Descripción</th>
+              <th className="px-6 py-4 font-medium text-left">Rol</th>
               <th className="px-6 py-4 font-medium text-center">Permisos</th>
               <th className="px-6 py-4 font-medium text-center">Estado</th>
               <th className="px-6 py-4 font-medium text-center">Acciones</th>
@@ -42,23 +52,17 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
             {roles.map((rol, index) => {
-              const { color, texto } = getEstadoBadge(rol.estado);
               const permisosActivos = contarPermisosActivos(rol.permisos);
               return (
                 <tr key={rol.id || index}>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3 justify-center">
+                    <div className="flex items-center gap-3 justify-start">
                       <img
                         src={`https://api.dicebear.com/7.x/initials/svg?seed=${rol.nombre}`}
                         alt={rol.nombre}
                         className="w-10 h-10 rounded-full"
                       />
                       <div className="text-sm font-semibold text-gray-800">{rol.nombre}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-gray-600 max-w-xs truncate" title={rol.descripcion}>
-                      {rol.descripcion || "Sin descripción"}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -69,18 +73,7 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2 relative">
-                      <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto}</span>
-                      <label className="inline-flex relative items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={rol.estado === "Activo"}
-                          onChange={() => toggleEstado(rol)}
-                        />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                      </label>
-                    </div>
+                    {getEstadoBadge(rol.estado, rol, onToggleEstado)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-2 justify-center flex-wrap">

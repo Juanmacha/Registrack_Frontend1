@@ -233,12 +233,15 @@ export const UserService = {
   
   // Actualizar usuario
   update(id, userData) {
+    console.log("UserService.update: Recibiendo id:", id, "y userData:", userData);
     const usuarios = this.getAll();
+    console.log("UserService.update: Usuarios antes de actualizar:", usuarios);
     const index = usuarios.findIndex(user => user.id === id);
     if (index !== -1) {
       const oldUser = usuarios[index];
       usuarios[index] = { ...usuarios[index], ...userData };
       setToStorage(STORAGE_KEYS.USUARIOS, usuarios);
+      console.log("UserService.update: Usuarios después de actualizar:", usuarios);
       
       // Sincronizar con empleados si el rol cambió
       if (oldUser.role !== userData.role) {
@@ -252,6 +255,7 @@ export const UserService = {
       
       return usuarios[index];
     }
+    console.log("UserService.update: Usuario con id", id, "no encontrado.");
     return null;
   },
   
@@ -297,7 +301,7 @@ export const UserService = {
         apellidos: user.lastName,
         email: user.email,
         rol: user.role,
-        estado: 'Activo',
+        estado: 'activo',
         fechaContratacion: new Date().toISOString().split('T')[0],
         departamento: user.role === 'Administrador' ? 'Administración' : 'General',
         telefono: '',
@@ -380,7 +384,7 @@ export const EmployeeService = {
     const newEmployee = {
       id: Date.now().toString(),
       ...employeeData,
-      estado: 'Activo'
+      estado: 'activo'
     };
     empleados.push(newEmployee);
     setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
@@ -393,12 +397,15 @@ export const EmployeeService = {
   
   // Actualizar empleado
   update(id, employeeData) {
+    console.log("EmployeeService.update: Recibiendo id:", id, "y employeeData:", employeeData);
     const empleados = this.getAll();
+    console.log("EmployeeService.update: Empleados antes de actualizar:", empleados);
     const index = empleados.findIndex(emp => emp.id === id);
     if (index !== -1) {
       const oldEmployee = empleados[index];
       empleados[index] = { ...empleados[index], ...employeeData };
       setToStorage(STORAGE_KEYS.EMPLEADOS, empleados);
+      console.log("EmployeeService.update: Empleados después de actualizar:", empleados);
       
       // Sincronizar con usuarios si el rol cambió
       if (oldEmployee.rol !== employeeData.rol) {
@@ -407,6 +414,7 @@ export const EmployeeService = {
       
       return empleados[index];
     }
+    console.log("EmployeeService.update: Empleado con id", id, "no encontrado.");
     return null;
   },
   
@@ -432,7 +440,7 @@ export const EmployeeService = {
   getStats() {
     const empleados = this.getAll();
     const total = empleados.length;
-    const activos = empleados.filter(emp => emp.estado === 'Activo').length;
+    const activos = empleados.filter(emp => emp.estado === 'activo').length;
     const porRol = {};
     
     empleados.forEach(emp => {

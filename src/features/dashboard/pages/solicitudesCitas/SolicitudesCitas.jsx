@@ -156,10 +156,23 @@ const SolicitudesCitas = () => {
             </select>
 
             <button
-              className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap"
+              className="rounded-circle p-0 d-flex align-items-center justify-content-center"
+              style={{
+                width: "40px",
+                height: "40px",
+                backgroundColor: "transparent",
+                transition: "background-color 0.3s",
+                border: "1px solid green",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
               onClick={handleExportarExcel}
+              title="Descargar Excel"
             >
-              <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+              <i
+                className="bi bi-file-earmark-excel-fill"
+                style={{ color: "#107C41", fontSize: "18px" }}
+              ></i>
             </button>
           </div>
         </div>

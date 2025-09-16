@@ -75,30 +75,27 @@ const HeroVideo = () => (
 
 // Componente para la sección "Quiénes somos"
 const QuienesSomos = () => (
-  <section
-    id="nosotros"
-    className="bg-[#275FAA] py-20 px-6 md:px-12 lg:px-24"
-  >
-    <div className="max-w-screen-xl mx-auto bg-white rounded-xl shadow-lg p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+  <section id="nosotros" className="pt-20">
+    <div className="max-w-screen-xl mx-auto bg-[#275FAA] rounded-xl shadow-lg p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
       <div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-left text-[#275FAA] tracking-tight">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-left text-white tracking-tight">
           ¿Quiénes somos?
         </h2>
-        <p className="text-base md:text-lg text-gray-700 mb-4 text-left leading-relaxed">
+        <p className="text-base md:text-lg text-white mb-4 text-left leading-relaxed">
           En{" "}
-          <span className="font-semibold text-[#275FAA]">Registrack</span>,
+          <span className="font-semibold">Registrack</span>,
           somos el equipo que te brinda la tranquilidad y la certeza de
           tener tu marca protegida. Con más de 12 años de experiencia en
           Propiedad Industrial, nos dedicamos a ser tu aliado estratégico en
           Medellín y a nivel internacional.
         </p>
-        <p className="text-base md:text-lg text-gray-700 mb-4 text-left leading-relaxed">
+        <p className="text-base md:text-lg text-white mb-4 text-left leading-relaxed">
           Nos mueve tu éxito. Nos apasiona proteger la identidad de tu
           negocio y asegurar su crecimiento. Elegirnos significa contar con
           la experiencia, el rigor legal y el compromiso de un equipo que
           valora tu marca tanto como tú.
         </p>
-        <blockquote className="border-l-4 border-[#275FAA] pl-4 italic text-gray-600 bg-gray-50 py-2">
+        <blockquote className="border-l-4 border-white pl-4 italic text-gray-200 bg-gray-50/10 py-2">
           En Registrack, somos tu respaldo confiable.
         </blockquote>
       </div>
@@ -151,7 +148,7 @@ const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }
 
 // Componente para la sección de servicios
 const ServiciosSection = ({ servicios, loading, onSaberMas, onAdquirir }) => (
-  <section id="servicios" className="py-20 px-6 md:px-12 lg:px-24 bg-white">
+  <section id="servicios" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
     <div className="max-w-screen-xl mx-auto">
       <h2 className="text-4xl font-bold text-center mb-12 text-[#275FAA]">
         Nuestros Servicios
@@ -174,6 +171,7 @@ const ServiciosSection = ({ servicios, loading, onSaberMas, onAdquirir }) => (
         </div>
       )}
     </div>
+    <QuienesSomos />
   </section>
 );
 
@@ -277,13 +275,41 @@ const Hero = () => {
     }, 100);
   };
 
+  const handleAgendarCitaClick = async () => {
+    const user = authData.getUser && typeof authData.getUser === 'function'
+      ? authData.getUser()
+      : JSON.parse(localStorage.getItem('user'));
+
+    if (!user) {
+      localStorage.setItem('postLoginRedirect', window.location.pathname);
+      await alertService.warning(
+        "¡Atención!",
+        "Debes estar logueado para realizar esta opción.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
+      navigate('/login');
+      return;
+    }
+
+    if (user.rol && user.rol.toLowerCase() === 'admin') {
+      await alertService.warning(
+        "¡Atención!",
+        "Esta acción solo está disponible para clientes.",
+        { confirmButtonText: "Entiendo", showCancelButton: false }
+      );
+      return;
+    }
+
+    setModalCitaOpen(true);
+  };
+
   return (
     <div className="min-h-screen w-full bg-white overflow-y-scroll no-scrollbar font-sans pt-5">
       {/* Hero Section */}
-      <header className="-mt-6 ml-4 md:ml-12 lg:ml-24 px-3 md:px-12 lg:px-20 bg-white">
+      <header className="bg-white px-4 sm:px-6 lg:px-8">
         <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-10 md:gap-16 min-h-[420px]">
           <div className="flex flex-col justify-center">
-            <h1 className="text-6xl text-left font-bold bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
+            <h1 className="text-5xl md:text-6xl text-left font-bold bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
               Certimarcas
             </h1>
             <p className="text-lg text-gray-700 mb-6 text-left">
@@ -292,16 +318,16 @@ const Hero = () => {
               legales. ¡Haz que tu marca sea solo tuya, hoy!
             </p>
             <HeroFeatures />
-            <div className="w-full text-left pt-2 flex gap-3">
+            <div className="w-full text-left pt-2 flex flex-col sm:flex-row gap-3">
               <a href="#nosotros">
-                <button className="bg-blue-700 text-white px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-800 transition font-bold">
+                <button className="bg-blue-700 text-white px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-800 transition font-bold w-full sm:w-auto">
                   Conocer más
                 </button>
               </a>
               <button
-                className="bg-blue-100 text-blue-800 px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow"
+                className="bg-blue-100 text-blue-800 px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow w-full sm:w-auto"
                 style={{ minWidth: 0 }}
-                onClick={() => setModalCitaOpen(true)}
+                onClick={handleAgendarCitaClick}
               >
                 No te quedes con dudas, agenda tu cita
               </button>
@@ -310,42 +336,6 @@ const Hero = () => {
           <HeroVideo />
         </div>
       </header>
-
-      {/* ¿Quiénes somos? */}
-      <section
-        id="nosotros"
-        className="bg-[#275FAA] py-20 px-6 md:px-12 lg:px-24"
-      >
-        <div className="max-w-screen-xl mx-auto bg-white rounded-xl shadow-lg p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-left text-[#275FAA] tracking-tight">
-              ¿Quiénes somos?
-            </h2>
-            <p className="text-base md:text-lg text-gray-700 mb-4 text-left leading-relaxed">
-              En{" "}
-              <span className="font-semibold text-[#275FAA]">Registrack</span>,
-              somos el equipo que te brinda la tranquilidad y la certeza de
-              tener tu marca protegida. Con más de 12 años de experiencia en
-              Propiedad Industrial, nos dedicamos a ser tu aliado estratégico en
-              Medellín y a nivel internacional.
-            </p>
-            <p className="text-base md:text-lg text-gray-700 mb-4 text-left leading-relaxed">
-              Nos mueve tu éxito. Nos apasiona proteger la identidad de tu
-              negocio y asegurar su crecimiento. Elegirnos significa contar con
-              la experiencia, el rigor legal y el compromiso de un equipo que
-              valora tu marca tanto como tú.
-            </p>
-            <blockquote className="border-l-4 border-[#275FAA] pl-4 italic text-gray-600 bg-gray-50 py-2">
-              En Registrack, somos tu respaldo confiable.
-            </blockquote>
-          </div>
-          <img
-            src="/images/trato.jpeg"
-            alt="Asesoría personalizada"
-            className="w-full h-full max-h-[500px] object-contain animate-float"
-          />
-        </div>
-      </section>
 
       <ServiciosSection
         servicios={servicios}

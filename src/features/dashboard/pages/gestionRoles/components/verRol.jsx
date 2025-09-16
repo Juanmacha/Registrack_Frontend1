@@ -60,7 +60,7 @@ const DetalleRolModal = ({ rol, onClose, modelosDisponibles }) => {
               <div>
                 <span className="text-sm font-medium text-gray-600">Estado:</span>
                 <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
-                  rol.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  rol.estado.toLowerCase() === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
                   {rol.estado}
                 </span>

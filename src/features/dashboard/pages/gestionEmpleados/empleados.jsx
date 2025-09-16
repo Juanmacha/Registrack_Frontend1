@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import TablaEmpleados from "./components/tablaEmpleados";
 import { EmployeeService, initializeMockData } from "../../../../utils/mockDataService.js";
 import EditarEmpleadoModal from "./components/editarEmpleado";
@@ -16,6 +17,11 @@ const Empleados = () => {
   const [mostrarEditar, setMostrarEditar] = useState(false);
   const [empleadoEditando, setEmpleadoEditando] = useState(null);
 
+  const [mostrarVer, setMostrarVer] = useState(false);
+  const [empleadoViendo, setEmpleadoViendo] = useState(null);
+
+  console.log("Empleados Component Render: mostrarEditar=", mostrarEditar, "mostrarVer=", mostrarVer);
+
   const handleEditar = (empleado) => {
     setEmpleadoEditando(empleado);
     setMostrarEditar(true);
@@ -30,8 +36,6 @@ const Empleados = () => {
     setMostrarEditar(false);
   };
 
-  const [mostrarVer, setMostrarVer] = useState(false);
-  const [empleadoViendo, setEmpleadoViendo] = useState(null);
 
   useEffect(() => {
     initializeMockData();
@@ -67,6 +71,34 @@ const Empleados = () => {
   const handleVer = (empleado) => {
     setEmpleadoViendo(empleado);
     setMostrarVer(true);
+  };
+
+  const handleToggleEstado = (empleado) => {
+    const nuevoEstado = empleado.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
+    console.log("handleToggleEstado (Empleados): Intentando cambiar estado para empleado:", empleado.id, "a", nuevoEstado);
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: `¿Deseas cambiar el estado de ${empleado.nombre} ${empleado.apellidos} a ${nuevoEstado}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, cambiar estado",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const empleadoActualizado = EmployeeService.update(empleado.id, { estado: nuevoEstado });
+        if (empleadoActualizado) {
+          const empleadosActualizados = EmployeeService.getAll();
+          setDatosEmpleados(empleadosActualizados);
+          console.log("handleToggleEstado (Empleados): Empleados actualizados después de cambio de estado:", empleadosActualizados);
+          Swal.fire("¡Éxito!", `El estado del empleado ha sido cambiado a ${nuevoEstado}.`, "success");
+        } else {
+          console.error("handleToggleEstado (Empleados): Fallo al actualizar el empleado en EmployeeService.");
+          Swal.fire("Error", "No se pudo actualizar el estado del empleado.", "error");
+        }
+      }
+    });
   };
 
   const handleEliminar = (empleado) => {
@@ -123,6 +155,8 @@ const Empleados = () => {
               onVer={handleVer}
               onEditar={handleEditar}
               onEliminar={handleEliminar}
+              onToggleEstado={handleToggleEstado}
+              deshabilitarAcciones={mostrarEditar || mostrarVer}
             />
             {mostrarVer && empleadoViendo && (
               <VerEmpleadoModal

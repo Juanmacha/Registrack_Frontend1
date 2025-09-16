@@ -1,5 +1,6 @@
 // pages/gestionRoles/index.jsx
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import TablaRoles from "./components/tablaRoles";
 import CrearRolModal from "./components/crearRol";
 import EditarRolModal from "./components/editarRol";
@@ -61,6 +62,31 @@ const GestionRoles = () => {
     }));
   };
 
+  const handleToggleEstado = (rol) => {
+    const nuevoEstado = rol.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: `¿Deseas cambiar el estado de ${rol.nombre} a ${nuevoEstado}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, cambiar estado",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const rolActualizado = RoleService.update(rol.id, { estado: nuevoEstado });
+        if (rolActualizado) {
+          const rolesActualizados = RoleService.getAll();
+          setRoles(rolesActualizados);
+          Swal.fire("¡Éxito!", `El estado del rol ha sido cambiado a ${nuevoEstado}.`, "success");
+        } else {
+          Swal.fire("Error", "No se pudo actualizar el estado del rol.", "error");
+        }
+      }
+    });
+  };
+
   const handleActualizarRoles = () => {
     setRoles(RoleService.getAll());
   };
@@ -85,6 +111,7 @@ const GestionRoles = () => {
           setRolEditable={setRolEditable}
           setRolSeleccionado={setRolSeleccionado}
           setRoles={setRoles}
+          onToggleEstado={handleToggleEstado}
         />
 
         <CrearRolModal

@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer id="footer" className="footer-container mt-15 py-12 px-6 flex justify-center">
+    <footer id="footer" className="footer-container mt-12 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="card-responsive w-full max-w-screen-xl bg-white rounded-xl shadow-md hover:shadow-xl transition flex flex-col md:flex-row overflow-hidden">
         {/* Columna izquierda */}
         <div className="w-full md:w-1/2 px-8 py-6 space-y-4">
@@ -16,7 +16,7 @@ const Footer = () => {
           </p>
           <div className="text-sm text-gray-600 space-y-1 text-left">
             <p><strong>Dirección:</strong> Edificio La Ceiba, Local 329, Medellín, Colombia</p>
-            <p><strong>Teléfono:</strong> +57 300 123 4567</p>
+            <p><strong>Teléfono:</strong> +57 300 123 4567</p>S
             <p><strong>Correo:</strong> contacto@certimarcas.com</p>
             <p><strong>Horario:</strong> Lunes a Viernes, 8:00am - 6:00pm</p>
           </div>

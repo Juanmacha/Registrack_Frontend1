@@ -7,6 +7,7 @@ const TablaUsuarios = ({
   handleDelete,
   onVer,
   onEditar,
+  onToggleEstado,
   deshabilitarAcciones = false,
   registrosPorPagina = 5
 }) => {
@@ -44,6 +45,7 @@ const TablaUsuarios = ({
                 <th className="px-6 py-4 text-center">Nombre Completo</th>
                 <th className="px-6 py-4 text-center">Email</th>
                 <th className="px-6 py-4 text-center">Rol</th>
+                <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center">Acciones</th>
               </tr>
             </thead>
@@ -65,6 +67,19 @@ const TablaUsuarios = ({
                     >
                       {u.role}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
+                        u.estado?.toLowerCase() === "activo"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                      onClick={() => onToggleEstado(u)}
+                      disabled={deshabilitarAcciones}
+                    >
+                      {u.estado || "Inactivo"}
+                    </button>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-2 justify-center flex-wrap">

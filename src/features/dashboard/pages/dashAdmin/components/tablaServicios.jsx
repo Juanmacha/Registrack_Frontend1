@@ -134,12 +134,23 @@ const TablaServicios = () => {
           <h2 className="text-lg font-bold text-gray-800 tracking-wide">Servicios con Inactividad Prolongada</h2>
           <div className="ml-auto flex gap-2">
             <button
+              className="rounded-circle p-0 d-flex align-items-center justify-content-center"
+              style={{
+                width: "40px",
+                height: "40px",
+                backgroundColor: "transparent",
+                transition: "background-color 0.3s",
+                border: "1px solid green",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
               onClick={descargarExcelInactivos}
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
-              title="Descargar Excel y ver tabla de ventas"
+              title="Descargar Excel"
             >
-              <Download size={16} />
-              Descargar Excel
+              <i
+                className="bi bi-file-earmark-excel-fill"
+                style={{ color: "#107C41", fontSize: "18px" }}
+              ></i>
             </button>
           </div>
         </div>

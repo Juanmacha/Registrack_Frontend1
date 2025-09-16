@@ -32,8 +32,8 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones, 
                   <button
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
                       c.estado === "Activo"
-                        ? "text-green-800"
-                        : "text-red-800"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                     onClick={() => onToggleEstado(idx)}
                     disabled={deshabilitarAcciones}
