@@ -16,7 +16,7 @@ const Footer = () => {
           </p>
           <div className="text-sm text-gray-600 space-y-1 text-left">
             <p><strong>Dirección:</strong> Edificio La Ceiba, Local 329, Medellín, Colombia</p>
-            <p><strong>Teléfono:</strong> +57 300 123 4567</p>S
+            <p><strong>Teléfono:</strong> +57 300 123 4567</p>
             <p><strong>Correo:</strong> contacto@certimarcas.com</p>
             <p><strong>Horario:</strong> Lunes a Viernes, 8:00am - 6:00pm</p>
           </div>
