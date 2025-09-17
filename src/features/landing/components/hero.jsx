@@ -30,32 +30,44 @@ const FORMULARIOS_POR_SERVICIO = {
 
 // Componente para las características del hero
 const HeroFeatures = () => (
-  <ul className="space-y-4 text-base text-gray-700 mb-6">
-    <li className="flex items-start gap-3">
-      <FaBalanceScale className="text-blue-600 mt-1" />
-      <span>
-        <strong>Soporte legal completo:</strong> Contamos con abogados
-        especializados en propiedad intelectual que te asesoran desde
-        el inicio hasta la obtención del certificado.
-      </span>
-    </li>
-    <li className="flex items-start gap-3">
-      <FaMedal className="text-yellow-500 mt-1" />
-      <span>
-        <strong>Más de 12 años de experiencia:</strong> Hemos ayudado
-        a cientos de emprendedores y empresas en Colombia a proteger
-        sus marcas con éxito.
-      </span>
-    </li>
-    <li className="flex items-start gap-3">
-      <FaRocket className="text-green-500 mt-1" />
-      <span>
-        <strong>Trámites 100% en línea:</strong> Ahorra tiempo y evita
-        desplazamientos. Todo el proceso es digital, ágil y con
-        atención personalizada.
-      </span>
-    </li>
-  </ul>
+  <div className="space-y-4 text-base text-gray-700 mb-6">
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+        <FaBalanceScale className="text-blue-700 text-sm" />
+      </div>
+      <div>
+        <h3 className="font-bold text-gray-800 mb-1 text-base">Soporte legal completo:</h3>
+        <p className="text-gray-700 text-base">
+          Contamos con abogados especializados en propiedad intelectual que te asesoran desde
+          el inicio hasta la obtención del certificado.
+        </p>
+      </div>
+    </div>
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+        <FaMedal className="text-blue-700 text-sm" />
+      </div>
+      <div>
+        <h3 className="font-bold text-gray-800 mb-1 text-base">Más de 12 años de experiencia:</h3>
+        <p className="text-gray-700 text-base">
+          Hemos ayudado a cientos de emprendedores y empresas en Colombia a proteger
+          sus marcas con éxito.
+        </p>
+      </div>
+    </div>
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+        <FaRocket className="text-blue-700 text-sm" />
+      </div>
+      <div>
+        <h3 className="font-bold text-gray-800 mb-1 text-base">Trámites 100% en línea:</h3>
+        <p className="text-gray-700 text-base">
+          Ahorra tiempo y evita desplazamientos. Todo el proceso es digital, ágil y con
+          atención personalizada.
+        </p>
+      </div>
+    </div>
+  </div>
 );
 
 // Componente para el video del hero
@@ -292,15 +304,14 @@ const Hero = () => {
               legales. ¡Haz que tu marca sea solo tuya, hoy!
             </p>
             <HeroFeatures />
-            <div className="w-full text-left pt-2 flex gap-3">
+            <div className="w-full text-left pt-3 pb-8 flex gap-4">
               <a href="#nosotros">
-                <button className="bg-blue-700 text-white px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-800 transition font-bold">
+                <button className="bg-blue-700 text-white px-6 py-3 rounded-lg text-base hover:bg-blue-800 transition font-bold whitespace-nowrap">
                   Conocer más
                 </button>
               </a>
               <button
-                className="bg-blue-100 text-blue-800 px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow"
-                style={{ minWidth: 0 }}
+                className="bg-blue-100 text-blue-700 px-6 py-3 rounded-lg text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow whitespace-nowrap"
                 onClick={() => setModalCitaOpen(true)}
               >
                 No te quedes con dudas, agenda tu cita

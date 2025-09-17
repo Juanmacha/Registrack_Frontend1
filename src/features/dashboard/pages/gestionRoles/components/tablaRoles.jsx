@@ -34,7 +34,6 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
           <thead className="text-left text-sm text-gray-500 bg-gray-50">
             <tr>
               <th className="px-6 py-4 font-medium text-center">Rol</th>
-              <th className="px-6 py-4 font-medium text-center">Descripción</th>
               <th className="px-6 py-4 font-medium text-center">Permisos</th>
               <th className="px-6 py-4 font-medium text-center">Estado</th>
               <th className="px-6 py-4 font-medium text-center">Acciones</th>
@@ -46,20 +45,8 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles }) => 
               const permisosActivos = contarPermisosActivos(rol.permisos);
               return (
                 <tr key={rol.id || index}>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3 justify-center">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${rol.nombre}`}
-                        alt={rol.nombre}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="text-sm font-semibold text-gray-800">{rol.nombre}</div>
-                    </div>
-                  </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="text-sm text-gray-600 max-w-xs truncate" title={rol.descripcion}>
-                      {rol.descripcion || "Sin descripción"}
-                    </div>
+                    <div className="text-sm font-semibold text-gray-800">{rol.nombre}</div>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col items-center">

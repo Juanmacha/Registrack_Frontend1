@@ -158,13 +158,13 @@ const NavBarLanding = () => {
             <>
               <Link
                 to="/login"
-                className="no-underline px-6 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded transition hover:bg-blue-100"
+                className="no-underline text-blue-700 hover:text-blue-800 transition font-medium px-6 py-2"
               >
                 Iniciar Sesión
               </Link>
               <Link
                 to="/register"
-                className="no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded transition hover:bg-blue-800"
+                className="no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded-lg transition hover:bg-blue-800"
               >
                 Regístrate
               </Link>
@@ -263,7 +263,7 @@ const NavBarLanding = () => {
                 </Link>
                 <Link
                   to="/login"
-                  className="text-blue-700 font-semibold"
+                  className="text-blue-600 hover:text-blue-800 transition font-medium px-4 py-2"
                   onClick={() => setMenuAbierto(false)}
                 >
                   Iniciar Sesión

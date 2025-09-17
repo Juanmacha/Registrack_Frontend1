@@ -17,12 +17,13 @@ const ModalAgendarCita = ({ isOpen, onClose }) => {
   });
   const [errors, setErrors] = useState({});
 
-  // Verificar si el usuario está autenticado
-  if (!user) {
-    alertService.warning('¡Atención!', 'Debes iniciar sesión para agendar una cita.', { confirmButtonText: 'Entiendo', showCancelButton: false });
-    onClose();
-    return null;
-  }
+  // Verificar si el usuario está autenticado solo cuando el modal se abre
+  React.useEffect(() => {
+    if (isOpen && !user) {
+      alertService.warning('¡Atención!', 'Debes iniciar sesión para agendar una cita.', { confirmButtonText: 'Entiendo', showCancelButton: false });
+      onClose();
+    }
+  }, [isOpen, user, onClose]);
 
   if (!isOpen) return null;
 
