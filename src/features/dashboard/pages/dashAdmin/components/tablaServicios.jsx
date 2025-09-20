@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FileText, Download, ArrowRight } from "lucide-react";
 import BotonDescargarExcel from "./descargarExcel";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 import BotonInfo from "./detalleInfo";
 import ModalDetalleServicio from "./modalInfo";
 import { Info } from "lucide-react";
@@ -8,24 +9,8 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import StandardAvatar from "../../../../../shared/components/StandardAvatar";
 
-// Utilidad para avatar con iniciales
-const Avatar = ({ nombre, color = "#2563eb" }) => {
-  const iniciales = nombre
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 3);
-  return (
-    <div
-      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shadow border"
-      style={{ backgroundColor: color }}
-    >
-      {iniciales}
-    </div>
-  );
-};
 
 // Badge de estado
 const EstadoBadge = ({ estado }) => {
@@ -110,14 +95,7 @@ const TablaServicios = () => {
     saveAs(data, "servicios-inactivos-prolongados.xlsx");
     
     // Mostrar mensaje de éxito
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Excel descargado. Redirigiendo a la tabla de ventas en proceso...",
-      confirmButtonColor: "#3085d6",
-      timer: 2000,
-      showConfirmButton: false
-    }).then(() => {
+    AlertService.success("¡Éxito!", "Excel descargado. Redirigiendo a la tabla de ventas en proceso...").then(() => {
       // Navegar después de descargar
       irAVentasProceso();
     });
@@ -133,25 +111,11 @@ const TablaServicios = () => {
           </div>
           <h2 className="text-lg font-bold text-gray-800 tracking-wide">Servicios con Inactividad Prolongada</h2>
           <div className="ml-auto flex gap-2">
-            <button
-              className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-              style={{
-                width: "40px",
-                height: "40px",
-                backgroundColor: "transparent",
-                transition: "background-color 0.3s",
-                border: "1px solid green",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+            <DownloadButton
+              type="excel"
               onClick={descargarExcelInactivos}
               title="Descargar Excel"
-            >
-              <i
-                className="bi bi-file-earmark-excel-fill"
-                style={{ color: "#107C41", fontSize: "18px" }}
-              ></i>
-            </button>
+            />
           </div>
         </div>
         {/* Barra de búsqueda global */}
@@ -168,12 +132,12 @@ const TablaServicios = () => {
           <table className="table-auto w-full divide-y divide-gray-100">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr className="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider border-b border-gray-200">
-                <th className="px-4 py-3 text-left">Cliente</th>
-                <th className="px-4 py-3 text-left">Empleado</th>
-                <th className="px-4 py-3 text-center">Estado</th>
-                <th className="px-4 py-3 text-center">Días Inactivo</th>
-                <th className="px-4 py-3 text-center">Servicio</th>
-                <th className="px-4 py-3 text-center">Acciones</th>
+                <th className="px-6 py-4 font-bold text-center">Cliente</th>
+                <th className="px-6 py-4 font-bold text-center">Empleado</th>
+                <th className="px-6 py-4 font-bold text-center">Estado</th>
+                <th className="px-6 py-4 font-bold text-center">Días Inactivo</th>
+                <th className="px-6 py-4 font-bold text-center">Servicio</th>
+                <th className="px-6 py-4 font-bold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
@@ -194,13 +158,13 @@ const TablaServicios = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center gap-2 justify-center">
-                        <Avatar nombre={item.cliente} color="#2563eb" />
+                        <StandardAvatar nombre={item.cliente} />
                         <span className="font-medium text-gray-800">{item.cliente}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center gap-2 justify-center">
-                        <Avatar nombre={item.empleado} color="#444" />
+                        <StandardAvatar nombre={item.empleado} color="#444" />
                         <span className="font-medium text-gray-800">{item.empleado}</span>
                       </div>
                     </td>

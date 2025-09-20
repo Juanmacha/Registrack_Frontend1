@@ -5,11 +5,7 @@ import TablaRoles from "./components/tablaRoles";
 import CrearRolModal from "./components/crearRol";
 import EditarRolModal from "./components/editarRol";
 import DetalleRolModal from "./components/verRol";
-
-import {
-  mostrarMensajeExito,
-  mostrarMensajeError,
-} from "../../../../utils/alerts";
+import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import { modelosDisponibles, guardarRoles } from "./services/rolesG";
 import { RoleService } from "../../../../utils/mockDataService";
 
@@ -18,6 +14,7 @@ const GestionRoles = () => {
   const [showModal, setShowModal] = useState(false);
   const [rolSeleccionado, setRolSeleccionado] = useState(null);
   const [rolEditable, setRolEditable] = useState(null);
+  const { createSuccess, updateSuccess, createError, updateError } = useNotification();
 
   const [nuevoRol, setNuevoRol] = useState({
     nombre: "",
@@ -40,12 +37,12 @@ const GestionRoles = () => {
         setRoles(RoleService.getAll());
         setNuevoRol({ nombre: "", estado: "Activo", permisos: {} });
         setShowModal(false);
-        mostrarMensajeExito("¡Rol creado exitosamente!");
+        createSuccess('rol');
       } else {
-        mostrarMensajeError("Error al crear el rol.");
+        createError('rol');
       }
     } else {
-      mostrarMensajeError("Por favor, ingresa un nombre para el rol.");
+      createError('rol');
     }
   };
 
@@ -79,9 +76,9 @@ const GestionRoles = () => {
         if (rolActualizado) {
           const rolesActualizados = RoleService.getAll();
           setRoles(rolesActualizados);
-          Swal.fire("¡Éxito!", `El estado del rol ha sido cambiado a ${nuevoEstado}.`, "success");
+          updateSuccess('rol');
         } else {
-          Swal.fire("Error", "No se pudo actualizar el estado del rol.", "error");
+          updateError('rol');
         }
       }
     });

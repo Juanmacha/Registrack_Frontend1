@@ -118,6 +118,14 @@ const FormularioUsuario = ({
     e.preventDefault();
     setFormSubmitted(true);
     if (!validarCampos()) return;
+    
+    // Limpiar el estado del formulario después de guardar
+    setFormSubmitted(false);
+    setTouched({});
+    setErrores({});
+    setConfirmarPassword("");
+    setErrorPassword("");
+    
     handleGuardarUsuario(e);
   };
 

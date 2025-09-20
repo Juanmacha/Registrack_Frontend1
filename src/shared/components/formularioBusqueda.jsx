@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
 import ValidationService from '../../utils/validationService.js';
+import FileUpload from './FileUpload.jsx';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
 
-const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsqueda de Marca' }) => {
-  const [form, setForm] = useState({
-    expediente: '',
+const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsqueda de Marca', form: propForm, setForm: propSetForm, errors: propErrors, setErrors: propSetErrors }) => {
+  // Estado local como fallback
+  const [localForm, setLocalForm] = useState({
     tipoSolicitante: 'Representante Autorizado',
     tipoDocumento: '',
     numeroDocumento: '',
@@ -29,15 +30,20 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     proximaCita: null,
     comentarios: []
   });
-  const [errors, setErrors] = useState({});
+  const [localErrors, setLocalErrors] = useState({});
+
+  // Usar props si están disponibles, sino usar estado local
+  const form = propForm || localForm;
+  const setForm = propSetForm || setLocalForm;
+  const errors = propErrors || localErrors;
+  const setErrors = propSetErrors || setLocalErrors;
 
   useEffect(() => {
     if (isOpen) {
       setForm(f => ({ ...f, tipoSolicitud: tipoSolicitud }));
-      setErrors({});
+      // ✅ NO RESETEAR ERRORES AL ABRIR, DEJAR QUE SE MUESTREN
     } else {
       setForm({
-        expediente: '',
         tipoSolicitante: 'Representante Autorizado',
         tipoDocumento: '',
         numeroDocumento: '',
@@ -68,7 +74,7 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     const e = {};
     
     // ✅ NUEVO: Usar ValidationService para validaciones básicas
-    const requiredFields = ['expediente', 'tipoDocumento', 'numeroDocumento', 'nombres', 'apellidos', 'email', 'telefono', 'direccion', 'pais', 'nitMarca', 'nombreMarca'];
+    const requiredFields = ['tipoDocumento', 'numeroDocumento', 'nombres', 'apellidos', 'email', 'telefono', 'direccion', 'pais', 'nitMarca', 'nombreMarca'];
     const requiredErrors = ValidationService.validateRequiredFields(f, requiredFields);
     Object.assign(e, requiredErrors);
     
@@ -82,9 +88,6 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
     }
     
     // Validaciones específicas del formulario
-    if (f.expediente && !/^[0-9]{6,15}$/.test(f.expediente)) {
-      e.expediente = 'Solo números, 6-15 dígitos';
-    }
     
     if (f.numeroDocumento) {
       if (f.tipoDocumento !== 'Pasaporte' && !/^[0-9]{6,15}$/.test(f.numeroDocumento)) {
@@ -133,9 +136,27 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
 
   const handleChange = e => {
     const { name, value, type, files } = e.target;
-    let newValue = type === 'file' ? files[0] : value;
+    let newValue;
+    
+    console.log('🔧 [FormularioBusqueda] handleChange llamado:', { name, type, files, value });
+    
+    if (type === 'file') {
+      // Manejar archivos del FileUpload (evento sintético)
+      if (files && files.length > 0) {
+        newValue = files[0];
+        console.log('🔧 [FormularioBusqueda] Archivo seleccionado:', newValue);
+      } else {
+        // Si no hay archivos, limpiar el campo
+        newValue = null;
+        console.log('🔧 [FormularioBusqueda] Archivo eliminado');
+      }
+    } else {
+      newValue = value;
+    }
+    
     setForm(f => {
       const updatedForm = { ...f, [name]: newValue };
+      console.log('🔧 [FormularioBusqueda] Form actualizado:', updatedForm);
       const newErrors = validate(updatedForm);
       setErrors(newErrors);
       return updatedForm;
@@ -163,25 +184,16 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = validate();
+    console.log('🔧 [FormularioBusqueda] handleSubmit llamado');
+    
+    const newErrors = validate(form);
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
-      return;
-    }
-    try {
+    
+    if (Object.keys(newErrors).length === 0) {
+      console.log('🔧 [FormularioBusqueda] Formulario válido, llamando onGuardar');
       await onGuardar(form);
-      // onClose(); // El cierre lo maneja el padre tras el pago
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+    } else {
+      console.log('🔧 [FormularioBusqueda] Formulario con errores:', newErrors);
     }
   };
 
@@ -204,12 +216,6 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-4">
-            {/* Número de Expediente */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Número de Expediente *</label>
-              <input type="text" name="expediente" value={form.expediente} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.expediente ? 'border-red-500' : ''}`} />
-              {errors.expediente && <p className="text-xs text-red-600">{errors.expediente}</p>}
-            </div>
             {/* Tipo de Solicitud (bloqueado) */}
             <div>
               <label className="block text-sm font-medium mb-1">Tipo de Solicitud *</label>
@@ -322,17 +328,25 @@ const FormularioBusqueda = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Búsq
           </div>
           {/* Adjuntar Documentos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Poder del Representante Autorizado *</label>
-              <input type="file" name="poderRepresentante" onChange={handleChange} className="w-full" />
-              {errors.poderRepresentante && <p className="text-xs text-red-600">{errors.poderRepresentante}</p>}
-              </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Poder que nos autoriza *</label>
-              <input type="file" name="poderAutorizacion" onChange={handleChange} className="w-full" />
-              {errors.poderAutorizacion && <p className="text-xs text-red-600">{errors.poderAutorizacion}</p>}
-              </div>
-              </div>
+            <FileUpload
+              name="poderRepresentante"
+              value={form.poderRepresentante}
+              onChange={handleChange}
+              label="Poder del Representante Autorizado"
+              required={true}
+              accept=".pdf,.doc,.docx"
+              error={errors.poderRepresentante}
+            />
+            <FileUpload
+              name="poderAutorizacion"
+              value={form.poderAutorizacion}
+              onChange={handleChange}
+              label="Poder que nos autoriza"
+              required={true}
+              accept=".pdf,.doc,.docx"
+              error={errors.poderAutorizacion}
+            />
+          </div>
           <div className="flex justify-end gap-4">
             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">Cancelar</button>
             <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-400">Guardar</button>

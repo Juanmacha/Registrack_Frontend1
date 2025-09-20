@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const tiposServicio = [
   "Certificaciones",
@@ -74,12 +75,7 @@ const GraficaResumenServicios = () => {
     const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, `resumen_servicios_${periodo}.xlsx`);
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   return (
@@ -101,33 +97,19 @@ const GraficaResumenServicios = () => {
               {p.label}
             </button>
           ))}
-          <button
+          <DownloadButton
+            type="excel"
             onClick={handleDescargarExcel}
-            className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-            style={{
-              width: "40px",
-              height: "40px",
-              backgroundColor: "transparent",
-              transition: "background-color 0.3s",
-              border: "1px solid green",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
             title="Descargar Excel"
-          >
-            <i
-              className="bi bi-file-earmark-excel-fill"
-              style={{ color: "#107C41", fontSize: "18px" }}
-            ></i>
-          </button>
+          />
         </div>
       </div>
       {/* Mini cards grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 w-full auto-cols-fr">
         {tiposServicio.map((tipo, idx) => (
           <div
             key={tipo}
-            className="flex flex-col items-center bg-gray-50 rounded-lg border border-gray-100 p-2 shadow-sm min-w-0"
+            className="flex flex-col items-center bg-gray-50 rounded-lg border border-gray-100 p-2 shadow-sm"
           >
             <div className="text-xs font-semibold text-gray-700 text-center mb-1 truncate w-full" title={tipo}>
               {tipo}

@@ -31,31 +31,15 @@ const Servicios = () => {
   const handleToggleVisibilidad = async (id) => {
     const servicio = servicios.find(s => s.id === id);
     if (servicio && servicio.visible_en_landing) {
-      const result = await Swal.fire({
-        title: '¿Ocultar servicio?',
-        text: '¿Estás seguro que deseas ocultar este servicio de la página principal? No será visible para los usuarios.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, ocultar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-      });
+      const result = await AlertService.warning("¿Ocultar servicio?", "¿Estás seguro que deseas ocultar este servicio de la página principal? No será visible para los usuarios.");
       if (!result.isConfirmed) return;
     }
     try {
       await Promise.resolve(toggleVisibilidadServicio(id));
-      Swal.fire({
-        icon: 'success',
-        title: 'Visibilidad actualizada',
-        text: 'El estado de visibilidad del servicio ha sido actualizado.'
-      });
+      AlertService.success("Visibilidad actualizada", "El estado de visibilidad del servicio ha sido actualizado.");
       cargarServicios();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err?.message || 'Ocurrió un error al actualizar la visibilidad.'
-      });
+      AlertService.error("Error", "");
     }
   };
 
@@ -68,18 +52,10 @@ const Servicios = () => {
       if (tipo === 'landing') await Promise.resolve(updateLandingData(editar.id, data));
       if (tipo === 'info') await Promise.resolve(updateInfoPageData(editar.id, data));
       if (tipo === 'process') await Promise.resolve(updateProcessStates(editar.id, data));
-      Swal.fire({
-        icon: 'success',
-        title: 'Servicio actualizado',
-        text: 'El servicio ha sido actualizado correctamente.'
-      });
+      AlertService.success("Servicio actualizado", "El servicio ha sido actualizado correctamente.");
       cargarServicios();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err?.message || 'Ocurrió un error al actualizar el servicio.'
-      });
+      AlertService.error("Error", "");
     }
   };
 
@@ -122,27 +98,37 @@ const Servicios = () => {
                 <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={() => handleVerDetalle(servicio)}
-                    className="flex-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
+                    className="flex-1 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-sm font-medium flex items-center justify-center"
                   >
-                    <i className="bi bi-eye mr-1"></i>
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                     Ver
                   </button>
                   <button
                     onClick={() => handleToggleVisibilidad(servicio.id)}
-                    className={`flex-1 px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium ${
-                      servicio.visible_en_landing
-                        ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                        : 'bg-green-50 text-green-700 hover:bg-green-100'
-                    }`}
+                    className="flex-1 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-sm font-medium flex items-center justify-center"
                   >
-                    <i className={`bi ${servicio.visible_en_landing ? 'bi-eye-slash' : 'bi-eye'} mr-1`}></i>
+                    {servicio.visible_en_landing ? (
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
                     {servicio.visible_en_landing ? 'Ocultar' : 'Mostrar'}
                   </button>
                   <button
                     onClick={() => handleEditar(servicio)}
-                    className="flex-1 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-sm font-medium"
+                    className="flex-1 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-sm font-medium flex items-center justify-center"
                   >
-                    <i className="bi bi-pencil mr-1"></i>
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
                     Editar
                   </button>
                 </div>

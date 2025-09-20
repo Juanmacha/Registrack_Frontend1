@@ -38,8 +38,12 @@ export const AuthProvider = ({ children }) => {
     const payload = btoa(JSON.stringify({
       id: userData.id,
       name: userData.firstName ? `${userData.firstName} ${userData.lastName}` : userData.name,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
       email: userData.email,
       role: userData.role,
+      documentType: userData.documentType,
+      documentNumber: userData.documentNumber,
       estado: userData.estado,
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
     }));

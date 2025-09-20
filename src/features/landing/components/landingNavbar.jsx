@@ -49,7 +49,7 @@ const NavBarLanding = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="navbar-container w-full bg-white fixed top-0 left-0 z-50 shadow-md">
+    <nav className="navbar-container w-full bg-white fixed top-0 left-0 z-50">
       <div className="max-w-screen-xl mx-auto h-24 flex items-center justify-between px-4 sm:px-6 lg:px-8 relative">
         {/* Columna izquierda: Logo */}
         <div className="flex items-center flex-shrink-0">
@@ -64,7 +64,7 @@ const NavBarLanding = () => {
 
         {/* Columna central: Opciones centradas */}
         <div className="hidden md:flex flex-1 justify-center">
-          <div className="navbar-menu flex gap-6 lg:gap-10 text-lg">
+          <div className="navbar-menu flex gap-6 lg:gap-10 text-lg font-open-sans">
             {!user ? (
               <>
                 <ScrollLink
@@ -123,18 +123,38 @@ const NavBarLanding = () => {
                   </ScrollLink>
                 ) : (
                   <Link
-                    to="/#servicios"
-                    className={`text-lg px-2 py-1 no-underline border-b-2 transition ${window.location.hash === '#servicios' ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}
+                    to="/"
+                    className={`text-lg px-2 py-1 no-underline border-b-2 transition ${INACTIVE_CLASSES}`}
+                    onClick={() => {
+                      // Navegar a la landing y luego hacer scroll a servicios
+                      navigate('/');
+                      setTimeout(() => {
+                        const element = document.getElementById('servicios');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }, 100);
+                    }}
                   >
                     Servicios
                   </Link>
                 )}
-                <a
-                  href="/#footer"
-                  className={`text-lg px-2 py-1 no-underline border-b-2 transition ${window.location.hash === '#footer' ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}
+                <Link
+                  to="/"
+                  className={`text-lg px-2 py-1 no-underline border-b-2 transition ${INACTIVE_CLASSES}`}
+                  onClick={() => {
+                    // Navegar a la landing y luego hacer scroll a footer
+                    navigate('/');
+                    setTimeout(() => {
+                      const element = document.getElementById('footer');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }, 100);
+                  }}
                 >
                   Contáctanos
-                </a>
+                </Link>
                 <Link
                   to="/misprocesos"
                   className={`text-lg px-2 py-1 no-underline border-b-2 transition ${isActive("/misprocesos") ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}
@@ -158,13 +178,13 @@ const NavBarLanding = () => {
             <>
               <Link
                 to="/login"
-                className="no-underline px-5 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded-md transition hover:bg-blue-50"
+                className="no-underline px-5 py-2 text-sm bg-white text-blue-600 rounded-md transition hover:bg-blue-50 btn-text"
               >
                 Iniciar Sesión
               </Link>
               <Link
                 to="/register"
-                className="no-underline px-5 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800"
+                className="no-underline px-5 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800 btn-text"
               >
                 Regístrate
               </Link>
@@ -264,14 +284,14 @@ const NavBarLanding = () => {
                 <div className="flex flex-col items-center gap-4 mt-4 w-full px-6">
                   <Link
                     to="/login"
-                    className="w-full text-center no-underline px-6 py-2 text-sm bg-white text-blue-600 border border-blue-700 rounded-md transition hover:bg-blue-50"
+                    className="w-full text-center no-underline px-6 py-2 text-sm bg-white text-blue-600 rounded-md transition hover:bg-blue-50 btn-text"
                     onClick={() => setMenuAbierto(false)}
                   >
                     Iniciar Sesión
                   </Link>
                   <Link
                     to="/register"
-                    className="w-full text-center no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800"
+                    className="w-full text-center no-underline px-6 py-2 text-sm bg-blue-700 text-white rounded-md transition hover:bg-blue-800 btn-text"
                     onClick={() => setMenuAbierto(false)}
                   >
                     Regístrate
@@ -302,20 +322,40 @@ const NavBarLanding = () => {
                   </ScrollLink>
                 ) : (
                   <Link
-                    to="/#servicios"
-                    className={`text-lg px-2 py-1 no-underline border-b-2 transition ${window.location.hash === '#servicios' ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}
-                    onClick={() => setMenuAbierto(false)}
+                    to="/"
+                    className={`text-lg px-2 py-1 no-underline border-b-2 transition ${INACTIVE_CLASSES}`}
+                    onClick={() => {
+                      setMenuAbierto(false);
+                      // Navegar a la landing y luego hacer scroll a servicios
+                      navigate('/');
+                      setTimeout(() => {
+                        const element = document.getElementById('servicios');
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }, 100);
+                    }}
                   >
                     Servicios
                   </Link>
                 )}
-                <a
-                  href="/#footer"
-                  className={`text-lg px-2 py-1 no-underline border-b-2 transition ${window.location.hash === '#footer' ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}
-                  onClick={() => setMenuAbierto(false)}
+                <Link
+                  to="/"
+                  className={`text-lg px-2 py-1 no-underline border-b-2 transition ${INACTIVE_CLASSES}`}
+                  onClick={() => {
+                    setMenuAbierto(false);
+                    // Navegar a la landing y luego hacer scroll a footer
+                    navigate('/');
+                    setTimeout(() => {
+                      const element = document.getElementById('footer');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }, 100);
+                  }}
                 >
                   Contáctanos
-                </a>
+                </Link>
                 <Link
                   to="/misprocesos"
                   className={`text-lg px-2 py-1 no-underline border-b-2 transition ${isActive("/misprocesos") ? ACTIVE_CLASSES : INACTIVE_CLASSES}`}

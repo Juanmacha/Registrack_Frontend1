@@ -1,95 +1,57 @@
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+// Importar el nuevo sistema de alertas estandarizado
+import { AlertService, CommonAlerts } from "../shared/styles/alertStandards.js";
 
-// Configuración personalizada para SweetAlert2
+// Mantener compatibilidad con el código existente
 const customConfig = {
-  confirmButtonColor: '#2563eb', // Azul
-  cancelButtonColor: '#dc2626', // Rojo
-  background: '#ffffff',
-  backdrop: 'rgba(0, 0, 0, 0.4)',
+  confirmButtonColor: "#2563eb",
+  cancelButtonColor: "#dc2626",
+  background: "#ffffff",
+  backdrop: "rgba(0, 0, 0, 0.4)",
   customClass: {
-    popup: 'rounded-xl shadow-2xl',
-    title: 'text-gray-800 font-semibold',
-    content: 'text-gray-600',
-    confirmButton: 'rounded-lg px-6 py-2 font-medium',
-    cancelButton: 'rounded-lg px-6 py-2 font-medium'
-  }
+    popup: "rounded-xl shadow-2xl",
+    title: "text-gray-800 font-semibold",
+    content: "text-gray-600",
+    confirmButton: "rounded-lg px-6 py-2 font-medium",
+    cancelButton: "rounded-lg px-6 py-2 font-medium",
+  },
 };
 
 const alertService = {
-  // Alerta de éxito
-  success: (title, message = '', options = {}) => {
-    return Swal.fire({
-      icon: 'success',
-      title: title,
-      text: message,
-      ...customConfig,
-      ...options
-    });
+  // Usar el nuevo sistema estandarizado
+  success: (title, message = "", options = {}) => {
+    return AlertService.success(title, message, options);
   },
 
-  // Alerta de error
-  error: (title, message = '', options = {}) => {
-    return Swal.fire({
-      icon: 'error',
-      title: title,
-      text: message,
-      ...customConfig,
-      ...options
-    });
+  error: (title, message = "", options = {}) => {
+    return AlertService.error(title, message, options);
   },
 
-  // Alerta de advertencia
-  warning: (title, message = '', options = {}) => {
-    return Swal.fire({
-      icon: 'warning',
-      title: title,
-      text: message,
-      ...customConfig,
-      ...options
-    });
+  warning: (title, message = "", options = {}) => {
+    return AlertService.warning(title, message, options);
   },
 
-  // Alerta de información
-  info: (title, message = '', options = {}) => {
-    return Swal.fire({
-      icon: 'info',
-      title: title,
-      text: message,
-      ...customConfig,
-      ...options
-    });
+  info: (title, message = "", options = {}) => {
+    return AlertService.info(title, message, options);
   },
 
-  // Alerta de pregunta (confirmación)
-  question: (title, message = '', options = {}) => {
-    return Swal.fire({
-      icon: 'question',
-      title: title,
-      text: message,
-      showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'No',
-      ...customConfig,
-      ...options
-    });
+  question: (title, message = "", options = {}) => {
+    return AlertService.confirm(title, message, options);
   },
 
   // Confirmación personalizada
-  confirm: (title, message = '', confirmText = 'Confirmar', cancelText = 'Cancelar', options = {}) => {
-    return Swal.fire({
-      icon: 'question',
-      title: title,
-      text: message,
-      showCancelButton: true,
-      confirmButtonText: confirmText,
-      cancelButtonText: cancelText,
-      ...customConfig,
-      ...options
-    });
+  confirm: (
+    title,
+    message = "",
+    confirmText = "Confirmar",
+    cancelText = "Cancelar",
+    options = {}
+  ) => {
+    return AlertService.confirm("", "");
   },
 
   // Alerta de carga con spinner personalizado
-  loading: (title = 'Cargando...', options = {}) => {
+  loading: (title = "Cargando...", options = {}) => {
     return Swal.fire({
       title: title,
       allowOutsideClick: false,
@@ -102,7 +64,7 @@ const alertService = {
         </div>
       `,
       ...customConfig,
-      ...options
+      ...options,
     });
   },
 
@@ -111,258 +73,226 @@ const alertService = {
     Swal.close();
   },
 
+  // Cerrar todas las alertas
+  closeAll: () => {
+    Swal.close();
+    // Forzar cierre si es necesario
+    const swalContainers = document.querySelectorAll(".swal2-container");
+    swalContainers.forEach((container) => {
+      container.remove();
+    });
+  },
+
+  // Verificar si hay alertas abiertas
+  hasOpenAlerts: () => {
+    return document.querySelectorAll(".swal2-popup").length > 0;
+  },
+
   // Alerta de login exitoso
   loginSuccess: (userName) => {
-    return Swal.fire({
-      icon: 'success',
-      title: '¡Bienvenido!',
-      text: `Hola ${userName}, has iniciado sesión correctamente.`,
-      timer: 2000,
-      timerProgressBar: true,
-      showConfirmButton: false,
-      ...customConfig
-    });
+    return CommonAlerts.loginSuccess(userName);
   },
 
   // Alerta de login fallido
   loginError: () => {
-    return Swal.fire({
-      icon: 'error',
-      title: 'Error de autenticación',
-      text: 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.',
-      ...customConfig
-    });
+    return CommonAlerts.loginError();
   },
 
   // Alerta de registro exitoso
   registerSuccess: () => {
-    return Swal.fire({
-      icon: 'success',
-      title: '¡Registro exitoso!',
-      text: 'Tu cuenta ha sido creada correctamente. Por favor, inicia sesión.',
-      ...customConfig
-    });
+    return AlertService.success(
+      "Registro exitoso",
+      "Tu cuenta ha sido creada correctamente. Por favor, inicia sesión para continuar."
+    );
   },
 
   // Alerta de registro fallido
-  registerError: (message = 'Error al registrar el usuario. Por favor, intenta de nuevo.') => {
-    return Swal.fire({
-      icon: 'error',
-      title: 'Error en el registro',
-      text: message,
-      ...customConfig
-    });
+  registerError: (
+    message = "Error al registrar el usuario. Por favor, intenta de nuevo."
+  ) => {
+    return AlertService.error("Error en el registro", message);
   },
 
   // Alerta de logout
   logoutConfirm: () => {
-    return Swal.fire({
-      icon: 'question',
-      title: '¿Cerrar sesión?',
-      text: '¿Estás seguro de que quieres cerrar tu sesión?',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, cerrar sesión',
-      cancelButtonText: 'Cancelar',
-      ...customConfig
-    });
+    return AlertService.confirm(
+      "¿Cerrar sesión?",
+      "¿Estás seguro de que quieres cerrar tu sesión?"
+    );
   },
 
   // Alerta de eliminación
-  deleteConfirm: (itemName = 'este elemento') => {
+  deleteConfirm: (itemName = "este elemento") => {
     return Swal.fire({
-      icon: 'warning',
-      title: '¿Eliminar?',
+      icon: "warning",
+      title: "¿Eliminar?",
       text: `¿Estás seguro de que quieres eliminar ${itemName}? Esta acción no se puede deshacer.`,
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#dc2626',
-      ...customConfig
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      ...customConfig,
     });
   },
 
   // Alerta de eliminación exitosa
-  deleteSuccess: (itemName = 'el elemento') => {
+  deleteSuccess: (itemName = "el elemento") => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Eliminado',
+      icon: "success",
+      title: "Eliminado",
       text: `${itemName} ha sido eliminado correctamente.`,
       timer: 2000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // Alerta de guardado exitoso
-  saveSuccess: (itemName = 'los datos') => {
+  saveSuccess: (itemName = "los datos") => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Guardado',
+      icon: "success",
+      title: "Guardado",
       text: `${itemName} han sido guardados correctamente.`,
       timer: 2000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // Alerta de error de guardado
-  saveError: (message = 'Error al guardar los datos. Por favor, intenta de nuevo.') => {
-    return Swal.fire({
-      icon: 'error',
-      title: 'Error al guardar',
-      text: message,
-      ...customConfig
-    });
+  saveError: (
+    message = "Error al guardar los datos. Por favor, intenta de nuevo."
+  ) => {
+    return AlertService.error("Error al guardar", "");
   },
 
   // Alerta de validación
   validationError: (message) => {
-    return Swal.fire({
-      icon: 'warning',
-      title: 'Datos incompletos',
-      text: message,
-      ...customConfig
-    });
+    return CommonAlerts.validationError(message);
   },
 
   // Alerta de acceso denegado
   accessDenied: () => {
-    return Swal.fire({
-      icon: 'error',
-      title: 'Acceso denegado',
-      text: 'No tienes permisos para realizar esta acción.',
-      ...customConfig
-    });
+    return CommonAlerts.accessDenied();
   },
 
   // Alerta de sesión expirada
   sessionExpired: () => {
-    return Swal.fire({
-      icon: 'warning',
-      title: 'Sesión expirada',
-      text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
-      confirmButtonText: 'Entendido',
-      ...customConfig
-    });
+    return CommonAlerts.sessionExpired();
   },
 
   // ✅ NUEVO: Alertas automáticas para cambios de estado
   saleStatusChanged: (saleData, oldStatus, newStatus) => {
     return Swal.fire({
-      icon: 'info',
-      title: 'Estado actualizado',
+      icon: "info",
+      title: "Estado actualizado",
       text: `La solicitud "${saleData.marca}" ha cambiado de "${oldStatus}" a "${newStatus}"`,
       timer: 3000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de cita próxima
   upcomingAppointment: (appointmentData) => {
     return Swal.fire({
-      icon: 'info',
-      title: 'Cita próxima',
+      icon: "info",
+      title: "Cita próxima",
       text: `Tienes una cita programada para ${appointmentData.fecha} a las ${appointmentData.horaInicio}`,
-      confirmButtonText: 'Ver detalles',
+      confirmButtonText: "Ver detalles",
       showCancelButton: true,
-      cancelButtonText: 'Más tarde',
-      ...customConfig
+      cancelButtonText: "Más tarde",
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de nueva solicitud
   newSaleCreated: (saleData) => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Nueva solicitud',
+      icon: "success",
+      title: "Nueva solicitud",
       text: `Se ha creado una nueva solicitud para "${saleData.marca}"`,
       timer: 3000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de pago recibido
   paymentReceived: (paymentData) => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Pago recibido',
+      icon: "success",
+      title: "Pago recibido",
       text: `Se ha registrado un pago de $${paymentData.monto} por ${paymentData.metodo_pago}`,
       timer: 3000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de error de validación
   validationError: (errors) => {
-    const errorMessages = Object.values(errors).join('\n');
-    return Swal.fire({
-      icon: 'warning',
-      title: 'Datos incompletos',
-      text: errorMessages,
-      ...customConfig
-    });
+    const errorMessages = Object.values(errors).join("\n");
+    return AlertService.warning("Datos incompletos", "");
   },
 
   // ✅ NUEVO: Alerta de confirmación de eliminación
-  confirmDelete: (itemName, itemType = 'elemento') => {
+  confirmDelete: (itemName, itemType = "elemento") => {
     return Swal.fire({
-      icon: 'warning',
-      title: '¿Eliminar?',
+      icon: "warning",
+      title: "¿Eliminar?",
       text: `¿Estás seguro de que quieres eliminar ${itemName}? Esta acción no se puede deshacer.`,
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#dc2626',
-      ...customConfig
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de éxito de eliminación
   deleteSuccess: (itemName) => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Eliminado',
+      icon: "success",
+      title: "Eliminado",
       text: `${itemName} ha sido eliminado correctamente.`,
       timer: 2000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de confirmación de cancelación
-  confirmCancel: (itemName, itemType = 'elemento') => {
+  confirmCancel: (itemName, itemType = "elemento") => {
     return Swal.fire({
-      icon: 'question',
-      title: '¿Cancelar?',
+      icon: "question",
+      title: "¿Cancelar?",
       text: `¿Estás seguro de que quieres cancelar ${itemName}?`,
       showCancelButton: true,
-      confirmButtonText: 'Sí, cancelar',
-      cancelButtonText: 'No',
-      ...customConfig
+      confirmButtonText: "Sí, cancelar",
+      cancelButtonText: "No",
+      ...customConfig,
     });
   },
 
   // ✅ NUEVO: Alerta de cancelación exitosa
   cancelSuccess: (itemName) => {
     return Swal.fire({
-      icon: 'success',
-      title: 'Cancelado',
+      icon: "success",
+      title: "Cancelado",
       text: `${itemName} ha sido cancelado correctamente.`,
       timer: 2000,
       timerProgressBar: true,
       showConfirmButton: false,
-      ...customConfig
+      ...customConfig,
     });
-  }
+  },
 };
 
-export default alertService; 
+export default alertService;

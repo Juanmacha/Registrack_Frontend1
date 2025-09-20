@@ -2,6 +2,7 @@ import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const DescargarExcelPagos = ({ pagos }) => {
   const exportarExcel = () => {
@@ -40,34 +41,15 @@ const DescargarExcelPagos = ({ pagos }) => {
     saveAs(data, "pagos.xlsx");
 
     // ✅ Mostrar mensaje con SweetAlert2
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   return (
-    <button
-      className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-      style={{
-        width: "40px",
-        height: "40px",
-        backgroundColor: "transparent",
-        transition: "background-color 0.3s",
-        border: "1px solid green",
-      }}
-      onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
-      onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+    <DownloadButton
+      type="excel"
       onClick={exportarExcel}
       title="Descargar Excel"
-    >
-      <i
-        className="bi bi-file-earmark-excel-fill"
-        style={{ color: "#107C41", fontSize: "18px" }}
-      ></i>
-    </button>
+    />
   );
 };
 

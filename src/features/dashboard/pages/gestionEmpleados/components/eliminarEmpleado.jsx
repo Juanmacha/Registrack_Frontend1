@@ -32,11 +32,7 @@ const EliminarEmpleado = ({ empleado, onEliminar }) => {
           confirmButtonColor: "#3085d6",
         });
       } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error al eliminar",
-          text: "Hubo un problema al eliminar el empleado.",
-        });
+        AlertService.error("Error al eliminar", "Hubo un problema al eliminar el empleado.");
       }
     }
   };

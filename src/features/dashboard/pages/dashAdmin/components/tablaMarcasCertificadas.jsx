@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Calendar, AlertTriangle, Download } from "lucide-react";
 import BotonDescargarExcel from "./descargarExcel";
+import StandardAvatar from "../../../../../shared/components/StandardAvatar";
 
 // Badge de estado de vencimiento
 const EstadoVencimientoBadge = ({ diasRestantes }) => {
@@ -141,46 +142,55 @@ const TablaMarcasCertificadas = () => {
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
-              <th className="px-6 py-3">Marca</th>
-              <th className="px-6 py-3">Cliente</th>
-              <th className="px-6 py-3">Fecha Certificación</th>
-              <th className="px-6 py-3">Fecha Vencimiento</th>
-              <th className="px-6 py-3">Días Restantes</th>
-              <th className="px-6 py-3">Estado</th>
-              <th className="px-6 py-3">Empleado Asignado</th>
-              <th className="px-6 py-3">Acciones</th>
+              <th className="px-6 py-4 font-bold text-center">Cliente</th>
+              <th className="px-6 py-4 font-bold text-center">Marca</th>
+              <th className="px-6 py-4 font-bold text-center">Fecha Certificación</th>
+              <th className="px-6 py-4 font-bold text-center">Fecha Vencimiento</th>
+              <th className="px-6 py-4 font-bold text-center">Días Restantes</th>
+              <th className="px-6 py-4 font-bold text-center">Estado</th>
+              <th className="px-6 py-4 font-bold text-center">Empleado Asignado</th>
+              <th className="px-6 py-4 font-bold text-center">Acciones</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {datosOrdenados.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 font-medium text-gray-900">
+                <td className="px-6 py-4 text-center">
+                  <div className="flex items-center justify-center gap-3">
+                    <StandardAvatar 
+                      nombre={item.cliente}
+                    />
+                    <div className="text-left">
+                      <span>{item.cliente}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-center font-medium text-gray-900">
                   {item.marca}
                 </td>
-                <td className="px-6 py-4 text-gray-700">
-                  {item.cliente}
-                </td>
-                <td className="px-6 py-4 text-gray-600">
+                <td className="px-6 py-4 text-center text-gray-600">
                   {new Date(item.fechaCertificacion).toLocaleDateString("es-ES")}
                 </td>
-                <td className="px-6 py-4 text-gray-600">
+                <td className="px-6 py-4 text-center text-gray-600">
                   {new Date(item.fechaVencimiento).toLocaleDateString("es-ES")}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <DiasRestantesColor dias={item.diasRestantes} />
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <EstadoVencimientoBadge diasRestantes={item.diasRestantes} />
                 </td>
-                <td className="px-6 py-4 text-gray-700">
+                <td className="px-6 py-4 text-center text-gray-700">
                   {item.empleadoAsignado}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <button
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                    className="p-2 rounded-md bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-gray-300 transition-all duration-200"
                     title="Iniciar proceso de renovación"
                   >
-                    Renovar
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                   </button>
                 </td>
               </tr>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { useNotification } from "../../../../../shared/contexts/NotificationContext.jsx";
 
 const CrearEmpleadoModal = ({
   showModal,
@@ -8,6 +9,7 @@ const CrearEmpleadoModal = ({
   setNuevoEmpleado,
   handleSubmit,
 }) => {
+  const { createSuccess, createError } = useNotification();
   const [errors, setErrors] = useState({});
   const [rolesDisponibles, setRolesDisponibles] = useState([]);
 
@@ -56,22 +58,10 @@ const CrearEmpleadoModal = ({
 
     if (Object.keys(nuevosErrores).length === 0) {
       handleSubmit(nuevoEmpleado);
-
-      Swal.fire({
-        icon: "success",
-        title: "Empleado creado",
-        text: "El empleado ha sido creado exitosamente.",
-        confirmButtonColor: "#3085d6",
-      });
-
+      createSuccess('empleado');
       setShowModal(false);
     } else {
-      Swal.fire({
-        icon: "error",
-        title: "Campos incompletos",
-        text: "Por favor completa todos los campos obligatorios.",
-        confirmButtonColor: "#d33",
-      });
+      createError('empleado');
     }
   };
 

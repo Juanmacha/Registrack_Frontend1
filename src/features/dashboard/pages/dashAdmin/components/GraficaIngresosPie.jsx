@@ -110,7 +110,7 @@ const GraficaIngresosPie = () => {
   };
 
   return (
-    <div className="dashboard-chart-container flex flex-col lg:flex-row items-center justify-center gap-2 min-h-[400px] relative">
+    <div className="dashboard-chart-container flex flex-col lg:flex-row items-center justify-center gap-2 min-h-[400px] relative mr-4">
       {/* Botón PDF en la esquina superior derecha absoluta del contenedor principal */}
       <div className="absolute top-4 right-4 z-20">
         <BotonDescargarPdf 
@@ -126,7 +126,7 @@ const GraficaIngresosPie = () => {
         </div>
       </div>
       {/* Panel derecho: leyenda y controles */}
-      <div className="flex flex-col items-center lg:items-start justify-center w-full max-w-md gap-3 relative">
+      <div className="flex flex-col items-center lg:items-start justify-center w-full max-w-md gap-3 relative pr-4">
         <h2 className="text-2xl font-bold text-center lg:text-left mb-2">Distribución de Ingresos por Servicio</h2>
         <div className="flex flex-row gap-2 w-full mb-2">
           <span className="flex items-center gap-1 text-gray-500"><i className="bi bi-calendar-event"></i> Período:</span>

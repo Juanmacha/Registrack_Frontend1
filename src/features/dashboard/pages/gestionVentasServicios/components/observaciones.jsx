@@ -10,20 +10,12 @@ const Observaciones = ({ isOpen, onClose, onGuardar }) => {
 
   const handleGuardar = () => {
     if (texto.trim() === "") {
-      Swal.fire({
-        icon: 'error',
-        title: 'Observación vacía',
-        text: 'Por favor, escribe una observación antes de guardar.'
-      });
+      AlertService.error("Observación vacía", "Por favor, escribe una observación antes de guardar.");
       return;
     }
     onGuardar(texto.trim());
     setTexto("");
-    Swal.fire({
-      icon: 'success',
-      title: 'Observación guardada',
-      text: 'La observación se ha guardado correctamente.'
-    });
+    AlertService.success("Observación guardada", "La observación se ha guardado correctamente.");
   };
 
   if (!isOpen) return null;

@@ -22,10 +22,10 @@ const SideBarGeneral = () => {
   const location = useLocation();
   const { setIsSidebarExpanded } = useSidebar();
 
-  const iconClass = "text-gray-600 w-5 h-5 flex-shrink-0";
+  const iconClass = "text-gray-600 w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0";
   const baseLinkClasses =
-    "flex items-center space-x-2 p-2 rounded-md hover:bg-gray-200 transition-all text-[0.95rem]";
-  const activeLinkClasses = "bg-gray-100 border-l-4 border-blue-500";
+    "flex items-center space-x-1 lg:space-x-2 p-1.5 lg:p-2 rounded-md hover:bg-gray-200 transition-all text-xs lg:text-[0.95rem]";
+  const activeLinkClasses = "bg-gray-100 border-l-2 lg:border-l-4 border-blue-500";
 
   const menuItems = [
     { label: "Dashboard", icon: TbLayoutGrid, to: "/admin/dashboard" },
@@ -53,13 +53,13 @@ const SideBarGeneral = () => {
         onMouseEnter={handleSidebarEnter}
         onMouseLeave={handleSidebarLeave}
       >
-        <aside className="sidebar-responsive w-20 group-hover:w-64 transition-all duration-300 ease-in-out text-gray-900 p-3 h-full">
+        <aside className="sidebar-responsive w-16 lg:w-20 group-hover:w-64 transition-all duration-300 ease-in-out text-gray-900 p-2 lg:p-3 h-full">
           {/* Logo */}
-          <div className="flex justify-center items-center mb-8">
+          <div className="flex justify-center items-center mb-4 lg:mb-8">
             <img
               src="/images/logo.png"
               alt="Logo"
-              className="w-12 h-auto group-hover:w-32 transition-all duration-300"
+              className="w-8 h-auto lg:w-12 group-hover:w-32 transition-all duration-300"
             />
           </div>
           {/* Navegación */}

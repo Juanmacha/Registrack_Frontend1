@@ -45,7 +45,6 @@ const DetalleRolModal = ({ rol, onClose, modelosDisponibles }) => {
             />
             <div>
               <h2 className="text-xl font-bold text-gray-800">{rol.nombre}</h2>
-              <p className="text-sm text-gray-600">{rol.descripcion}</p>
             </div>
           </div>
           {/* Botón de cerrar eliminado */}

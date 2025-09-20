@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import TablaUsuarios from "./components/tablaUsuarios";
 import FormularioUsuario from "./components/FormularioUsuario";
-import VerDetalleUsuario from "./components/verDetalleUsuario";
+import ProfileModal from "../../../../shared/components/ProfileModal";
 import { UserService, initializeMockData } from "../../../../utils/mockDataService.js";
 import { validarUsuario } from "./services/validarUsuario";
+import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -30,6 +31,7 @@ const GestionUsuarios = () => {
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const usuariosPorPagina = 5;
+  const { deleteConfirm, deleteSuccess, deleteError, createSuccess, updateSuccess, createError, updateError } = useNotification();
 
   useEffect(() => {
     initializeMockData();
@@ -71,11 +73,11 @@ const GestionUsuarios = () => {
         setUsuarios(usuariosActualizados);
       }
     }
-    Swal.fire({
-      icon: "success",
-      title: modoEdicion ? "Usuario actualizado exitosamente" : "Usuario registrado exitosamente",
-      confirmButtonText: "OK",
-    });
+    if (modoEdicion) {
+      updateSuccess('usuario');
+    } else {
+      createSuccess('usuario');
+    }
     setModoEdicion(false);
     setUsuarioSeleccionado(null);
     setIndiceEditar(null);
@@ -119,22 +121,15 @@ const GestionUsuarios = () => {
   };
 
   const handleDelete = (usuario) => {
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "No podrás revertir esta acción",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar"
-    }).then((result) => {
+    deleteConfirm('usuario').then((result) => {
       if (result.isConfirmed) {
         const eliminado = UserService.delete(usuario.id);
         if (eliminado) {
           const usuariosActualizados = UserService.getAll();
           setUsuarios(usuariosActualizados);
-          Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+          deleteSuccess('usuario');
+        } else {
+          deleteError('usuario');
         }
       }
     });
@@ -299,10 +294,11 @@ const GestionUsuarios = () => {
           </div>
         )}
 
-        <VerDetalleUsuario
-          usuario={usuarioSeleccionado}
+        <ProfileModal
+          user={usuarioSeleccionado}
           isOpen={mostrarModalVer}
           onClose={() => setMostrarModalVer(false)}
+          onEdit={handleEditar}
         />
       </div>
     </div>

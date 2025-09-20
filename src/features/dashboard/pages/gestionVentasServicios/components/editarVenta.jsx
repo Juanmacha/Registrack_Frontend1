@@ -151,11 +151,7 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
     const newErrors = validate();
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
+      AlertService.error("Error en el formulario", "Por favor, corrige los campos marcados en rojo antes de continuar.");
       return;
     }
     try {
@@ -173,18 +169,10 @@ const EditarVenta = ({ datos, isOpen, onClose, onGuardar }) => {
         }
       }
       await onGuardar(formToSave);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud actualizada',
-        text: 'La solicitud se ha actualizado correctamente.'
-      });
+      AlertService.success("Solicitud actualizada", "La solicitud se ha actualizado correctamente.");
       onClose();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+      AlertService.error("Error al guardar", "");
     }
   };
 

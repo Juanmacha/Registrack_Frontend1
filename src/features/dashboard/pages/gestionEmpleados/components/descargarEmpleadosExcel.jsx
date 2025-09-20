@@ -2,6 +2,7 @@ import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const DescargarExcelEmpleados = ({ empleados }) => {
   const exportarExcel = () => {
@@ -61,13 +62,11 @@ const DescargarExcelEmpleados = ({ empleados }) => {
   };
 
   return (
-    <button
-      className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
+    <DownloadButton
+      type="excel"
       onClick={exportarExcel}
       title="Descargar Excel"
-    >
-      <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-    </button>
+    />
   );
 };
 

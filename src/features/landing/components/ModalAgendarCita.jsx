@@ -31,13 +31,7 @@ const ModalAgendarCita = ({ isOpen, onClose }) => {
       }
     }
     console.log("Datos del formulario:", formData);
-    Swal.fire({
-      icon: 'success',
-      title: 'Solicitud enviada',
-      text: 'Tu solicitud de cita ha sido enviada con éxito. Pronto nos contactaremos contigo.',
-      timer: 3000,
-      showConfirmButton: false
-    });
+    AlertService.success("Solicitud enviada", "Tu solicitud de cita ha sido enviada con éxito. Pronto nos contactaremos contigo.");
     onClose();
     setFormData({ nombre: "", email: "", telefono: "", fecha: "", hora: "", mensaje: "" });
   };

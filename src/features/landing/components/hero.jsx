@@ -16,6 +16,7 @@ import FormularioCesion from "../../../shared/components/formularioCesiondeMarca
 import FormularioAmpliacion from "../../../shared/components/formularioAmpliacion";
 import FormularioRespuesta from "../../../shared/components/formularioRespuesta";
 import ModalAgendarCita from './ModalAgendarCita';
+import ServiceModal from './ServiceModal';
 
 // Constantes
 const FORMULARIOS_POR_SERVICIO = {
@@ -30,27 +31,33 @@ const FORMULARIOS_POR_SERVICIO = {
 
 // Componente para las características del hero
 const HeroFeatures = () => (
-  <ul className="space-y-4 text-base text-gray-700 mb-6">
+  <ul className="space-y-4 text-base text-gray-700 mb-6 pl-0">
     <li className="flex items-start gap-3">
-      <FaBalanceScale className="text-blue-600 mt-1" />
-      <span>
-        <strong>Soporte legal completo:</strong> Contamos con abogados
+      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+        <FaBalanceScale className="text-blue-600 text-sm" />
+      </div>
+      <span className="text-body">
+        <strong className="text-body-medium">Soporte legal completo:</strong> Contamos con abogados
         especializados en propiedad intelectual que te asesoran desde
         el inicio hasta la obtención del certificado.
       </span>
     </li>
     <li className="flex items-start gap-3">
-      <FaMedal className="text-yellow-500 mt-1" />
-      <span>
-        <strong>Más de 12 años de experiencia:</strong> Hemos ayudado
+      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+        <FaMedal className="text-blue-600 text-sm" />
+      </div>
+      <span className="text-body">
+        <strong className="text-body-medium">Más de 12 años de experiencia:</strong> Hemos ayudado
         a cientos de emprendedores y empresas en Colombia a proteger
         sus marcas con éxito.
       </span>
     </li>
     <li className="flex items-start gap-3">
-      <FaRocket className="text-green-500 mt-1" />
-      <span>
-        <strong>Trámites 100% en línea:</strong> Ahorra tiempo y evita
+      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+        <FaRocket className="text-blue-600 text-sm" />
+      </div>
+      <span className="text-body">
+        <strong className="text-body-medium">Trámites 100% en línea:</strong> Ahorra tiempo y evita
         desplazamientos. Todo el proceso es digital, ágil y con
         atención personalizada.
       </span>
@@ -73,40 +80,6 @@ const HeroVideo = () => (
   </div>
 );
 
-// Componente para la sección "Quiénes somos"
-const QuienesSomos = () => (
-  <section id="nosotros" className="pt-20">
-    <div className="max-w-screen-xl mx-auto bg-[#275FAA] rounded-xl shadow-lg p-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-      <div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-left text-white tracking-tight">
-          ¿Quiénes somos?
-        </h2>
-        <p className="text-base md:text-lg text-white mb-4 text-left leading-relaxed">
-          En{" "}
-          <span className="font-semibold">Registrack</span>,
-          somos el equipo que te brinda la tranquilidad y la certeza de
-          tener tu marca protegida. Con más de 12 años de experiencia en
-          Propiedad Industrial, nos dedicamos a ser tu aliado estratégico en
-          Medellín y a nivel internacional.
-        </p>
-        <p className="text-base md:text-lg text-white mb-4 text-left leading-relaxed">
-          Nos mueve tu éxito. Nos apasiona proteger la identidad de tu
-          negocio y asegurar su crecimiento. Elegirnos significa contar con
-          la experiencia, el rigor legal y el compromiso de un equipo que
-          valora tu marca tanto como tú.
-        </p>
-        <blockquote className="border-l-4 border-white pl-4 italic text-gray-200 bg-gray-50/10 py-2">
-          En Registrack, somos tu respaldo confiable.
-        </blockquote>
-      </div>
-      <img
-        src="/images/trato.jpeg"
-        alt="Asesoría personalizada"
-        className="w-full h-full max-h-[500px] object-contain animate-float"
-      />
-    </div>
-  </section>
-);
 
 // Componente para la tarjeta de servicio
 const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }) => (
@@ -118,22 +91,22 @@ const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }
       onError={e => { e.target.src = "/images/certificacion.jpg"; }}
     />
     <div className="p-6">
-      <h3 className="text-xl font-semibold text-[#275FAA] mb-2">
+      <h3 className="text-xl title-secondary text-[#275FAA] mb-2">
         {servicio.landing_data?.titulo || servicio.nombre}
       </h3>
-      <p className="text-gray-600 text-sm mb-4">
+      <p className="text-gray-600 text-sm mb-4 text-body">
         {servicio.landing_data?.resumen || servicio.descripcion_corta}
       </p>
       <div className="flex flex-row gap-2 justify-center mt-2">
         <button
           onClick={() => onSaberMas(servicio)}
-          className="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md font-medium shadow-sm hover:bg-[#163366] transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md btn-text shadow-sm hover:bg-[#163366] transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Saber más
         </button>
         <button
           onClick={() => onAdquirir(servicio)}
-          className={`px-3 py-1.5 text-sm rounded-md font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${formularioDisponible
+          className={`px-3 py-1.5 text-sm rounded-md btn-text shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-400 ${formularioDisponible
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
@@ -150,7 +123,7 @@ const ServicioCard = ({ servicio, onSaberMas, onAdquirir, formularioDisponible }
 const ServiciosSection = ({ servicios, loading, onSaberMas, onAdquirir }) => (
   <section id="servicios" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
     <div className="max-w-screen-xl mx-auto">
-      <h2 className="text-4xl font-bold text-center mb-12 text-[#275FAA]">
+      <h2 className="text-4xl title-primary text-center mb-12 text-[#275FAA]">
         Nuestros Servicios
       </h2>
       {loading ? (
@@ -171,7 +144,6 @@ const ServiciosSection = ({ servicios, loading, onSaberMas, onAdquirir }) => (
         </div>
       )}
     </div>
-    <QuienesSomos />
   </section>
 );
 
@@ -183,7 +155,9 @@ const useServicios = () => {
   useEffect(() => {
     const cargar = () => {
       const todos = mockDataService.getServices();
-      setServicios(todos.filter(s => s.visible_en_landing));
+      const serviciosVisibles = todos.filter(s => s.visible_en_landing);
+      console.log('🔧 [Hero] Servicios cargados:', serviciosVisibles);
+      setServicios(serviciosVisibles);
       setLoading(false);
     };
 
@@ -211,13 +185,17 @@ const useModal = () => {
   const [tituloModal, setTituloModal] = useState("");
 
   const abrirModal = (servicio) => {
+    console.log('🔧 [Hero] abrirModal llamado con servicio:', servicio);
     const FormularioComponente = FORMULARIOS_POR_SERVICIO[servicio.nombre];
+    console.log('🔧 [Hero] FormularioComponente para', servicio.nombre, ':', FormularioComponente);
 
     if (!FormularioComponente) {
+      console.error('🔧 [Hero] No se encontró formulario para:', servicio.nombre);
       alert("Este servicio aún no tiene un formulario habilitado.");
       return false;
     }
 
+    console.log('🔧 [Hero] Abriendo modal...');
     setServicioSeleccionado(servicio);
     setTituloModal(`Solicitud de ${servicio.nombre}`);
     setModalAbierto(true);
@@ -239,6 +217,54 @@ const Hero = () => {
   const { servicios, loading } = useServicios();
   const { modalAbierto, servicioSeleccionado, tituloModal, abrirModal, cerrarModal } = useModal();
   const [modalCitaOpen, setModalCitaOpen] = useState(false);
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+
+  const handleGuardarOrden = async (formData) => {
+    try {
+      console.log('🔧 [Hero] Guardando orden de servicio:', formData);
+      
+      // Obtener el usuario actual
+      const user = authData.getUser && typeof authData.getUser === 'function'
+        ? authData.getUser()
+        : JSON.parse(localStorage.getItem('user'));
+      
+      if (!user) {
+        await alertService.error("Error", "No se pudo obtener la información del usuario.");
+        return;
+      }
+
+      // Crear la orden usando el servicio de ventas
+      const ordenData = {
+        ...formData,
+        cliente: user.nombres + ' ' + user.apellidos,
+        clienteId: user.id,
+        email: user.email, // Agregar email para que aparezca en Mis Procesos
+        fechaCreacion: new Date().toISOString(),
+        estado: 'En revisión',
+        encargado: 'Sin asignar'
+      };
+
+      // Usar el servicio de ventas para crear la orden
+      const { crearVenta } = await import('../../dashboard/pages/gestionVentasServicios/services/ventasService');
+      await crearVenta(ordenData);
+      
+      await alertService.success(
+        "¡Orden creada!",
+        "La orden de servicio se ha creado correctamente y aparecerá en 'Mis Procesos'.",
+        { confirmButtonText: "Entendido" }
+      );
+      
+      cerrarModal();
+    } catch (error) {
+      console.error('Error al guardar la orden:', error);
+      await alertService.error(
+        "Error",
+        "No se pudo crear la orden de servicio. Inténtalo de nuevo.",
+        { confirmButtonText: "Entendido" }
+      );
+    }
+  };
 
   const handleAdquirir = async (servicio) => {
     const user = authData.getUser && typeof authData.getUser === 'function'
@@ -269,10 +295,8 @@ const Hero = () => {
   };
 
   const handleSaberMas = (servicio) => {
-    navigate(servicio.route_path);
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 100);
+    setSelectedService(servicio);
+    setServiceModalOpen(true);
   };
 
   const handleAgendarCitaClick = async () => {
@@ -304,15 +328,15 @@ const Hero = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white overflow-y-scroll no-scrollbar font-sans pt-5">
+    <div className="min-h-screen w-full bg-white font-sans pt-5">
       {/* Hero Section */}
       <header className="bg-white px-4 sm:px-6 lg:px-8">
         <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-10 md:gap-16 min-h-[420px]">
           <div className="flex flex-col justify-center">
-            <h1 className="text-5xl md:text-6xl text-left font-bold bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
+            <h1 className="text-5xl md:text-6xl text-left title-primary bg-gradient-to-r from-[#083874] to-[#F3D273] bg-clip-text text-transparent mb-6">
               Certimarcas
             </h1>
-            <p className="text-lg text-gray-700 mb-6 text-left">
+            <p className="text-lg text-gray-700 mb-6 text-left text-body">
               ¿Tienes una gran idea? Nosotros la protegemos. En Registrack te
               ayudamos a registrar tu marca de forma fácil, rápida y sin enredos
               legales. ¡Haz que tu marca sea solo tuya, hoy!
@@ -320,12 +344,12 @@ const Hero = () => {
             <HeroFeatures />
             <div className="w-full text-left pt-2 flex flex-col sm:flex-row gap-3">
               <a href="#nosotros">
-                <button className="bg-blue-700 text-white px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-800 transition font-bold w-full sm:w-auto">
+                <button className="bg-blue-600 text-white px-6 py-3 rounded-md text-base hover:bg-blue-700 transition btn-text w-full sm:w-auto">
                   Conocer más
                 </button>
               </a>
               <button
-                className="bg-blue-100 text-blue-800 px-5 mb-5 py-2.5 rounded-md text-base hover:bg-blue-200 border border-blue-300 transition font-bold shadow w-full sm:w-auto"
+                className="bg-blue-50 text-blue-600 px-6 py-3 rounded-md text-base hover:bg-blue-100 border border-blue-200 transition btn-text w-full sm:w-auto"
                 style={{ minWidth: 0 }}
                 onClick={handleAgendarCitaClick}
               >
@@ -337,6 +361,45 @@ const Hero = () => {
         </div>
       </header>
 
+      {/* Quiénes somos Section */}
+      <section className="bg-[#275FAA] py-16 px-4 sm:px-6 lg:px-8 mt-16">
+        <div className="max-w-screen-xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl title-primary mb-6 text-left text-[#275FAA]">
+                  ¿Quiénes somos?
+                </h2>
+                <p className="text-base md:text-lg text-gray-700 mb-4 text-body">
+                  En{" "}
+                  <span className="text-body-medium text-[#275FAA]">Registrack</span>,
+                  somos el equipo que te brinda la tranquilidad y la certeza de
+                  tener tu marca protegida. Con más de 12 años de experiencia en
+                  Propiedad Industrial, nos dedicamos a ser tu aliado estratégico en
+                  Medellín y a nivel internacional.
+                </p>
+                <p className="text-base md:text-lg text-gray-700 mb-4 text-body">
+                  Nos mueve tu éxito. Nos apasiona proteger la identidad de tu
+                  negocio y asegurar su crecimiento. Elegirnos significa contar con
+                  la experiencia, el rigor legal y el compromiso de un equipo que
+                  valora tu marca tanto como tú.
+                </p>
+                <blockquote className="border-l-4 border-[#275FAA] pl-4 italic text-gray-600 bg-gray-50 py-3 rounded-r-lg text-body">
+                  En Registrack, somos tu respaldo confiable.
+                </blockquote>
+              </div>
+              <div className="flex justify-center">
+                <img
+                  src="/images/trato.jpeg"
+                  alt="Asesoría personalizada"
+                  className="w-full max-w-2xl h-auto object-contain animate-bounce-subtle"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <ServiciosSection
         servicios={servicios}
         loading={loading}
@@ -347,17 +410,35 @@ const Hero = () => {
       {/* Modal */}
       {modalAbierto && servicioSeleccionado && (
         (() => {
+          console.log('🔧 [Hero] Renderizando modal para servicio:', servicioSeleccionado.nombre);
           const FormularioComponente = FORMULARIOS_POR_SERVICIO[servicioSeleccionado.nombre];
-          return FormularioComponente ? (
-            <FormularioComponente
-              isOpen={modalAbierto}
-              onClose={cerrarModal}
-              onGuardar={cerrarModal}
-            />
-          ) : null;
+          console.log('🔧 [Hero] FormularioComponente encontrado:', FormularioComponente);
+          
+          if (FormularioComponente) {
+            return (
+              <FormularioComponente
+                isOpen={modalAbierto}
+                onClose={cerrarModal}
+                onGuardar={handleGuardarOrden}
+              />
+            );
+          } else {
+            console.error('🔧 [Hero] No se encontró formulario para:', servicioSeleccionado.nombre);
+            return null;
+          }
         })()
       )}
       <ModalAgendarCita isOpen={modalCitaOpen} onClose={() => setModalCitaOpen(false)} />
+      
+      {/* Modal de Servicio */}
+      <ServiceModal
+        isOpen={serviceModalOpen}
+        onClose={() => {
+          setServiceModalOpen(false);
+          setSelectedService(null);
+        }}
+        servicio={selectedService}
+      />
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BiEnvelope, BiLock, BiShow, BiHide } from "react-icons/bi";
+import { BiEnvelope, BiLock, BiShow, BiHide, BiLeftArrowAlt } from "react-icons/bi";
 import { useAuth } from "../../../shared/contexts/authContext";
-import alertService from "../../../utils/alertService.js";
+import alertService from "../../../utils/alertService";
 
 const validateEmail = (email) => {
   // Expresión regular básica para validar email
@@ -60,19 +60,18 @@ const Login = () => {
       return;
     }
     try {
-      // Mostrar alerta de carga
-      const loadingAlert = alertService.loading("Iniciando sesión...");
-      
       // Autenticar usuario usando AuthContext
       const result = await login(formData.email, formData.password);
       
-      // Cerrar alerta de carga
-      alertService.close();
-      
       if (result.success) {
-        // Mostrar alerta de éxito
-        await alertService.loginSuccess(`${result.user.name}`);
-        
+        // Mostrar alerta de login exitoso
+        const userName = result.user.name || result.user.firstName || 'Usuario';
+        await alertService.success(
+          "¡Bienvenido!",
+          `Hola ${userName}, has iniciado sesión correctamente.`,
+          { confirmButtonText: "Continuar" }
+        );
+
         // Redirección inteligente para rutas del landing
         const redirect = localStorage.getItem('postLoginRedirect');
         if (redirect &&
@@ -97,77 +96,135 @@ const Login = () => {
         }
       } else {
         setError("Credenciales incorrectas. Intenta de nuevo.");
-        alertService.loginError();
       }
     } catch (error) {
       setError("Error al iniciar sesión. Por favor, intenta de nuevo.");
-      alertService.close();
-      alertService.error("Error", "Error al iniciar sesión. Por favor, intenta de nuevo.");
     }
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md w-full">
-      <h2 className="text-2xl font-bold text-blue-900 text-center mb-6">
-        Iniciar sesión - Certimarcas
-      </h2>
-      {error && (
-        <div className="mb-4 text-red-600 text-center font-semibold bg-red-100 rounded p-2">
-          {error}
+    <div className="min-h-screen bg-white flex">
+      {/* Formulario de Login - Lado Izquierdo */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            {/* Botón Volver */}
+            <div className="mb-4">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <BiLeftArrowAlt className="mr-2" />
+                Volver al inicio
+              </button>
+            </div>
+
+            {/* Título */}
+            <h1 className="text-2xl font-bold text-blue-900 mb-8 text-center">
+              Iniciar sesión - Certimarcas
+            </h1>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm text-center">{error}</p>
+              </div>
+            )}
+
+            {/* Formulario */}
+            <div className="space-y-6">
+              {/* Campo Email */}
+              <div>
+                <div className="relative">
+                  <BiEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="martica@gmail.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              {/* Campo Password */}
+              <div>
+                <div className="relative">
+                  <BiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="••••••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <BiHide className="text-lg" /> : <BiShow className="text-lg" />}
+                  </button>
+                </div>
+                {fieldErrors.password && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              {/* Forgot password */}
+              <div className="text-right">
+                <button
+                  onClick={() => navigate("/forgotPassword")}
+                  className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
+              {/* Botón de Login */}
+              <button
+                onClick={handleLogin}
+                disabled={!isFormValid()}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Ingresar
+              </button>
+
+              {/* Registro */}
+              <div className="text-center">
+                <p className="text-sm text-gray-600">
+                  ¿No tienes una cuenta?{" "}
+                  <button
+                    onClick={() => navigate("/register")}
+                    className="text-blue-500 hover:text-blue-700 font-medium transition-colors"
+                  >
+                    Regístrate
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-      <div className="space-y-4">
-        <div className="relative">
-          <BiEnvelope className="absolute left-3 top-3 text-blue-700" />
-          <input
-            name="email"
-            placeholder="Correo electrónico"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+      </div>
+
+      {/* Video Decorativo - Lado Derecho */}
+      <div className="flex-1 flex items-center justify-center bg-white">
+        <div className="w-full max-w-lg h-96 flex items-center justify-center">
+          <video
+            src="/images/Whisk_cauajgm4ymzhyjjkltawzjetndazzc1hn2y3lwe.mp4"
+            alt="Video Registrack"
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
           />
-          {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
         </div>
-        <div className="relative">
-          <BiLock className="absolute left-3 top-3 text-blue-700" />
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            placeholder="Contraseña"
-            onChange={handleChange}
-            className="w-full pl-10 pr-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
-          <span
-            className="absolute right-3 top-3 text-blue-700 cursor-pointer"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <BiHide /> : <BiShow />}
-          </span>
-        </div>
-        <div className="text-right">
-          <button
-            onClick={() => navigate("/forgotPassword")}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
-        </div>
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold shadow-md hover:bg-blue-700 transition-all duration-300"
-          disabled={!isFormValid()}
-        >
-          Ingresar
-        </button>
-        <p className="text-center text-sm text-gray-600 mt-4">
-          ¿No tienes una cuenta?{" "}
-          <span
-            onClick={() => navigate("/register")}
-            className="text-blue-600 hover:underline cursor-pointer"
-          >
-            Regístrate
-          </span>
-        </p>
       </div>
     </div>
   );

@@ -62,8 +62,8 @@ const NavBar = () => {
   const titulo = titulosPorRuta[location.pathname] || "Panel de Administración";
 
   return (
-    <header className="w-full bg-white flex justify-between items-center px-6 py-3 shadow-sm z-40">
-      <h1 className="text-xl font-semibold text-gray-700 tracking-wide">
+    <header className="w-full bg-white flex justify-between items-center px-3 sm:px-6 py-2 sm:py-3 shadow-sm z-40">
+      <h1 className="text-lg sm:text-xl font-semibold text-gray-700 tracking-wide truncate">
         {titulo}
       </h1>
 
@@ -71,25 +71,25 @@ const NavBar = () => {
         <button
           onClick={toggleMenu}
           aria-expanded={menuAbierto}
-          className="bg-gray-200 rounded-full p-2 hover:bg-gray-300 transition duration-200"
+          className="bg-gray-200 rounded-full p-1.5 sm:p-2 hover:bg-gray-300 transition duration-200"
         >
-          <CgProfile className="w-7 h-7 text-gray-700" />
+          <CgProfile className="w-5 h-5 sm:w-7 sm:h-7 text-gray-700" />
         </button>
 
         {menuAbierto && (
           <div
-            className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden"
+            className="absolute right-0 mt-2 w-40 sm:w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden"
             role="menu"
           >
             <button
               onClick={handleVerPerfil}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition"
+              className="w-full text-left px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-blue-100 transition"
             >
               Ver perfil
             </button>
             <button
               onClick={handleCerrarSesion}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-red-100 transition"
+              className="w-full text-left px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-red-100 transition"
             >
               Cerrar sesión
             </button>

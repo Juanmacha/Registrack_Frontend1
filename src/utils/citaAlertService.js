@@ -1,79 +1,86 @@
-import alertService from './alertService.js';
+import alertService from "./alertService.js";
+import { CommonAlerts, AlertService } from "../shared/styles/alertStandards.js";
 
 const citaAlertService = {
   // Alerta de fecha no válida
   fechaNoValida: () => {
-    return alertService.warning(
-      "Fecha no válida", 
-      "No puedes agendar citas en fechas anteriores a hoy."
+    return AlertService.warning(
+      "Fecha no válida",
+      "No puedes agendar citas en fechas anteriores a hoy. Por favor, selecciona una fecha futura."
     );
   },
 
   // Alerta de cita agendada exitosamente
   citaAgendada: () => {
-    return alertService.success(
-      "Cita agendada", 
-      "La cita ha sido agendada correctamente."
+    return AlertService.success(
+      "Cita agendada exitosamente",
+      "La cita ha sido programada correctamente. Recibirás una confirmación por correo electrónico."
     );
   },
 
   // Alerta de cita reprogramada exitosamente
   citaReprogramada: () => {
-    return alertService.success(
-      "Cita reprogramada", 
-      "La cita ha sido reprogramada correctamente."
+    return AlertService.success(
+      "Cita reprogramada exitosamente",
+      "La cita ha sido reprogramada correctamente. Se ha enviado una notificación al cliente."
     );
   },
 
   // Alerta de cita anulada exitosamente
   citaAnulada: () => {
-    return alertService.success(
-      "Cita anulada", 
-      "La cita ha sido anulada correctamente."
+    return AlertService.success(
+      "Cita anulada exitosamente",
+      "La cita ha sido anulada correctamente. Se ha notificado al cliente sobre la cancelación."
     );
   },
 
   // Confirmación para anular cita
   confirmarAnulacion: () => {
-    return alertService.confirm(
-      "Anular cita",
-      "¿Estás seguro de que quieres anular esta cita? Esta acción no se puede deshacer.",
-      "Sí, anular cita",
-      "Cancelar"
+    return AlertService.confirm(
+      "Confirmar anulación de cita",
+      "¿Estás seguro de que deseas anular esta cita? Esta acción no se puede deshacer y se notificará al cliente.",
+      {
+        confirmButtonText: "Sí, anular cita",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#ef4444",
+      }
     );
   },
 
   // Confirmación para reprogramar cita
   confirmarReprogramacion: () => {
-    return alertService.confirm(
-      "Reprogramar cita",
-      "¿Estás seguro de que quieres reprogramar esta cita?",
-      "Sí, reprogramar",
-      "Cancelar"
+    return AlertService.confirm(
+      "Confirmar reprogramación de cita",
+      "¿Estás seguro de que deseas reprogramar esta cita? Se enviará una notificación al cliente con la nueva fecha y hora.",
+      {
+        confirmButtonText: "Sí, reprogramar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#f59e0b",
+      }
     );
   },
 
   // Alerta de error al procesar cita
   errorProcesarCita: () => {
-    return alertService.error(
-      "Error", 
-      "Error al procesar la cita. Por favor, intenta de nuevo."
+    return AlertService.error(
+      "Error al procesar cita",
+      "No se pudo procesar la solicitud de cita. Por favor, verifica los datos e intenta nuevamente."
     );
   },
 
   // Alerta de error al anular cita
   errorAnularCita: () => {
-    return alertService.error(
-      "Error", 
-      "Error al anular la cita. Por favor, intenta de nuevo."
+    return AlertService.error(
+      "Error al anular cita",
+      "No se pudo anular la cita. Por favor, intenta nuevamente o contacta al soporte técnico."
     );
   },
 
   // Alerta de error al reprogramar cita
   errorReprogramarCita: () => {
-    return alertService.error(
-      "Error", 
-      "Error al reprogramar la cita. Por favor, intenta de nuevo."
+    return AlertService.error(
+      "Error al reprogramar cita",
+      "No se pudo reprogramar la cita. Por favor, intenta nuevamente o contacta al soporte técnico."
     );
   },
 
@@ -181,7 +188,7 @@ const citaAlertService = {
       "Calendario limpio",
       "Todas las citas han sido eliminadas del calendario."
     );
-  }
+  },
 };
 
-export default citaAlertService; 
+export default citaAlertService;

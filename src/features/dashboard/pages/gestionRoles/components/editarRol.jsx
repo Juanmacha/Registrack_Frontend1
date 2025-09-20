@@ -1,9 +1,10 @@
-import React from "react";
-import { mostrarMensajeExito } from "../../../../../utils/alerts";
+import React, { useState, useEffect } from "react";
+import { useNotification } from "../../../../../shared/contexts/NotificationContext.jsx";
 import { RoleService } from "../../../../../utils/mockDataService";
 
 const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
   console.log("EditarRolModal - rolEditable:", rolEditable);  // Depuración
+  const { updateSuccess, updateError } = useNotification();
 
   if (!rolEditable) {
     return null;
@@ -12,7 +13,6 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
   const [formData, setFormData] = useState({
     id: "",
     nombre: "",
-    descripcion: "",
     estado: "activo", // Añadir estado al formData
     permisos: {},
   });
@@ -22,7 +22,6 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
       setFormData({
         id: rolEditable.id,
         nombre: rolEditable.nombre,
-        descripcion: rolEditable.descripcion || "",
         estado: rolEditable.estado ? rolEditable.estado.toLowerCase() : "activo", // Asegurar minúsculas
         permisos: rolEditable.permisos || {},
       });
@@ -43,9 +42,9 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
     if (rolActualizado) {
       setRoles(RoleService.getAll());
       setRolEditable(null);
-      mostrarMensajeExito("¡Rol actualizado exitosamente!");
+      updateSuccess('rol');
     } else {
-      mostrarMensajeExito("Error al actualizar el rol.");
+      updateError('rol');
     }
   };
 
@@ -116,17 +115,6 @@ const EditarRolModal = ({ rolEditable, setRolEditable, roles, setRoles }) => {
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Descripción
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.descripcion || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 {/* Nuevo campo de estado */}

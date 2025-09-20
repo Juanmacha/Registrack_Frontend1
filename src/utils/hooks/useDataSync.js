@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { DataChangeNotifier } from '../mockDataService.js';
+import { useState, useEffect } from "react";
+import { DataChangeNotifier } from "../mockDataService.js";
 
 /**
  * Hook personalizado para sincronizar datos entre componentes
@@ -21,17 +21,28 @@ export const useDataSync = (dataType, dataFetcher, dependencies = []) => {
 
   // Efecto para manejar cambios de datos
   useEffect(() => {
-    console.log(`[useDataSync] Configurando listener para ${dataType}`);
-    const unsubscribe = DataChangeNotifier.subscribe((changedDataType, action, changedData) => {
-      console.log(`[useDataSync] Recibida notificación: ${changedDataType} - ${action}`, changedData);
-      // Solo actualizar si el tipo de datos coincide
-      if (changedDataType === dataType) {
-        console.log(`[useDataSync] ${dataType} changed:`, action, changedData);
-        refreshData();
-      } else {
-        console.log(`[useDataSync] Ignorando notificación de tipo ${changedDataType} (esperado: ${dataType})`);
+    console.log(`🔧 [useDataSync] Configurando listener para ${dataType}`);
+    const unsubscribe = DataChangeNotifier.subscribe(
+      (changedDataType, action, changedData) => {
+        console.log(
+          `🔧 [useDataSync] Recibida notificación: ${changedDataType} - ${action}`,
+          changedData
+        );
+        // Solo actualizar si el tipo de datos coincide
+        if (changedDataType === dataType) {
+          console.log(
+            `🔧 [useDataSync] ${dataType} changed:`,
+            action,
+            changedData
+          );
+          refreshData();
+        } else {
+          console.log(
+            `🔧 [useDataSync] Ignorando notificación de tipo ${changedDataType} (esperado: ${dataType})`
+          );
+        }
       }
-    });
+    );
 
     return unsubscribe;
   }, [dataType, ...dependencies]);
@@ -51,7 +62,7 @@ export const useDataSync = (dataType, dataFetcher, dependencies = []) => {
  * @returns {Array} [ventas, refreshVentas, lastUpdate]
  */
 export const useSalesSync = (dataFetcher, dependencies = []) => {
-  return useDataSync('sale', dataFetcher, dependencies);
+  return useDataSync("sale", dataFetcher, dependencies);
 };
 
 /**
@@ -61,7 +72,7 @@ export const useSalesSync = (dataFetcher, dependencies = []) => {
  * @returns {Array} [usuarios, refreshUsuarios, lastUpdate]
  */
 export const useUsersSync = (dataFetcher, dependencies = []) => {
-  return useDataSync('user', dataFetcher, dependencies);
+  return useDataSync("user", dataFetcher, dependencies);
 };
 
 /**
@@ -71,7 +82,7 @@ export const useUsersSync = (dataFetcher, dependencies = []) => {
  * @returns {Array} [citas, refreshCitas, lastUpdate]
  */
 export const useAppointmentsSync = (dataFetcher, dependencies = []) => {
-  return useDataSync('appointment', dataFetcher, dependencies);
+  return useDataSync("appointment", dataFetcher, dependencies);
 };
 
 /**
@@ -81,7 +92,7 @@ export const useAppointmentsSync = (dataFetcher, dependencies = []) => {
  * @returns {Array} [empleados, refreshEmpleados, lastUpdate]
  */
 export const useEmployeesSync = (dataFetcher, dependencies = []) => {
-  return useDataSync('employee', dataFetcher, dependencies);
+  return useDataSync("employee", dataFetcher, dependencies);
 };
 
 /**
@@ -91,5 +102,5 @@ export const useEmployeesSync = (dataFetcher, dependencies = []) => {
  * @returns {Array} [clientes, refreshClientes, lastUpdate]
  */
 export const useClientsSync = (dataFetcher, dependencies = []) => {
-  return useDataSync('client', dataFetcher, dependencies);
-}; 
+  return useDataSync("client", dataFetcher, dependencies);
+};

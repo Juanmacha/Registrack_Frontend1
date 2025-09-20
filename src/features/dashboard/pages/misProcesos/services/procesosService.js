@@ -10,8 +10,15 @@ export function getSolicitudesUsuario(email) {
   try {
     // Usar SaleService para obtener todas las ventas
     const todas = SaleService.getAll();
-    return todas.filter((s) => s && typeof s === "object" && s.email === email);
-  } catch {
+    console.log('🔧 [procesosService] Todas las ventas:', todas);
+    console.log('🔧 [procesosService] Filtrando por email:', email);
+    
+    const filtradas = todas.filter((s) => s && typeof s === "object" && s.email === email);
+    console.log('🔧 [procesosService] Ventas filtradas para el usuario:', filtradas);
+    
+    return filtradas;
+  } catch (error) {
+    console.error('🔧 [procesosService] Error al obtener solicitudes:', error);
     return [];
   }
 }

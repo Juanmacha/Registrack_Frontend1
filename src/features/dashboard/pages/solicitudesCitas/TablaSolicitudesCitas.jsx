@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { mockDataService } from '../../../../utils/mockDataService.js';
 import alertService from '../../../../utils/alertService.js';
 import Swal from "sweetalert2";
+import StandardAvatar from "../../../../shared/components/StandardAvatar";
 
 const TablaSolicitudesCitas = ({ solicitudes, onVer, deshabilitarAcciones, cargarSolicitudes }) => {
   const navigate = useNavigate();
@@ -46,27 +47,30 @@ const TablaSolicitudesCitas = ({ solicitudes, onVer, deshabilitarAcciones, carga
     <>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
         <div className="overflow-x-auto w-full">
-          <table className="table-auto w-full divide-y divide-gray-100 text-sm text-gray-700">
+          <table className="table-auto w-full divide-y divide-gray-100 text-sm text-gray-700 min-w-[800px]">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-center">#</th>
-                <th className="px-6 py-4 text-center">Cliente</th>
-                <th className="px-6 py-4 text-center">Documento</th>
-                <th className="px-6 py-4 text-center">Tipo Solicitud</th>
-                <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center">Fecha</th>
-                <th className="px-6 py-4 text-center">Acciones</th>
+                <th className="px-6 py-4 font-bold text-center">Cliente</th>
+                <th className="px-6 py-4 font-bold text-center">Documento</th>
+                <th className="px-6 py-4 font-bold text-center">Tipo Solicitud</th>
+                <th className="px-6 py-4 font-bold text-center">Estado</th>
+                <th className="px-6 py-4 font-bold text-center">Fecha</th>
+                <th className="px-6 py-4 font-bold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
               {solicitudes.length > 0 ? (
                 solicitudes.map((solicitud, idx) => (
                   <tr key={solicitud.id}>
-                    <td className="px-6 py-4 text-center">{idx + 1}</td>
                     <td className="px-6 py-4 text-center">
-                      <div>
-                        <div className="font-medium">{solicitud.nombre}</div>
-                        <div className="text-gray-500 text-xs">{solicitud.email}</div>
+                      <div className="flex items-center justify-center gap-3">
+                        <StandardAvatar 
+                          nombre={solicitud.nombre || 'N/A'}
+                        />
+                        <div className="text-left">
+                          <div className="font-medium">{solicitud.nombre}</div>
+                          <div className="text-gray-500 text-xs">{solicitud.email}</div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">{solicitud.numeroDocumento}</td>
@@ -84,32 +88,20 @@ const TablaSolicitudesCitas = ({ solicitudes, onVer, deshabilitarAcciones, carga
                         <button
                           onClick={() => onVer(idx)}
                           title="Ver detalle"
-                          className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-center custom-hover"
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            borderColor: "#1E4A85",
-                            color: "#1E4A85",
-                          }}
+                          className="p-2 rounded-lg bg-white text-blue-700 hover:bg-blue-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-blue-200 transition-all duration-200"
                           disabled={deshabilitarAcciones}
                         >
-                          <i className="bi bi-eye-fill text-base"></i>
+                          <i className="bi bi-eye-fill text-sm"></i>
                         </button>
                         
                         {solicitud.estado === 'Pendiente' && (
                           <button
                             onClick={() => handleAgendar(solicitud)}
                             title="Agendar Cita"
-                            className="btn btn-outline-success rounded-circle p-0 d-flex align-items-center justify-center custom-hover"
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              borderColor: "#28a745",
-                              color: "#28a745",
-                            }}
+                            className="p-2 rounded-lg bg-white text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-emerald-200 transition-all duration-200"
                             disabled={deshabilitarAcciones}
                           >
-                            <i className="bi bi-calendar-plus"></i>
+                            <i className="bi bi-calendar-plus-fill text-sm"></i>
                           </button>
                         )}
                       </div>

@@ -4,9 +4,12 @@ import { PaymentService, initializeMockData } from "../../../../../utils/mockDat
 import getEstadoPagoBadge from "../services/getEstadoPagoBadge";
 import VerDetallePago from "../components/verDetallePagos";
 import DescargarExcelPagos from "../components/descargarExcelPagos";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { usePayments } from '../../../../../shared/contexts/PaymentContext';
 import { generarComprobantePDF } from '../../../../../shared/utils/generarComprobantePDF';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const Tablapagos = () => {
   const [datos, setDatos] = useState([]);
@@ -82,21 +85,43 @@ const Tablapagos = () => {
           value={busqueda}
           onChange={handleBusquedaChange}
         />
-        <DescargarExcelPagos pagos={datos} />
+        <DownloadButton
+          type="excel"
+          onClick={() => {
+            // Lógica de descarga Excel existente
+            const pagosData = datos;
+            const encabezados = ["ID Pago", "Monto", "Fecha", "Método", "Orden de Servicio", "Estado"];
+            const datosExcel = pagosData.map(pago => ({
+              "ID Pago": pago.id_pago || '-',
+              "Monto": pago.monto || '-',
+              "Fecha": pago.fecha || '-',
+              "Método": pago.metodo_pago || '-',
+              "Orden de Servicio": pago.orden_servicio || '-',
+              "Estado": pago.estado || '-'
+            }));
+            
+            const libro = XLSX.utils.book_new();
+            const hoja = XLSX.utils.json_to_sheet(datosExcel);
+            XLSX.utils.book_append_sheet(libro, hoja, "Pagos");
+            const excelBuffer = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+            const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+            saveAs(data, "pagos.xlsx");
+          }}
+          title="Descargar Excel"
+        />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white hover:shadow-2xl transition-shadow duration-300 z-40">
         <div className="overflow-x-auto w-full">
-          <table className="table-auto w-full divide-y divide-gray-100">
+          <table className="table-auto w-full divide-y divide-gray-100 min-w-[800px]">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-center">ID Pago</th>
-                <th className="px-6 py-4 text-center">Monto</th>
-                <th className="px-6 py-4 text-center">Fecha</th>
-                <th className="px-6 py-4 text-center">Método</th>
-                <th className="px-6 py-4 text-center">Orden de Servicio</th>
-                <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center">Acciones</th>
+                <th className="px-6 py-4 font-bold text-center">Monto</th>
+                <th className="px-6 py-4 font-bold text-center">Fecha</th>
+                <th className="px-6 py-4 font-bold text-center">Método</th>
+                <th className="px-6 py-4 font-bold text-center">Orden de Servicio</th>
+                <th className="px-6 py-4 font-bold text-center">Estado</th>
+                <th className="px-6 py-4 font-bold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700 text-center">
@@ -105,7 +130,6 @@ const Tablapagos = () => {
                 const esSimulado = !!item.numeroTransaccion;
                 return (
                   <tr key={item.id_pago || item.numeroTransaccion || idx}>
-                    <td className="px-6 py-4">{item.id_pago || item.numeroTransaccion}</td>
                     <td className="px-6 py-4">${item.monto?.toLocaleString?.() || item.valorTotal?.toLocaleString?.() || ''}</td>
                     <td className="px-6 py-4">{item.fecha_pago ? new Date(item.fecha_pago).toLocaleDateString() : item.fechaPago}</td>
                     <td className="px-6 py-4">{item.metodo_pago || 'Demo'}</td>
@@ -117,31 +141,35 @@ const Tablapagos = () => {
                       <div className="flex gap-2 justify-center flex-wrap">
                         <button
                           onClick={() => abrirDetalle(item)}
-                          className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                          style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
+                          className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-gray-300 transition-all duration-200"
                           title="Ver detalle"
                         >
-                          <i className="bi bi-eye-fill"></i>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
                         </button>
                         {esSimulado ? (
                           <button
                             onClick={() => handleDescargarComprobante(item)}
-                            className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                            style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
+                            className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-gray-300 transition-all duration-200"
                             title="Descargar comprobante"
                           >
-                            <i className="bi bi-download"></i>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                           </button>
                         ) : (
                           item.comprobante_url && (
                             <a
                               href={item.comprobante_url}
                               download={`comprobante_pago_${item.id_pago}.pdf`}
-                              className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                              style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
+                              className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-gray-300 transition-all duration-200"
                               title="Descargar comprobante"
                             >
-                              <i className="bi bi-download"></i>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
                             </a>
                           )
                         )}
@@ -204,13 +232,6 @@ const Tablapagos = () => {
         onClose={cerrarDetalle}
       />
 
-      <style jsx>{`
-        .custom-hover:hover {
-          opacity: 0.8;
-          transform: scale(1.05);
-          transition: all 0.2s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };

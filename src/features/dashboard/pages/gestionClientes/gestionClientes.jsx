@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import TablaClientes from "./components/tablaClientes";
-import VerDetalleCliente from "./components/verDetalleCliente";
+import ProfileModal from "../../../../shared/components/ProfileModal";
 import FormularioCliente from "./components/FormularioCliente";
 import { ClientService, initializeMockData } from "../../../../utils/mockDataService.js";
+import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../shared/components/DownloadButton";
 
 const CAMPOS_REQUERIDOS = [
   "tipoDocumento",
@@ -26,6 +28,7 @@ const GestionClientes = () => {
   const [clienteEditar, setClienteEditar] = useState(null);
   const rolUsuario = "administrador"; // Cambia a "empleado" para probar restricción
   const clientesPorPagina = 5;
+  const { createSuccess, updateSuccess, createError, updateError } = useNotification();
 
   useEffect(() => {
     initializeMockData();
@@ -78,23 +81,37 @@ const GestionClientes = () => {
     setClienteEditar(clientesPagina[idx]);
     setMostrarModalFormulario(true);
   };
-  const handleGuardarCliente = (nuevoCliente) => {
-    if (modoEdicion) {
-      // Editar
-      const actualizado = ClientService.update(nuevoCliente.id, nuevoCliente);
-      if (actualizado) {
-        setClientes(ClientService.getAll());
-        Swal.fire({ icon: "success", title: "¡Cliente actualizado!", timer: 1500, showConfirmButton: false });
+  const handleGuardarCliente = async (nuevoCliente) => {
+    try {
+      if (modoEdicion) {
+        // Editar
+        const actualizado = ClientService.update(nuevoCliente.id, nuevoCliente);
+        if (actualizado) {
+          setClientes(ClientService.getAll());
+          setMostrarModalFormulario(false);
+          updateSuccess('cliente');
+        } else {
+          updateError('cliente');
+        }
+      } else {
+        // Crear
+        const creado = ClientService.create(nuevoCliente);
+        if (creado) {
+          setClientes(ClientService.getAll());
+          setMostrarModalFormulario(false);
+          createSuccess('cliente');
+        } else {
+          createError('cliente');
+        }
       }
-    } else {
-      // Crear
-      const creado = ClientService.create(nuevoCliente);
-      if (creado) {
-        setClientes(ClientService.getAll());
-        Swal.fire({ icon: "success", title: "¡Cliente creado!", timer: 1500, showConfirmButton: false });
+    } catch (error) {
+      console.error("Error al guardar cliente:", error);
+      if (modoEdicion) {
+        updateError('cliente');
+      } else {
+        createError('cliente');
       }
     }
-    setMostrarModalFormulario(false);
   };
 
   const handleExportarExcel = () => {
@@ -123,22 +140,17 @@ const GestionClientes = () => {
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "clientes.xlsx");
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   return (
     <div className="flex-1 flex justify-center">
       <div className="w-full px-4">
-        <div className="flex items-center justify-between px-4 mb-4 w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-2 sm:px-4 mb-4 w-full">
           <input
             type="text"
             placeholder="Buscar"
-            className="form-control w-50 h-9 text-sm border border-gray-300 rounded-md px-3"
+            className="form-control w-full sm:w-64 h-9 text-sm border border-gray-300 rounded-md px-3"
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.target.value);
@@ -146,32 +158,20 @@ const GestionClientes = () => {
             }}
           />
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
             <button
-              className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap"
+              className="btn btn-primary px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-md whitespace-nowrap flex-1 sm:flex-none"
               onClick={handleCrearCliente}
             >
-              <i className="bi bi-plus-square"></i> Crear Cliente
+              <i className="bi bi-plus-square mr-1"></i> 
+              <span className="hidden sm:inline">Crear Cliente</span>
+              <span className="sm:hidden">Crear</span>
             </button>
-            <button
-              className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-              style={{
-                width: "40px",
-                height: "40px",
-                backgroundColor: "transparent",
-                transition: "background-color 0.3s",
-                border: "1px solid green",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#86ed53")}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+            <DownloadButton
+              type="excel"
               onClick={handleExportarExcel}
               title="Descargar Excel"
-            >
-              <i
-                className="bi bi-file-earmark-excel-fill"
-                style={{ color: "#107C41", fontSize: "18px" }}
-              ></i>
-            </button>
+            />
           </div>
         </div>
 
@@ -183,50 +183,56 @@ const GestionClientes = () => {
           onEditar={handleEditarCliente}
         />
 
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-          <div className="text-sm text-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 sm:px-4 py-3 bg-white border-t border-gray-200">
+          <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
             Mostrando <span className="font-medium">{clientesFiltrados.length === 0 ? 0 : indiceInicio + 1}</span> a {" "}
             <span className="font-medium">{Math.min(indiceFin, clientesFiltrados.length)}</span> de {" "}
             <span className="font-medium">{clientesFiltrados.length}</span> resultados
           </div>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2">
             <button
               onClick={() => irAPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
-              className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
+              className="p-1.5 sm:p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border border-blue-200"
             >
-              <i className="bi bi-chevron-left text-base"></i>
+              <i className="bi bi-chevron-left text-sm sm:text-base"></i>
             </button>
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
-              <button
-                key={pagina}
-                onClick={() => irAPagina(pagina)}
-                className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold transition border ${
-                  paginaActual === pagina
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                    : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
-                }`}
-              >
-                {pagina}
-              </button>
-            ))}
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(totalPaginas, 5) }, (_, i) => {
+                const pagina = i + 1;
+                return (
+                  <button
+                    key={pagina}
+                    onClick={() => irAPagina(pagina)}
+                    className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center font-semibold transition border text-xs sm:text-sm ${
+                      paginaActual === pagina
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
+                    }`}
+                  >
+                    {pagina}
+                  </button>
+                );
+              })}
+            </div>
             <button
               onClick={() => irAPagina(paginaActual + 1)}
               disabled={paginaActual === totalPaginas}
-              className="p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-9 w-9 border border-blue-200"
+              className="p-1.5 sm:p-2 rounded-full bg-white text-blue-600 hover:bg-blue-100 disabled:opacity-50 flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border border-blue-200"
             >
-              <i className="bi bi-chevron-right text-base"></i>
+              <i className="bi bi-chevron-right text-sm sm:text-base"></i>
             </button>
           </div>
         </div>
 
-        <VerDetalleCliente
-          cliente={selectedCliente}
+        <ProfileModal
+          user={selectedCliente}
           isOpen={mostrarModalVer}
           onClose={() => {
             setMostrarModalVer(false);
             setDeshabilitarAcciones(false);
           }}
+          onEdit={handleEditarCliente}
         />
         {mostrarModalFormulario && (
           <FormularioCliente
