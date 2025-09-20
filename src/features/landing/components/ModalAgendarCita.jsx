@@ -11,9 +11,7 @@ const ModalAgendarCita = ({ isOpen, onClose }) => {
     hora: "",
     mensaje: "",
   });
-    }
-  }, [isOpen, user, onClose]);
-=======
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });

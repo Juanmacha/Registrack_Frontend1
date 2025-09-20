@@ -69,40 +69,6 @@ const HeroFeatures = () => (
       </div>
     </div>
   </div>
-=======
-  <ul className="space-y-4 text-base text-gray-700 mb-6 pl-0">
-    <li className="flex items-start gap-3">
-      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
-        <FaBalanceScale className="text-blue-600 text-sm" />
-      </div>
-      <span className="text-body">
-        <strong className="text-body-medium">Soporte legal completo:</strong> Contamos con abogados
-        especializados en propiedad intelectual que te asesoran desde
-        el inicio hasta la obtención del certificado.
-      </span>
-    </li>
-    <li className="flex items-start gap-3">
-      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
-        <FaMedal className="text-blue-600 text-sm" />
-      </div>
-      <span className="text-body">
-        <strong className="text-body-medium">Más de 12 años de experiencia:</strong> Hemos ayudado
-        a cientos de emprendedores y empresas en Colombia a proteger
-        sus marcas con éxito.
-      </span>
-    </li>
-    <li className="flex items-start gap-3">
-      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-1 flex-shrink-0">
-        <FaRocket className="text-blue-600 text-sm" />
-      </div>
-      <span className="text-body">
-        <strong className="text-body-medium">Trámites 100% en línea:</strong> Ahorra tiempo y evita
-        desplazamientos. Todo el proceso es digital, ágil y con
-        atención personalizada.
-      </span>
-    </li>
-  </ul>
->>>>>>> yuver
 );
 
 // Componente para el video del hero

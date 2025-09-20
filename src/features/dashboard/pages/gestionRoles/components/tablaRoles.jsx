@@ -49,12 +49,6 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onTog
               const permisosActivos = contarPermisosActivos(rol.permisos);
               return (
                 <tr key={rol.id || index}>
-<<<<<<< HEAD
-                  <td className="px-6 py-4 text-center">
-                    <div className="text-sm font-semibold text-gray-800">{rol.nombre}</div>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-=======
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3 justify-start">
                       <img
@@ -66,7 +60,6 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onTog
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
->>>>>>> yuver
                     <div className="flex flex-col items-center">
                       <span className="text-sm font-semibold text-blue-600">
                         {permisosActivos} permisos

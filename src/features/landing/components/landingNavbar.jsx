@@ -281,11 +281,6 @@ const NavBarLanding = () => {
                 >
                   Ayuda
                 </Link>
-                  onClick={() => setMenuAbierto(false)}
-                >
-                  Regístrate
-                </Link>
-=======
                 <div className="flex flex-col items-center gap-4 mt-4 w-full px-6">
                   <Link
                     to="/login"
