@@ -4,50 +4,205 @@ import { mockDataService } from '../../../../../utils/mockDataService';
 import authData from '../../../../auth/services/authData.js';
 import Swal from 'sweetalert2';
 import { PAISES } from '../../../../../shared/utils/paises.js';
+import { AlertService } from '../../../../../shared/styles/alertStandards.js';
 // Importar formularios específicos
 import FormularioBusqueda from '../../../../../shared/components/formularioBusqueda';
 import FormularioCertificacion from '../../../../../shared/components/formularioCertificacion';
-import FormularioRenovacion from '../../../../../shared/components/formularioCesiondeMarca';
+import FormularioRenovacion from '../../../../../shared/components/formularioRenovacion';
 import FormularioOposicion from '../../../../../shared/components/formularioOposicion';
 import FormularioCesion from '../../../../../shared/components/formularioCesiondeMarca';
 import FormularioAmpliacion from '../../../../../shared/components/formularioAmpliacion';
 import FormularioRespuesta from '../../../../../shared/components/formularioRespuesta';
 import DemoPasarelaPagoModal from '../../../../landing/components/DemoPasarelaPagoModal'; // Asegúrate de que la ruta sea correcta
 
-// ...existing code...
+// Mapeo de formularios por servicio
+const FORMULARIOS_POR_SERVICIO = {
+  'Búsqueda de Antecedentes': FormularioBusqueda,
+  'Certificación de Marca': FormularioCertificacion,
+  'Renovación de Marca': FormularioRenovacion,
+  'Presentación de Oposición': FormularioOposicion,
+  'Cesión de Marca': FormularioCesion,
+  'Ampliación de Alcance': FormularioAmpliacion,
+  'Respuesta a Oposición': FormularioRespuesta,
+};
 
 const CrearSolicitud = ({ isOpen, onClose, onGuardar, tipoSolicitud, servicioId }) => {
-  // ...existing code...
+  // Estados del formulario
+  const [form, setForm] = useState({
+    tipoSolicitante: '',
+    tipoPersona: '',
+    tipoDocumento: '',
+    numeroDocumento: '',
+    nombres: '',
+    apellidos: '',
+    email: '',
+    telefono: '',
+    direccion: '',
+    tipoEntidad: '',
+    razonSocial: '',
+    nombreEmpresa: '',
+    nit: '',
+    pais: '',
+    nitMarca: '',
+    nombreMarca: '',
+    categoria: '',
+    clases: [{ numero: '', descripcion: '' }],
+    certificadoCamara: null,
+    logotipoMarca: null,
+    poderRepresentante: null,
+    poderAutorizacion: null,
+    fechaSolicitud: new Date().toISOString().split('T')[0],
+    estado: 'En revisión',
+    tipoSolicitud: tipoSolicitud,
+    encargado: 'Sin asignar',
+    proximaCita: null,
+    comentarios: []
+  });
+  const [errors, setErrors] = useState({});
 
   // Estado para la pasarela demo
   const [mostrarPasarela, setMostrarPasarela] = useState(false);
   const [pagoDemo, setPagoDemo] = useState(null);
 
-  // ...existing code...
+  // Determinar qué formulario renderizar
+  const FormularioComponente = FORMULARIOS_POR_SERVICIO[tipoSolicitud];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = validate();
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
-      return;
-    }
-    // Mostrar la pasarela demo antes de guardar
-    setMostrarPasarela(true);
+  // Función para convertir archivo a base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
   };
 
-  // Cuando el pago es exitoso, guardar la solicitud
-  const handlePagoExitoso = async (pago) => {
-    setMostrarPasarela(false);
-    setPagoDemo(pago);
+  // Función para manejar cambios en el formulario
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setForm(prev => ({ ...prev, [name]: files[0] }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Función para manejar cambios en las clases
+  const handleClaseChange = (index, field, value) => {
+    const nuevasClases = [...form.clases];
+    nuevasClases[index][field] = value;
+    setForm(prev => ({ ...prev, clases: nuevasClases }));
+  };
+
+  // Función para agregar una nueva clase
+  const addClase = () => {
+    setForm(prev => ({
+      ...prev,
+      clases: [...prev.clases, { numero: '', descripcion: '' }]
+    }));
+  };
+
+  // Función para eliminar una clase
+  const removeClase = (index) => {
+    if (form.clases.length > 1) {
+      const nuevasClases = form.clases.filter((_, i) => i !== index);
+      setForm(prev => ({ ...prev, clases: nuevasClases }));
+    }
+  };
+
+  // Función de validación
+  const validate = () => {
+    const newErrors = {};
+    
+    console.log("🔧 [CrearSolicitud] Validando form:", form);
+    
+    // Validar solo campos básicos requeridos que siempre deben estar
+    if (!form.tipoSolicitante || form.tipoSolicitante.trim() === '') {
+      newErrors.tipoSolicitante = 'El tipo de solicitante es requerido';
+    }
+    if (!form.email || form.email.trim() === '') {
+      newErrors.email = 'El email es requerido';
+    }
+    if (!form.nombreMarca || form.nombreMarca.trim() === '') {
+      newErrors.nombreMarca = 'El nombre de la marca es requerido';
+    }
+    
+    // Validar campos condicionales según el tipo de solicitante
+    if (form.tipoSolicitante === 'Titular') {
+      if (!form.tipoPersona || form.tipoPersona.trim() === '') {
+        newErrors.tipoPersona = 'El tipo de persona es requerido';
+      }
+      if (form.tipoPersona === 'Natural') {
+        if (!form.tipoDocumento || form.tipoDocumento.trim() === '') {
+          newErrors.tipoDocumento = 'El tipo de documento es requerido';
+        }
+        if (!form.numeroDocumento || form.numeroDocumento.trim() === '') {
+          newErrors.numeroDocumento = 'El número de documento es requerido';
+        }
+        if (!form.nombres || form.nombres.trim() === '') {
+          newErrors.nombres = 'Los nombres son requeridos';
+        }
+        if (!form.apellidos || form.apellidos.trim() === '') {
+          newErrors.apellidos = 'Los apellidos son requeridos';
+        }
+      } else if (form.tipoPersona === 'Jurídica') {
+        if (!form.nombreEmpresa || form.nombreEmpresa.trim() === '') {
+          newErrors.nombreEmpresa = 'El nombre de la empresa es requerido';
+        }
+        if (!form.nit || form.nit.trim() === '') {
+          newErrors.nit = 'El NIT es requerido';
+        }
+      }
+    } else if (form.tipoSolicitante === 'Representante Autorizado') {
+      if (!form.tipoDocumento || form.tipoDocumento.trim() === '') {
+        newErrors.tipoDocumento = 'El tipo de documento es requerido';
+      }
+      if (!form.numeroDocumento || form.numeroDocumento.trim() === '') {
+        newErrors.numeroDocumento = 'El número de documento es requerido';
+      }
+      if (!form.nombres || form.nombres.trim() === '') {
+        newErrors.nombres = 'Los nombres son requeridos';
+      }
+      if (!form.apellidos || form.apellidos.trim() === '') {
+        newErrors.apellidos = 'Los apellidos son requeridos';
+      }
+    }
+    
+    console.log("🔧 [CrearSolicitud] Errores generados:", newErrors);
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    console.log("🔧 [CrearSolicitud] handleSubmit iniciado");
+    console.log("🔧 [CrearSolicitud] Form actual:", form);
+    console.log("🔧 [CrearSolicitud] Form keys:", Object.keys(form));
+    e.preventDefault();
+    const newErrors = validate();
+    console.log("🔧 [CrearSolicitud] Errores de validación encontrados:", newErrors);
+    console.log("🔧 [CrearSolicitud] Número de errores:", Object.keys(newErrors).length);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      console.log("🔧 [CrearSolicitud] Errores de validación:", newErrors);
+      // ✅ NO MOSTRAR ALERT, DEJAR QUE LOS ERRORES SE MUESTREN EN EL FORMULARIO
+      return;
+    }
+    console.log("🔧 [CrearSolicitud] Validación exitosa");
+    
+    // ✅ DESDE ADMIN NO MOSTRAR PASARELA DE PAGO, GUARDAR DIRECTAMENTE
+    console.log("🔧 [CrearSolicitud] Guardando directamente desde admin (sin pasarela de pago)");
     try {
       // Convertir archivos a base64 antes de guardar
-      const formToSave = { ...form };
+      const formToSave = { 
+        ...form,
+        tipoSolicitud: tipoSolicitud,
+        estado: 'Pendiente',
+        fechaSolicitud: new Date().toISOString().split('T')[0]
+      };
+      
       const fileFields = [
         'certificadoCamara',
         'logotipoMarca',
@@ -56,22 +211,62 @@ const CrearSolicitud = ({ isOpen, onClose, onGuardar, tipoSolicitud, servicioId 
       ];
       for (const field of fileFields) {
         if (formToSave[field] instanceof File) {
+          console.log("🔧 [CrearSolicitud] Convirtiendo archivo:", field);
           formToSave[field] = await fileToBase64(formToSave[field]);
         }
       }
+      
+      console.log("🔧 [CrearSolicitud] Formulario final a guardar:", formToSave);
       await onGuardar(formToSave);
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada',
-        text: 'La solicitud se ha creado correctamente.'
-      });
-      onClose();
+      
+      console.log("🔧 [CrearSolicitud] Solicitud creada exitosamente desde admin");
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+      console.error("🔧 [CrearSolicitud] Error al guardar:", err);
+      AlertService.error("Error al guardar", "No se pudo crear la solicitud. Inténtalo de nuevo.");
+    }
+  };
+
+  // Cuando el pago es exitoso, guardar la solicitud
+  const handlePagoExitoso = async (pago) => {
+    console.log("🔧 [CrearSolicitud] handlePagoExitoso iniciado");
+    console.log("🔧 [CrearSolicitud] Pago recibido:", pago);
+    console.log("🔧 [CrearSolicitud] Form actual:", form);
+    console.log("🔧 [CrearSolicitud] tipoSolicitud:", tipoSolicitud);
+    
+    setMostrarPasarela(false);
+    setPagoDemo(pago);
+    try {
+      // Convertir archivos a base64 antes de guardar
+      const formToSave = { 
+        ...form,
+        tipoSolicitud: tipoSolicitud, // ✅ AGREGAR EL TIPO DE SOLICITUD
+        estado: 'Pendiente', // ✅ AGREGAR ESTADO INICIAL
+        fechaSolicitud: new Date().toISOString().split('T')[0] // ✅ AGREGAR FECHA
+      };
+      console.log("🔧 [CrearSolicitud] FormToSave antes de archivos:", formToSave);
+      
+      const fileFields = [
+        'certificadoCamara',
+        'logotipoMarca',
+        'poderRepresentante',
+        'poderAutorizacion',
+      ];
+      for (const field of fileFields) {
+        if (formToSave[field] instanceof File) {
+          console.log("🔧 [CrearSolicitud] Convirtiendo archivo:", field);
+          formToSave[field] = await fileToBase64(formToSave[field]);
+        }
+      }
+      console.log("🔧 [CrearSolicitud] Formulario final a guardar:", formToSave);
+      console.log("🔧 [CrearSolicitud] Llamando a onGuardar...");
+      
+      // Solo llamar a onGuardar, no cerrar el modal aquí
+      await onGuardar(formToSave);
+      
+      console.log("🔧 [CrearSolicitud] onGuardar completado exitosamente");
+    } catch (err) {
+      console.error("🔧 [CrearSolicitud] Error al guardar:", err);
+      AlertService.error("Error al guardar", "No se pudo crear la solicitud. Inténtalo de nuevo.");
     }
   };
 

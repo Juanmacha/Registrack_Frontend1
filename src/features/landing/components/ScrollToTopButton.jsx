@@ -32,6 +32,19 @@ const ScrollToTopButton = () => {
           width: '48px',
           height: '48px'
         }}
+=======
+    <button
+      onClick={scrollToTop}
+      aria-label="Subir al inicio"
+      className="fixed bottom-8 right-8 z-50 bg-white border-2 border-blue-600 shadow-lg rounded-lg p-3 flex items-center justify-center transition-all duration-300 hover:bg-blue-600 hover:scale-105"
+      style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.10)' }}
+    >
+      <svg
+        className="w-7 h-7 text-blue-600 hover:text-white transition-colors duration-200"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        viewBox="0 0 24 24"
       >
         <svg
           className="w-5 h-5 text-blue-700"

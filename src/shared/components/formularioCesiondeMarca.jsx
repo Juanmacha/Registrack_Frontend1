@@ -7,7 +7,6 @@ const tiposEntidad = ['Sociedad Anónima', 'SAS', 'LTDA', 'Otra'];
 
 const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Cesión de Marca' }) => {
   const [form, setForm] = useState({
-    expediente: '',
     tipoSolicitante: '',
     tipoPersona: '',
     tipoDocumento: '',
@@ -55,7 +54,6 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
       setErrors({});
     } else {
       setForm({
-        expediente: '',
         tipoSolicitante: '',
         tipoPersona: '',
         tipoDocumento: '',
@@ -107,8 +105,7 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
   const validate = (customForm) => {
     const f = customForm || form;
     const e = {};
-    if (!f.expediente) e.expediente = 'Requerido';
-    else if (!/^[0-9]{6,15}$/.test(f.expediente)) e.expediente = 'Solo números, 6-15 dígitos';
+    // ✅ REMOVIDO: Validación de expediente (se genera automáticamente)
     if (!f.tipoSolicitante) e.tipoSolicitante = 'Requerido';
     if (f.tipoSolicitante === 'Titular') {
       if (!f.tipoPersona) e.tipoPersona = 'Requerido';
@@ -192,34 +189,7 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = validate();
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
-      return;
-    }
-    try {
-      await onGuardar(form);
-      // Swal.fire({
-      //   icon: 'success',
-      //   title: 'Solicitud creada',
-      //   text: 'La solicitud de cesión se ha creado correctamente.'
-      // });
-      // onClose(); // El cierre lo maneja el padre tras el pago
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
-    }
-  };
+  // ✅ REMOVIDO: handleSubmit - se usa el del componente padre (CrearSolicitud.jsx)
 
   if (!isOpen) return null;
 
@@ -238,14 +208,8 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
             <p className="text-sm text-gray-500">Complete la información del proceso</p>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-4">
-            {/* Número de Expediente */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Número de Expediente *</label>
-              <input type="text" name="expediente" value={form.expediente} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.expediente ? 'border-red-500' : ''}`} />
-              {errors.expediente && <p className="text-xs text-red-600">{errors.expediente}</p>}
-            </div>
             {/* Tipo de Solicitud (bloqueado) */}
             <div>
               <label className="block text-sm font-medium mb-1">Tipo de Solicitud *</label>
@@ -492,7 +456,7 @@ const FormularioCesiondeMarca = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">Cancelar</button>
             <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-400">Guardar</button>
         </div>
-        </form>
+        </div>
       </div>
     </div>
   );

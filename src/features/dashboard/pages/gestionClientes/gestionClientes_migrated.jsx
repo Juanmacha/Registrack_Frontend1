@@ -177,12 +177,7 @@ const GestionClientes = () => {
 
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "clientes.xlsx");
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   const irAPagina = (pagina) => {
@@ -217,10 +212,11 @@ const GestionClientes = () => {
                   <i className="bi bi-plus-square"></i> Crear Cliente
                 </button>
                 <button
-                  className="btn btn-success px-4 py-2 text-sm rounded-md"
+                  className="p-2 rounded-full bg-white text-green-600 hover:bg-green-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-green-200"
                   onClick={exportarExcel}
+                  title="Descargar Excel"
                 >
-                  <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+                  <i className="bi bi-file-earmark-excel-fill text-sm"></i>
                 </button>
               </div>
             </div>

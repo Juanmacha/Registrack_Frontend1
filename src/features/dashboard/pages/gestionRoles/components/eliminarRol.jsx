@@ -1,4 +1,5 @@
-import { mostrarConfirmacion, mostrarMensajeExito } from "../../../../../utils/alerts";
+import { mostrarConfirmacion } from "../../../../../utils/alerts";
+import notificationService from "../../../../../shared/services/NotificationService.js";
 
 const eliminarRol = async (index, roles, setRoles) => {
   const confirmado = await mostrarConfirmacion(
@@ -12,7 +13,7 @@ const eliminarRol = async (index, roles, setRoles) => {
     nuevosRoles.splice(index, 1);
     setRoles(nuevosRoles);
     localStorage.setItem("roles", JSON.stringify(nuevosRoles));
-    mostrarMensajeExito("Rol eliminado correctamente.");
+    notificationService.deleteSuccess('rol');
   }
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSidebar } from "../../../../shared/contexts/SidebarContext";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import FullCalendar from "@fullcalendar/react";
@@ -29,6 +30,7 @@ const esLocale = {
   noEventsText: 'No hay eventos para mostrar'
 };
 import { AppointmentService, EmployeeService } from "../../../../utils/mockDataService.js";
+import DownloadButton from "../../../../shared/components/DownloadButton";
 import VerDetalleCita from "../gestionCitas/components/verDetallecita";
 import Swal from "sweetalert2";
 import { FaCalendarAlt, FaUser, FaPhone, FaFileAlt, FaBriefcase, FaDownload, FaSearch, FaEye, FaEdit, FaTrash, FaCalendarDay } from "react-icons/fa";
@@ -48,6 +50,7 @@ const Calendario = () => {
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [busqueda, setBusqueda] = useState("");
   const calendarRef = useRef(null);
+  const { isSidebarExpanded } = useSidebar();
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -85,7 +88,19 @@ const Calendario = () => {
     } catch (error) {
       // No hacer nada, así no se borra el localStorage
     }
+
+    // Forzar el re-renderizado del calendario después de que el DOM esté estable
+    if (calendarRef.current) {
+      calendarRef.current.getApi().updateSize();
+    }
   }, []);
+
+  useEffect(() => {
+    // Este useEffect se ejecutará cada vez que isSidebarExpanded cambie
+    if (calendarRef.current) {
+      calendarRef.current.getApi().updateSize();
+    }
+  }, [isSidebarExpanded]);
 
   useEffect(() => {
     try {
@@ -148,12 +163,15 @@ const Calendario = () => {
   const generarIdUnico = (cedula, fecha, hora) => `${cedula}_${fecha}_${hora}`;
 
   const handleDateSelect = (selectInfo) => {
+    console.log('🔧 [Calendario] handleDateSelect llamado:', selectInfo);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const fechaSeleccionada = new Date(selectInfo.startStr);
     fechaSeleccionada.setHours(0, 0, 0, 0);
+    console.log('🔧 [Calendario] Fecha seleccionada:', fechaSeleccionada);
+    console.log('🔧 [Calendario] Fecha de hoy:', hoy);
     if (fechaSeleccionada < hoy) {
-      Swal.fire({ icon: 'warning', title: 'Fecha inválida', text: 'No puedes agendar citas en días anteriores a hoy.' });
+      AlertService.warning("Fecha inválida", "No puedes agendar citas en días anteriores a hoy.");
       return;
     }
     abrirModal(selectInfo);
@@ -170,6 +188,18 @@ const Calendario = () => {
 
   const handleGuardarCita = (e) => {
     e.preventDefault();
+    
+    // Validar que modalDate esté presente (excepto en modo reprogramar)
+    if (!modoReprogramar && !modalDate) {
+      console.error('🔧 [Calendario] Error: modalDate no está presente');
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Error de fecha', 
+        text: 'No se ha seleccionado una fecha válida. Por favor, selecciona una fecha en el calendario.' 
+      });
+      return;
+    }
+    
     // Validación básica
     let camposObligatorios = ["nombre","apellido","cedula","telefono","tipoCita","horaInicio","horaFin","asesor"];
     if (modoReprogramar) {
@@ -183,13 +213,26 @@ const Calendario = () => {
     }
     // Validar que horaFin > horaInicio
     if (formData.horaFin <= formData.horaInicio) {
-      Swal.fire({ icon: 'error', title: 'Hora inválida', text: 'La hora de fin debe ser mayor que la de inicio.' });
+      AlertService.error("Hora inválida", "La hora de fin debe ser mayor que la de inicio.");
       return;
     }
     // Validar cruce de horarios
-    const fechaBase = modoReprogramar && citaAReprogramar?.start
-      ? new Date(citaAReprogramar.start).toISOString().split("T")[0]
-      : modalDate?.startStr?.split("T")[0] || new Date().toISOString().split("T")[0];
+    console.log('🔧 [Calendario] modalDate en handleGuardarCita:', modalDate);
+    let fechaBase;
+    if (modoReprogramar && citaAReprogramar?.start) {
+      fechaBase = new Date(citaAReprogramar.start).toISOString().split("T")[0];
+    } else if (modalDate?.startStr) {
+      fechaBase = modalDate.startStr.split("T")[0];
+    } else {
+      console.error('🔧 [Calendario] Error: No se puede determinar la fecha base');
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Error de fecha', 
+        text: 'No se puede determinar la fecha para la cita. Por favor, selecciona una fecha válida.' 
+      });
+      return;
+    }
+    console.log('🔧 [Calendario] fechaBase calculada:', fechaBase);
     const horaInicio = formData.horaInicio;
     const horaFin = formData.horaFin;
     const cruza = events.some(ev => {
@@ -203,7 +246,7 @@ const Calendario = () => {
     });
     console.log('Intentando guardar cita:', { ...formData, fechaBase });
     if (cruza) {
-      Swal.fire({ icon: 'error', title: 'Horario ocupado', text: 'Ya existe una cita en ese rango de horas.' });
+      AlertService.error("Horario ocupado", "Ya existe una cita en ese rango de horas.");
       return;
     }
 
@@ -230,7 +273,7 @@ const Calendario = () => {
       setModoReprogramar(false);
       setCitaAReprogramar(null);
       setShowModal(false);
-      Swal.fire({ icon: 'success', title: 'Cita reprogramada', timer: 1800, showConfirmButton: false });
+      AlertService.success("Cita reprogramada", "");
       return;
     }
 
@@ -247,8 +290,9 @@ const Calendario = () => {
       ...colores,
     };
     setEvents(prev => [...prev, nuevaCita]);
+    console.log('🔧 [Calendario] Cita creada exitosamente:', nuevaCita);
     cerrarModal();
-    Swal.fire({ icon: 'success', title: 'Cita agendada', text: 'La cita ha sido agendada correctamente.', timer: 1800, showConfirmButton: false });
+    AlertService.success("Cita agendada", "La cita ha sido agendada correctamente.");
   };
 
   // Cambiar la generación de opciones de hora a intervalos de 1 hora
@@ -323,7 +367,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
         ));
         setShowDetalle(false);
         setCitaAReprogramar(null);
-        Swal.fire({ icon: 'success', title: 'Cita anulada', text: 'La cita ha sido anulada correctamente.', timer: 1800, showConfirmButton: false });
+        AlertService.success("Cita anulada", "La cita ha sido anulada correctamente.");
       }
     });
   };
@@ -368,12 +412,6 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
       icon: <FaCalendarDay className="text-white text-2xl" />,
     },
     {
-      label: "Iniciadas",
-      value: events.filter(e => e.extendedProps?.estado === "Iniciada").length,
-      color: "bg-orange-500",
-      icon: <FaCalendarDay className="text-white text-2xl" />,
-    },
-    {
       label: "Total",
       value: events.length,
       color: "bg-blue-900 text-white",
@@ -382,8 +420,10 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
   ];
 
   function abrirModal(dateInfo = null) {
+    console.log('🔧 [Calendario] abrirModal llamado con dateInfo:', dateInfo);
     setShowModal(true);
     setModalDate(dateInfo); // Aquí se guarda la fecha seleccionada
+    console.log('🔧 [Calendario] modalDate establecido:', dateInfo);
     
     // Solo resetear el formulario si no viene de una solicitud
     const solicitudParaAgendar = localStorage.getItem('solicitudParaAgendar');
@@ -544,7 +584,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
       return fecha >= start && fecha < end;
     });
     if (eventosMes.length === 0) {
-      Swal.fire({ icon: 'info', title: 'Sin datos', text: 'No hay citas en el mes actual.' });
+      AlertService.info("Sin datos", "No hay citas en el mes actual.");
       return;
     }
     // Preparar datos para Excel
@@ -653,9 +693,11 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
               className="pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
             />
           </div>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center gap-2 font-medium shadow" onClick={exportarExcelMesActual}>
-            <FaDownload /> Exportar Excel
-          </button>
+          <DownloadButton
+            type="excel"
+            onClick={exportarExcelMesActual}
+            title="Descargar Excel"
+          />
           <button className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-md flex items-center gap-2 font-semibold shadow" onClick={() => abrirModal()}>
             <FaCalendarAlt /> Nueva Cita
           </button>

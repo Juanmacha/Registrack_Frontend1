@@ -8,13 +8,17 @@ import { crearVenta, agregarComentario, anularVenta, initDatosPrueba, actualizar
 import { mockDataService } from '../../../../../utils/mockDataService.js';
 import { useSalesSync } from '../../../../../utils/hooks/useDataSync.js';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
+import { AlertService } from '../../../../../shared/styles/alertStandards.js';
 import getEstadoBadge from "../services/getEstadoBadge";
 import CrearSolicitud from "./CrearSolicitud";
 import Swal from 'sweetalert2';
+import StandardAvatar from "../../../../../shared/components/StandardAvatar";
 import * as xlsx from "xlsx";
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import { EmployeeService } from '../../../../../utils/mockDataService.js';
+import ActionDropdown from '../../../../../shared/components/ActionDropdown.jsx';
 
 const TablaVentasProceso = ({ adquirir }) => {
   const [busqueda, setBusqueda] = useState("");
@@ -40,7 +44,11 @@ const TablaVentasProceso = ({ adquirir }) => {
 
   // Usar hook de sincronización para ventas en proceso
   const [ventasEnProceso, refreshVentas, lastUpdate] = useSalesSync(
-    () => mockDataService.getSales().getInProcess(),
+    () => {
+      const ventas = mockDataService.getSales().getInProcess();
+      console.log("🔧 [useSalesSync] Obteniendo ventas en proceso:", ventas);
+      return ventas;
+    },
     [busqueda, servicioFiltro, estadoFiltro]
   );
 
@@ -113,15 +121,27 @@ const TablaVentasProceso = ({ adquirir }) => {
     setModalCrearOpen(true);
   };
 
-  const handleGuardarNuevaVenta = (nuevaVenta) => {
-    crearVenta(nuevaVenta); // Guardar la venta en el almacenamiento
-    setModalCrearOpen(false);
-    setModoCrear(false);
-    setPaginaActual(1); // Forzar a la primera página
-    setTimeout(() => {
+  const handleGuardarNuevaVenta = async (nuevaVenta) => {
+    console.log("🔧 [handleGuardarNuevaVenta] Iniciando creación de venta:", nuevaVenta);
+    try {
+      const resultado = await crearVenta(nuevaVenta); // Guardar la venta en el almacenamiento
+      console.log("🔧 [handleGuardarNuevaVenta] Venta creada exitosamente:", resultado);
+      
+      setModalCrearOpen(false);
+      setModoCrear(false);
+      setPaginaActual(1); // Forzar a la primera página
+      
+      // Refrescar inmediatamente después de crear
+      console.log("🔧 [handleGuardarNuevaVenta] Refrescando datos...");
       refreshVentas();
-    }, 100);
+      
+      AlertService.success("Solicitud creada", "La solicitud se ha creado correctamente.");
+    } catch (error) {
+      console.error("🔧 [handleGuardarNuevaVenta] Error al crear la venta:", error);
+      AlertService.error("Error al crear", "No se pudo crear la solicitud. Inténtalo de nuevo.");
+    }
   };
+
 
   const handleGuardarComentario = (texto) => {
     if (datoSeleccionado && datoSeleccionado.id) {
@@ -136,33 +156,17 @@ const TablaVentasProceso = ({ adquirir }) => {
   };
 
   const handleAnular = async () => {
-    const result = await Swal.fire({
-      title: '¿Anular venta?',
-      text: '¿Estás seguro que deseas anular esta venta? Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, anular',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true
-    });
+    const result = await AlertService.warning("¿Anular venta?", "¿Estás seguro que deseas anular esta venta? Esta acción no se puede deshacer.");
     if (!result.isConfirmed) return;
     try {
       // Aquí va la lógica de anulación real
       await anularVenta(datoSeleccionado.id, motivoAnular);
-      Swal.fire({
-        icon: 'success',
-        title: 'Venta anulada',
-        text: 'La venta ha sido anulada correctamente.'
-      });
+      AlertService.success("Venta anulada", "La venta ha sido anulada correctamente.");
       setModalAnularOpen(false);
       setMotivoAnular("");
       refreshVentas();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al anular',
-        text: err?.message || 'Ocurrió un error al anular la venta.'
-      });
+      AlertService.error("Error al anular", "");
     }
   };
 
@@ -324,6 +328,7 @@ const TablaVentasProceso = ({ adquirir }) => {
             onChange={e => { setBusqueda(e.target.value); setPaginaActual(1); }}
           />
         </div>
+        
         {/* Select Servicio */}
         <div className="flex flex-col min-w-[210px] w-[210px]">
           <label className="text-xs font-medium text-gray-500 mb-1" htmlFor="select-servicio">Servicio:</label>
@@ -361,36 +366,41 @@ const TablaVentasProceso = ({ adquirir }) => {
           >
             <i className="bi bi-plus-square"></i> Crear Solicitud
           </button>
-          <button
-            style={{ backgroundColor: "#219653", color: "#fff" }}
-            className="px-4 h-12 text-sm rounded-md whitespace-nowrap flex items-center gap-2 hover:bg-green-700 transition"
+          <DownloadButton
+            type="excel"
             onClick={exportarExcel}
-          >
-            <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-          </button>
+            title="Descargar Excel"
+          />
         </div>
       </div>
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300 z-40">
         <div className="overflow-x-auto w-full">
-          <table className="table-auto w-full divide-y divide-gray-100">
+          <table className="table-auto w-full divide-y divide-gray-100 min-w-[1000px]">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-center">#</th>
-                <th className="px-4 py-3 text-center">Titular</th>
-                <th className="px-4 py-3 text-center">Tipo de Documento</th>
-                <th className="px-4 py-3 text-center">País</th>
-                <th className="px-4 py-3 text-center">Teléfono</th>
-                <th className="px-4 py-3 text-center">Dirección</th>
-                <th className="px-4 py-3 text-center">Tipo de Solicitud</th>
-                <th className="px-4 py-3 text-center">Proceso</th>
-                <th className="px-4 py-3 text-center">Acciones</th>
+                <th className="px-6 py-4 font-bold text-center">Titular</th>
+                <th className="px-6 py-4 font-bold text-center">Tipo de Documento</th>
+                <th className="px-6 py-4 font-bold text-center">País</th>
+                <th className="px-6 py-4 font-bold text-center">Teléfono</th>
+                <th className="px-6 py-4 font-bold text-center">Dirección</th>
+                <th className="px-6 py-4 font-bold text-center">Tipo de Solicitud</th>
+                <th className="px-6 py-4 font-bold text-center">Proceso</th>
+                <th className="px-6 py-4 font-bold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
               {datosPagina.map((item, idx) => (
                 <tr key={item.id}>
-                  <td className="px-4 py-3 text-center">{inicio + idx + 1}</td>
-                  <td className="px-4 py-3 text-center">{item.titular || item.nombreCompleto || ''}</td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-3">
+                      <StandardAvatar 
+                        nombre={item.titular || item.nombreCompleto || 'N/A'}
+                      />
+                      <div className="text-left">
+                        <span>{item.titular || item.nombreCompleto || ''}</span>
+                      </div>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-center">{item.tipoDocumento || ''}</td>
                   <td className="px-4 py-3 text-center">{item.pais || ''}</td>
                   <td className="px-4 py-3 text-center">{item.telefono || ''}</td>
@@ -398,111 +408,106 @@ const TablaVentasProceso = ({ adquirir }) => {
                   <td className="px-4 py-3 text-center">{item.tipoSolicitud || ''}</td>
                   <td className="px-4 py-3 text-center">{item.estado || ''}</td>
                   <td className="px-4 py-3 text-center">
-                    <div className="flex gap-1 justify-center flex-nowrap">
-                      <button
-                        className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
-                        onClick={() => {
-                          setDatoSeleccionado(item);
-                          setModalEditarOpen(true);
-                          setModoCrear(false);
-                        }}
-                        title="Editar"
-                      >
-                        <i className="bi bi-pencil"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                        onClick={() => {
-                          setDatoSeleccionado(item);
-                          setModalObservacionOpen(true);
-                        }}
-                        title="Observaciones"
-                      >
-                        <i className="bi bi-chat-dots"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                        onClick={() => {
-                          setDatoSeleccionado(item);
-                          setModalDetalleOpen(true);
-                        }}
-                        title="Ver detalle"
-                      >
-                        <i className="bi bi-eye-fill"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-warning rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#F2994A", color: "#F2994A" }}
-                        onClick={async () => {
-                          const zip = new JSZip();
-                          // Archivos a incluir
-                          const files = [
-                            { file: item.certificadoCamara, label: "Certificado_Camara" },
-                            { file: item.logotipoMarca, label: "Logotipo_Marca" },
-                            { file: item.poderRepresentante, label: "Poder_Representante" },
-                            { file: item.poderAutorizacion, label: "Poder_Autorizacion" },
-                          ];
-                          let added = 0;
-                          for (const { file, label } of files) {
-                            if (file && typeof file !== "string" && file.name && file instanceof File) {
-                              // Si es un File (input file)
-                              zip.file(label + "_" + file.name, file);
-                              added++;
-                            } else if (file && typeof file === "string" && file.startsWith("data:")) {
-                              // Si es base64
-                              const arr = file.split(",");
-                              const mime = arr[0].match(/:(.*?);/)[1];
-                              const bstr = atob(arr[1]);
-                              let n = bstr.length;
-                              const u8arr = new Uint8Array(n);
-                              while (n--) u8arr[n] = bstr.charCodeAt(n);
-                              zip.file(label + "." + mime.split("/")[1], u8arr);
-                              added++;
+                    <div className="flex justify-center">
+                      <ActionDropdown
+                        actions={[
+                          {
+                            icon: "bi bi-pencil-fill",
+                            label: "Editar",
+                            title: "Editar venta",
+                            onClick: () => {
+                              setDatoSeleccionado(item);
+                              setModalEditarOpen(true);
+                              setModoCrear(false);
+                            }
+                          },
+                          {
+                            icon: "bi bi-chat-dots-fill",
+                            label: "Observaciones",
+                            title: "Ver y agregar observaciones",
+                            onClick: () => {
+                              setDatoSeleccionado(item);
+                              setModalObservacionOpen(true);
+                            }
+                          },
+                          {
+                            icon: "bi bi-eye-fill",
+                            label: "Ver detalle",
+                            title: "Ver detalles completos",
+                            onClick: () => {
+                              setDatoSeleccionado(item);
+                              setModalDetalleOpen(true);
+                            }
+                          },
+                          {
+                            icon: "bi bi-file-earmark-zip",
+                            label: "Descargar ZIP",
+                            title: "Descargar documentos adjuntos",
+                            onClick: async () => {
+                              const zip = new JSZip();
+                              // Archivos a incluir
+                              const files = [
+                                { file: item.certificadoCamara, label: "Certificado_Camara" },
+                                { file: item.logotipoMarca, label: "Logotipo_Marca" },
+                                { file: item.poderRepresentante, label: "Poder_Representante" },
+                                { file: item.poderAutorizacion, label: "Poder_Autorizacion" },
+                              ];
+                              let added = 0;
+                              for (const { file, label } of files) {
+                                if (file && typeof file !== "string" && file.name && file instanceof File) {
+                                  // Si es un File (input file)
+                                  zip.file(label + "_" + file.name, file);
+                                  added++;
+                                } else if (file && typeof file === "string" && file.startsWith("data:")) {
+                                  // Si es base64
+                                  const arr = file.split(",");
+                                  const mime = arr[0].match(/:(.*?);/)[1];
+                                  const bstr = atob(arr[1]);
+                                  let n = bstr.length;
+                                  const u8arr = new Uint8Array(n);
+                                  while (n--) u8arr[n] = bstr.charCodeAt(n);
+                                  zip.file(label + "." + mime.split("/")[1], u8arr);
+                                  added++;
+                                }
+                              }
+                              if (added === 0) {
+                                Swal.fire({
+                                  icon: "info",
+                                  title: "Sin archivos",
+                                  text: "No hay documentos adjuntos para descargar en esta venta.",
+                                  customClass: { popup: "swal2-border-radius" }
+                                });
+                                return;
+                              }
+                              const content = await zip.generateAsync({ type: "blob" });
+                              saveAs(content, `Documentos_Venta_${item.id || item.expediente || ""}.zip`);
+                            }
+                          },
+                          {
+                            icon: "bi bi-person-badge",
+                            label: "Asignar encargado",
+                            title: "Asignar empleado encargado",
+                            onClick: () => {
+                              setDatoSeleccionado(item);
+                              setEmpleadoSeleccionado(item.encargado || "");
+                              setModalAsignarEncargadoOpen(true);
+                            }
+                          },
+                          {
+                            icon: "bi bi-x-circle",
+                            label: "Anular venta",
+                            title: "Anular esta venta",
+                            danger: true,
+                            onClick: () => {
+                              setDatoSeleccionado(item);
+                              setModalAnularOpen(true);
+                              setMotivoAnular("");
                             }
                           }
-                          if (added === 0) {
-                            Swal.fire({
-                              icon: "info",
-                              title: "Sin archivos",
-                              text: "No hay documentos adjuntos para descargar en esta venta.",
-                              customClass: { popup: "swal2-border-radius" }
-                            });
-                            return;
-                          }
-                          const content = await zip.generateAsync({ type: "blob" });
-                          saveAs(content, `Documentos_Venta_${item.id || item.expediente || ""}.zip`);
-                        }}
-                        title="Descargar documentos ZIP"
-                      >
-                        <i className="bi bi-file-earmark-zip"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#6C757D", color: "#6C757D" }}
-                        onClick={() => {
-                          setDatoSeleccionado(item);
-                          setEmpleadoSeleccionado(item.encargado || "");
-                          setModalAsignarEncargadoOpen(true);
-                        }}
-                        title="Asignar encargado"
-                      >
-                        <i className="bi bi-person-badge"></i>
-                      </button>
-                      <button
-                        className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                        style={{ width: "32px", height: "32px", borderColor: "#DC3545", color: "#DC3545" }}
-                        onClick={() => {
-                          setDatoSeleccionado(item);
-                          setModalAnularOpen(true);
-                          setMotivoAnular("");
-                        }}
-                        title="Eliminar"
-                      >
-                        <i className="bi bi-x-circle"></i>
-                      </button>
+                        ]}
+                        triggerIcon="bi-three-dots-vertical"
+                        triggerTitle="Acciones"
+                      />
                     </div>
                   </td>
                 </tr>

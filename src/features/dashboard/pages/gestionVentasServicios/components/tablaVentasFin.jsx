@@ -8,7 +8,10 @@ import { mockDataService } from '../../../../../utils/mockDataService';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import getEstadoBadge from "../services/getEstadoBadge"; // Usa el mismo servicio
 import * as xlsx from "xlsx";
+import StandardAvatar from "../../../../../shared/components/StandardAvatar";
 import { saveAs } from "file-saver";
+import ActionDropdown from "../../../../../shared/components/ActionDropdown";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const TablaVentasFin = () => {
   const [datos, setDatos] = useState([]);
@@ -274,29 +277,27 @@ const TablaVentasFin = () => {
           </select>
         </div>
         <div className="flex gap-3 ml-auto">
-          <button
-            style={{ backgroundColor: "#219653", color: "#fff" }}
-            className="px-4 h-12 text-sm rounded-md whitespace-nowrap flex items-center gap-2 hover:bg-green-700 transition"
+          <DownloadButton
+            type="excel"
             onClick={exportarExcel}
-          >
-            <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-          </button>
+            title="Descargar Excel"
+          />
         </div>
       </div>
       {/* Tabla */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300 z-40">
         <div className="overflow-x-auto w-full">
-          <table className="table-auto w-full divide-y divide-gray-100">
+          <table className="table-auto w-full divide-y divide-gray-100 min-w-[1000px]">
             <thead className="text-left text-sm text-gray-500 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 font-semibold text-center">Titular</th>
-                <th className="px-6 py-4 font-semibold text-center">Expediente</th>
-                <th className="px-6 py-4 font-semibold text-center">Solicitud</th>
-                <th className="px-6 py-4 font-semibold text-center">Marca</th>
-                <th className="px-6 py-4 font-semibold text-center">Encargado</th>
-                <th className="px-6 py-4 font-semibold text-center">Cita</th>
-                <th className="px-6 py-4 font-semibold text-center">Estado</th>
-                <th className="px-6 py-4 font-semibold text-center">Acciones</th>
+                <th className="px-6 py-4 font-bold text-center">Titular</th>
+                <th className="px-6 py-4 font-bold text-center">Expediente</th>
+                <th className="px-6 py-4 font-bold text-center">Solicitud</th>
+                <th className="px-6 py-4 font-bold text-center">Marca</th>
+                <th className="px-6 py-4 font-bold text-center">Encargado</th>
+                <th className="px-6 py-4 font-bold text-center">Cita</th>
+                <th className="px-6 py-4 font-bold text-center">Estado</th>
+                <th className="px-6 py-4 font-bold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
@@ -310,14 +311,12 @@ const TablaVentasFin = () => {
                   const esAnulado = (item.estado || '').toLowerCase() === 'anulado';
                   return (
                     <tr key={item.id} className="hover:bg-blue-50 transition">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.titular || 'N/A'}`}
-                            alt={item.titular || 'N/A'}
-                            className="w-10 h-10 rounded-full border-2 border-blue-200 shadow-sm"
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-3">
+                          <StandardAvatar 
+                            nombre={item.titular || 'N/A'}
                           />
-                          <div>
+                          <div className="text-left">
                             <div className="font-semibold text-gray-800">{item.titular || 'Sin titular'}</div>
                             <div className="text-xs text-gray-500">{item.tipoPersona || '-'}</div>
                           </div>
@@ -336,55 +335,44 @@ const TablaVentasFin = () => {
                         <span style={{ color, fontWeight: 600, fontSize: "14px" }}>{texto || '-'}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="flex gap-2 justify-center flex-wrap">
-                          {!esAnulado && (
-                            <>
-                              <button
-                                className="btn btn-outline-primary rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                                style={{ width: "32px", height: "32px", borderColor: "#275FAA", color: "#275FAA" }}
-                                onClick={() => {
-                                  setDatoSeleccionado(item);
-                                  setModalEditarOpen(true);
-                                }}
-                                title="Editar"
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </button>
-                              <button
-                                className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                                style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                                onClick={() => {
-                                  setDatoSeleccionado(item);
-                                  setModalObservacionOpen(true);
-                                }}
-                                title="Observaciones"
-                              >
-                                <i className="bi bi-chat-dots"></i>
-                              </button>
-                              <button
-                                className="btn btn-outline-info rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                                style={{ width: "32px", height: "32px", borderColor: "#1E4A85", color: "#1E4A85" }}
-                                onClick={() => {
+                        <div className="flex justify-center">
+                          <ActionDropdown
+                            layout="horizontal"
+                            actions={[
+                              ...(!esAnulado ? [
+                                {
+                                  icon: "bi bi-pencil-fill",
+                                  label: "Editar",
+                                  title: "Editar venta",
+                                  hideLabel: true,
+                                  onClick: () => {
+                                    setDatoSeleccionado(item);
+                                    setModalEditarOpen(true);
+                                  }
+                                },
+                                {
+                                  icon: "bi bi-chat-dots-fill",
+                                  label: "Observaciones",
+                                  title: "Ver y agregar observaciones",
+                                  hideLabel: true,
+                                  onClick: () => {
+                                    setDatoSeleccionado(item);
+                                    setModalObservacionOpen(true);
+                                  }
+                                }
+                              ] : []),
+                              {
+                                icon: "bi bi-eye-fill",
+                                label: "Ver detalle",
+                                title: "Ver detalles completos",
+                                hideLabel: true,
+                                onClick: () => {
                                   setDatoSeleccionado(item);
                                   setModalDetalleOpen(true);
-                                }}
-                                title="Ver detalle"
-                              >
-                                <i className="bi bi-eye-fill"></i>
-                              </button>
-                            </>
-                          )}
-                          <button
-                            className="btn btn-outline-danger rounded-circle p-0 d-flex align-items-center justify-content-center custom-hover"
-                            style={{ width: "32px", height: "32px", borderColor: "#DC3545", color: "#DC3545" }}
-                            onClick={() => {
-                              setDatoSeleccionado(item);
-                              setModalDetalleOpen(true);
-                            }}
-                            title="Ver detalle"
-                          >
-                            <i className="bi bi-eye-fill"></i>
-                          </button>
+                                }
+                              }
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>

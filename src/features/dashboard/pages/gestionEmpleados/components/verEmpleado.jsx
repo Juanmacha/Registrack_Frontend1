@@ -1,5 +1,3 @@
-import React from "react";
-
 const VerEmpleadoModal = ({ showModal, setShowModal, empleado }) => {
   if (!showModal || !empleado) return null;
 

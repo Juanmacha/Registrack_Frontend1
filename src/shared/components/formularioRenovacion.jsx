@@ -6,9 +6,9 @@ const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
 const tiposEntidad = ['Sociedad Anónima', 'SAS', 'LTDA', 'Otra'];
 const categorias = ['Productos', 'Servicios'];
 
-const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Renovación de Marca' }) => {
-  const [form, setForm] = useState({
-    expediente: '',
+const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Renovación de Marca', form: propForm, setForm: propSetForm, errors: propErrors, setErrors: propSetErrors }) => {
+  // Estado local como fallback
+  const [localForm, setLocalForm] = useState({
     tipoSolicitante: '',
     tipoPersona: '',
     tipoDocumento: '',
@@ -36,7 +36,13 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
     proximaCita: null,
     comentarios: []
   });
-  const [errors, setErrors] = useState({});
+  const [localErrors, setLocalErrors] = useState({});
+
+  // Usar props si están disponibles, sino usar estado local
+  const form = propForm || localForm;
+  const setForm = propSetForm || setLocalForm;
+  const errors = propErrors || localErrors;
+  const setErrors = propSetErrors || setLocalErrors;
 
   useEffect(() => {
     if (isOpen) {
@@ -44,7 +50,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
       setErrors({});
     } else {
     setForm({
-        expediente: '',
         tipoSolicitante: '',
         tipoPersona: '',
         tipoDocumento: '',
@@ -84,8 +89,7 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
   const validate = (customForm) => {
     const f = customForm || form;
     const e = {};
-    if (!f.expediente) e.expediente = 'Requerido';
-    else if (!/^[0-9]{6,15}$/.test(f.expediente)) e.expediente = 'Solo números, 6-15 dígitos';
+    // ✅ REMOVIDO: Validación de expediente (se genera automáticamente)
     if (!f.tipoSolicitante) e.tipoSolicitante = 'Requerido';
     if (f.tipoSolicitante === 'Titular') {
       if (!f.tipoPersona) e.tipoPersona = 'Requerido';
@@ -142,7 +146,20 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
 
   const handleChange = e => {
     const { name, value, type, files } = e.target;
-    let newValue = type === 'file' ? files[0] : value;
+    let newValue;
+    
+    if (type === 'file') {
+      // Manejar archivos del FileUpload (evento sintético)
+      if (files && files.length > 0) {
+        newValue = files[0];
+      } else {
+        // Si no hay archivos, limpiar el campo
+        newValue = null;
+      }
+    } else {
+      newValue = value;
+    }
+    
     setForm(f => {
       const updatedForm = { ...f, [name]: newValue };
       const newErrors = validate(updatedForm);
@@ -172,30 +189,16 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = validate();
+    console.log('🔧 [FormularioRenovacion] handleSubmit llamado');
+    
+    const newErrors = validate(form);
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
-      return;
-    }
-    try {
+    
+    if (Object.keys(newErrors).length === 0) {
+      console.log('🔧 [FormularioRenovacion] Formulario válido, llamando onGuardar');
       await onGuardar(form);
-      // Swal.fire({
-      //   icon: 'success',
-      //   title: 'Solicitud creada',
-      //   text: 'La solicitud de renovación se ha creado correctamente.'
-      // });
-      // onClose(); // El cierre lo maneja el padre tras el pago
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+    } else {
+      console.log('🔧 [FormularioRenovacion] Formulario con errores:', newErrors);
     }
   };
 
@@ -218,12 +221,6 @@ const FormularioRenovacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Ren
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-4">
-            {/* Número de Expediente */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Número de Expediente *</label>
-              <input type="text" name="expediente" value={form.expediente} onChange={handleChange} className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.expediente ? 'border-red-500' : ''}`} />
-              {errors.expediente && <p className="text-xs text-red-600">{errors.expediente}</p>}
-            </div>
             {/* Tipo de Solicitud (bloqueado) */}
             <div>
               <label className="block text-sm font-medium mb-1">Tipo de Solicitud *</label>

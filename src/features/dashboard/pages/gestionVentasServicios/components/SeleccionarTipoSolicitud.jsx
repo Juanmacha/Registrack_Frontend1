@@ -4,9 +4,9 @@ const tipos = [
   { nombre: 'Búsqueda de Antecedentes', habilitado: true },
   { nombre: 'Certificación de Marca', habilitado: true },
   { nombre: 'Renovación de Marca', habilitado: true },
-  { nombre: 'Oposición', habilitado: true },
+  { nombre: 'Presentación de Oposición', habilitado: true },
   { nombre: 'Cesión de Marca', habilitado: true },
-  { nombre: 'Ampliamiento de Alcance', habilitado: true },
+  { nombre: 'Ampliación de Alcance', habilitado: true },
   { nombre: 'Respuesta a Oposición', habilitado: true },
 ];
 

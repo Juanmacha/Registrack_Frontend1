@@ -4,6 +4,7 @@ import React from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const DescargarExcel = ({ roles }) => {
   const exportarExcel = () => {
@@ -70,21 +71,15 @@ const DescargarExcel = ({ roles }) => {
     });
 
     saveAs(data, "roles.xlsx");
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   return (
-    <button
-      className="btn btn-success px-4 py-2 text-sm rounded-md"
+    <DownloadButton
+      type="excel"
       onClick={exportarExcel}
-    >
-      <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-    </button>
+      title="Descargar Excel"
+    />
   );
 };
 

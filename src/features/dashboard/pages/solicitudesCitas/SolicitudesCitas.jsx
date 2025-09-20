@@ -5,6 +5,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../shared/components/DownloadButton";
 
 const SolicitudesCitas = () => {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -94,12 +95,7 @@ const SolicitudesCitas = () => {
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "solicitudes_citas.xlsx");
-    Swal.fire({
-      icon: "success",
-      title: "¡Éxito!",
-      text: "Archivo Excel descargado exitosamente.",
-      confirmButtonColor: "#3085d6",
-    });
+    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
   const tiposSolicitud = [...new Set(solicitudes.map(s => s.tipoSolicitud))];
@@ -155,12 +151,11 @@ const SolicitudesCitas = () => {
               ))}
             </select>
 
-            <button
-              className="btn btn-success px-4 py-2 text-sm rounded-md whitespace-nowrap"
+            <DownloadButton
+              type="excel"
               onClick={handleExportarExcel}
-            >
-              <i className="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-            </button>
+              title="Descargar Excel"
+            />
           </div>
         </div>
 

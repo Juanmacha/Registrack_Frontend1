@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import TablaUsuarios from "./components/tablaUsuarios";
 import FormularioUsuario from "./components/FormularioUsuario";
-import VerDetalleUsuario from "./components/verDetalleUsuario";
+import ProfileModal from "../../../../shared/components/ProfileModal";
 import { UserService, initializeMockData } from "../../../../utils/mockDataService.js";
 import { validarUsuario } from "./services/validarUsuario";
+import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
@@ -30,6 +31,7 @@ const GestionUsuarios = () => {
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const usuariosPorPagina = 5;
+  const { deleteConfirm, deleteSuccess, deleteError, createSuccess, updateSuccess, createError, updateError } = useNotification();
 
   useEffect(() => {
     initializeMockData();
@@ -71,11 +73,11 @@ const GestionUsuarios = () => {
         setUsuarios(usuariosActualizados);
       }
     }
-    Swal.fire({
-      icon: "success",
-      title: modoEdicion ? "Usuario actualizado exitosamente" : "Usuario registrado exitosamente",
-      confirmButtonText: "OK",
-    });
+    if (modoEdicion) {
+      updateSuccess('usuario');
+    } else {
+      createSuccess('usuario');
+    }
     setModoEdicion(false);
     setUsuarioSeleccionado(null);
     setIndiceEditar(null);
@@ -90,23 +92,44 @@ const GestionUsuarios = () => {
     });
   };
 
-  const handleDelete = (usuario) => {
+  const handleToggleEstado = (usuario) => {
+    const nuevoEstado = usuario.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
+    console.log("handleToggleEstado: Intentando cambiar estado para usuario:", usuario.id, "a", nuevoEstado);
     Swal.fire({
       title: "¿Estás seguro?",
-      text: "No podrás revertir esta acción",
+      text: `¿Deseas cambiar el estado de ${usuario.firstName} ${usuario.lastName} a ${nuevoEstado}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, eliminar",
+      confirmButtonText: "Sí, cambiar estado",
       cancelButtonText: "Cancelar"
     }).then((result) => {
+      if (result.isConfirmed) {
+        const usuarioActualizado = UserService.update(usuario.id, { estado: nuevoEstado });
+        if (usuarioActualizado) {
+          const usuariosActualizados = UserService.getAll();
+          setUsuarios(usuariosActualizados);
+          console.log("handleToggleEstado: Usuarios actualizados después de cambio de estado:", usuariosActualizados);
+          Swal.fire("¡Éxito!", `El estado del usuario ha sido cambiado a ${nuevoEstado}.`, "success");
+        } else {
+          console.error("handleToggleEstado: Fallo al actualizar el usuario en UserService.");
+          Swal.fire("Error", "No se pudo actualizar el estado del usuario.", "error");
+        }
+      }
+    });
+  };
+
+  const handleDelete = (usuario) => {
+    deleteConfirm('usuario').then((result) => {
       if (result.isConfirmed) {
         const eliminado = UserService.delete(usuario.id);
         if (eliminado) {
           const usuariosActualizados = UserService.getAll();
           setUsuarios(usuariosActualizados);
-          Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+          deleteSuccess('usuario');
+        } else {
+          deleteError('usuario');
         }
       }
     });
@@ -195,6 +218,7 @@ const GestionUsuarios = () => {
           handleDelete={handleDelete}
           onVer={handleVer}
           onEditar={handleEditar}
+          onToggleEstado={handleToggleEstado}
           deshabilitarAcciones={mostrarModal || mostrarModalVer}
           mostrarBusqueda={false}
           mostrarPaginacion={false}
@@ -270,10 +294,11 @@ const GestionUsuarios = () => {
           </div>
         )}
 
-        <VerDetalleUsuario
-          usuario={usuarioSeleccionado}
+        <ProfileModal
+          user={usuarioSeleccionado}
           isOpen={mostrarModalVer}
           onClose={() => setMostrarModalVer(false)}
+          onEdit={handleEditar}
         />
       </div>
     </div>

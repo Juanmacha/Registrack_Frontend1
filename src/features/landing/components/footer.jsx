@@ -3,7 +3,7 @@ import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer id="footer" className="footer-container mt-15 py-12 px-6 flex justify-center">
+    <footer id="footer" className="footer-container mt-12 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="card-responsive w-full max-w-screen-xl bg-white rounded-xl shadow-md hover:shadow-xl transition flex flex-col md:flex-row overflow-hidden">
         {/* Columna izquierda */}
         <div className="w-full md:w-1/2 px-8 py-6 space-y-4">

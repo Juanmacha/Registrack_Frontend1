@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { PAISES } from '../../shared/utils/paises.js';
 import Swal from 'sweetalert2';
+import { AlertService } from '../../shared/styles/alertStandards.js';
+import FileUpload from './FileUpload.jsx';
 
 const tiposDocumento = ['Cédula', 'Pasaporte', 'DNI', 'Otro'];
 const tiposEntidad = ['Sociedad Anónima', 'SAS', 'LTDA', 'Otra'];
 const categorias = ['Productos', 'Servicios'];
 
-const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Certificación de Marca' }) => {
-  const [form, setForm] = useState({
-    expediente: '',
+const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = 'Certificación de Marca', form: propForm, setForm: propSetForm, errors: propErrors, setErrors: propSetErrors }) => {
+  // Estado local como fallback
+  const [localForm, setLocalForm] = useState({
     tipoSolicitante: '',
     tipoPersona: '',
     tipoDocumento: '',
@@ -38,15 +40,24 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
     proximaCita: null,
     comentarios: []
   });
-  const [errors, setErrors] = useState({});
+  const [localErrors, setLocalErrors] = useState({});
+
+  // Usar props si están disponibles, sino usar estado local
+  const form = propForm || localForm;
+  const setForm = propSetForm || setLocalForm;
+  const errors = propErrors || localErrors;
+  const setErrors = propSetErrors || setLocalErrors;
 
   useEffect(() => {
+    console.log("🔧 [FormularioCertificacion] useEffect ejecutado, isOpen:", isOpen);
+    console.log("🔧 [FormularioCertificacion] Errores recibidos:", errors);
     if (isOpen) {
+      console.log("🔧 [FormularioCertificacion] Abriendo formulario, tipoSolicitud:", tipoSolicitud);
       setForm(f => ({ ...f, tipoSolicitud: tipoSolicitud }));
-      setErrors({});
+      // ✅ NO RESETEAR ERRORES AL ABRIR, DEJAR QUE SE MUESTREN
     } else {
+      console.log("🔧 [FormularioCertificacion] Cerrando formulario, reseteando form");
       setForm({
-        expediente: '',
         tipoSolicitante: '',
         tipoPersona: '',
         tipoDocumento: '',
@@ -88,8 +99,7 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
   const validate = (customForm) => {
     const f = customForm || form;
     const e = {};
-    if (!f.expediente) e.expediente = 'Requerido';
-    else if (!/^[0-9]{6,15}$/.test(f.expediente)) e.expediente = 'Solo números, 6-15 dígitos';
+    // ✅ REMOVIDO: Validación de expediente (se genera automáticamente)
     if (!f.tipoSolicitante) e.tipoSolicitante = 'Requerido';
     if (f.tipoSolicitante === 'Titular') {
       if (!f.tipoPersona) e.tipoPersona = 'Requerido';
@@ -152,7 +162,20 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
 
   const handleChange = e => {
     const { name, value, type, files } = e.target;
-    let newValue = type === 'file' ? files[0] : value;
+    let newValue;
+    
+    if (type === 'file') {
+      // Manejar archivos del FileUpload (evento sintético)
+      if (files && files.length > 0) {
+        newValue = files[0];
+      } else {
+        // Si no hay archivos, limpiar el campo
+        newValue = null;
+      }
+    } else {
+      newValue = value;
+    }
+    
     setForm(f => {
       const updatedForm = { ...f, [name]: newValue };
       const newErrors = validate(updatedForm);
@@ -182,25 +205,16 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = validate();
+    console.log('🔧 [FormularioCertificacion] handleSubmit llamado');
+    
+    const newErrors = validate(form);
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error en el formulario',
-        text: 'Por favor, corrige los campos marcados en rojo antes de continuar.'
-      });
-      return;
-    }
-    try {
+    
+    if (Object.keys(newErrors).length === 0) {
+      console.log('🔧 [FormularioCertificacion] Formulario válido, llamando onGuardar');
       await onGuardar(form);
-      // onClose(); // El cierre lo maneja el padre tras el pago
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+    } else {
+      console.log('🔧 [FormularioCertificacion] Formulario con errores:', newErrors);
     }
   };
 
@@ -223,19 +237,6 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-4">
-            {/* Número de Expediente */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Número de Expediente *</label>
-              <input
-                type="text"
-                name="expediente"
-                value={form.expediente}
-                onChange={handleChange}
-                className={`w-full border rounded p-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${errors.expediente ? 'border-red-500' : ''}`}
-                placeholder="Número de expediente"
-              />
-              {errors.expediente && <p className="text-xs text-red-600">{errors.expediente}</p>}
-            </div>
             {/* Tipo de Solicitud (bloqueado) */}
             <div>
               <label className="block text-sm font-medium mb-1">Tipo de Solicitud *</label>
@@ -450,28 +451,44 @@ const FormularioCertificacion = ({ isOpen, onClose, onGuardar, tipoSolicitud = '
           </div>
           {/* Adjuntar Documentos */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Certificado de Cámara y Comercio *</label>
-              <input type="file" name="certificadoCamara" onChange={handleChange} className="w-full" />
-              {errors.certificadoCamara && <p className="text-xs text-red-600">{errors.certificadoCamara}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Logotipo de la Marca *</label>
-              <input type="file" name="logotipoMarca" onChange={handleChange} className="w-full" />
-              {errors.logotipoMarca && <p className="text-xs text-red-600">{errors.logotipoMarca}</p>}
-            </div>
+            <FileUpload
+              name="certificadoCamara"
+              value={form.certificadoCamara}
+              onChange={handleChange}
+              label="Certificado de Cámara y Comercio"
+              required={true}
+              accept=".pdf,.jpg,.jpeg,.png"
+              error={errors.certificadoCamara}
+            />
+            <FileUpload
+              name="logotipoMarca"
+              value={form.logotipoMarca}
+              onChange={handleChange}
+              label="Logotipo de la Marca"
+              required={true}
+              accept=".jpg,.jpeg,.png,.gif"
+              error={errors.logotipoMarca}
+            />
             {esRepresentante && (
               <>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Poder del Representante Autorizado *</label>
-                  <input type="file" name="poderRepresentante" onChange={handleChange} className="w-full" />
-                  {errors.poderRepresentante && <p className="text-xs text-red-600">{errors.poderRepresentante}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Poder que nos autoriza *</label>
-                  <input type="file" name="poderAutorizacion" onChange={handleChange} className="w-full" />
-                  {errors.poderAutorizacion && <p className="text-xs text-red-600">{errors.poderAutorizacion}</p>}
-                </div>
+                <FileUpload
+                  name="poderRepresentante"
+                  value={form.poderRepresentante}
+                  onChange={handleChange}
+                  label="Poder del Representante Autorizado"
+                  required={true}
+                  accept=".pdf,.doc,.docx"
+                  error={errors.poderRepresentante}
+                />
+                <FileUpload
+                  name="poderAutorizacion"
+                  value={form.poderAutorizacion}
+                  onChange={handleChange}
+                  label="Poder que nos autoriza"
+                  required={true}
+                  accept=".pdf,.doc,.docx"
+                  error={errors.poderAutorizacion}
+                />
               </>
             )}
           </div>

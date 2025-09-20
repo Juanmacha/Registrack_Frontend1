@@ -1,7 +1,10 @@
 // Servicio de ventas usando la data mock centralizada
 // ✅ REFACTORIZADO: Ahora usa SaleService del mockDataService
 
-import { SaleService, initializeMockData } from '../../../../../utils/mockDataService.js';
+import {
+  SaleService,
+  initializeMockData,
+} from "../../../../../utils/mockDataService.js";
 
 // Inicializar datos mock centralizados
 initializeMockData();
@@ -23,7 +26,7 @@ export function initDatosPrueba() {
         estado: "En revisión",
         comentarios: [],
         email: "juan.perez@example.com",
-        telefono: "3001234567"
+        telefono: "3001234567",
       },
       {
         id: "2",
@@ -37,12 +40,12 @@ export function initDatosPrueba() {
         estado: "Pendiente",
         comentarios: [],
         email: "empresa.xyz@example.com",
-        telefono: "3009876543"
+        telefono: "3009876543",
       },
     ];
-    
+
     // Usar SaleService para crear las ventas
-    datosPrueba.forEach(venta => {
+    datosPrueba.forEach((venta) => {
       SaleService.create(venta);
     });
   }
@@ -50,17 +53,29 @@ export function initDatosPrueba() {
 
 // Crear nueva venta
 export function crearVenta(nuevaVenta) {
+  console.log("🔧 [crearVenta] Datos recibidos:", nuevaVenta);
+
+  // Generar número de expediente automático
+  const generarExpediente = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
+    return `EXP-${timestamp}${random}`;
+  };
+
   // Mapear los campos del formulario a los campos que espera la tabla
   const ventaMapeada = {
     ...nuevaVenta,
+    expediente: generarExpediente(), // Generar expediente automáticamente
     comentarios: [],
     // Mapear titular
     titular:
       nuevaVenta.tipoSolicitante === "Titular"
         ? nuevaVenta.tipoPersona === "Natural"
-          ? nuevaVenta.nombreCompleto
+          ? `${nuevaVenta.nombres || ""} ${nuevaVenta.apellidos || ""}`.trim()
           : nuevaVenta.nombreEmpresa
-        : nuevaVenta.nombreCompleto,
+        : `${nuevaVenta.nombres || ""} ${nuevaVenta.apellidos || ""}`.trim(),
     // Mapear marca
     marca: nuevaVenta.nombreMarca,
     // Mapear tipo de solicitud
@@ -73,7 +88,12 @@ export function crearVenta(nuevaVenta) {
     tipoPersona: nuevaVenta.tipoPersona || nuevaVenta.tipoSolicitante,
   };
 
-  return SaleService.create(ventaMapeada);
+  console.log("🔧 [crearVenta] Datos mapeados:", ventaMapeada);
+
+  const resultado = SaleService.create(ventaMapeada);
+  console.log("🔧 [crearVenta] Resultado de SaleService.create:", resultado);
+
+  return resultado;
 }
 
 // Editar venta
@@ -86,15 +106,16 @@ export function actualizarVenta(id, datosActualizados) {
     if (
       datos.tipoSolicitante ||
       datos.tipoPersona ||
-      datos.nombreCompleto ||
+      datos.nombres ||
+      datos.apellidos ||
       datos.nombreEmpresa
     ) {
       mapeados.titular =
         datos.tipoSolicitante === "Titular"
           ? datos.tipoPersona === "Natural"
-            ? datos.nombreCompleto
+            ? `${datos.nombres || ""} ${datos.apellidos || ""}`.trim()
             : datos.nombreEmpresa
-          : datos.nombreCompleto;
+          : `${datos.nombres || ""} ${datos.apellidos || ""}`.trim();
     }
 
     // Mapear marca si se actualizó nombreMarca

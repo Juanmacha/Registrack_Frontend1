@@ -2,6 +2,7 @@ import React from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Swal from "sweetalert2";
+import DownloadButton from "../../../../../shared/components/DownloadButton";
 
 const BotonDescargarPdf = ({ datos, nombreArchivo = "reporte.pdf", chartRef }) => {
   const exportarPdf = async () => {
@@ -101,47 +102,19 @@ const BotonDescargarPdf = ({ datos, nombreArchivo = "reporte.pdf", chartRef }) =
       pdf.save(nombreArchivo);
 
       // Mostrar éxito
-      Swal.fire({
-        icon: "success",
-        title: "¡Éxito!",
-        text: "Archivo PDF descargado exitosamente.",
-        confirmButtonColor: "#3085d6",
-      });
+      AlertService.success("¡Éxito!", "Archivo PDF descargado exitosamente.");
     } catch (error) {
       console.error("Error generando PDF:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un problema al generar el PDF.",
-        confirmButtonColor: "#d33",
-      });
+      AlertService.error("Error", "Hubo un problema al generar el PDF.");
     }
   };
 
   return (
-    <button
+    <DownloadButton
+      type="pdf"
       onClick={exportarPdf}
-      className="rounded-circle p-0 d-flex align-items-center justify-content-center"
-      style={{
-        width: "40px",
-        height: "40px",
-        backgroundColor: "transparent",
-        transition: "background-color 0.3s",
-        border: "1px solid #dc2626",
-      }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.backgroundColor = "#fecaca")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.backgroundColor = "transparent")
-      }
       title="Descargar PDF"
-    >
-      <i
-        className="bi bi-file-earmark-pdf-fill"
-        style={{ color: "#dc2626", fontSize: "18px" }}
-      ></i>
-    </button>
+    />
   );
 };
 

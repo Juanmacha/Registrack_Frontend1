@@ -80,7 +80,7 @@ const GraficaIngresosBarra = () => {
       <div className="absolute top-4 right-4 z-10">
         <BotonDescargarExcel datos={datosExcel} nombreArchivo="ingresos_por_servicio.xlsx" />
       </div>
-      <h2 className="text-lg font-bold mb-2">Ingresos por Servicio</h2>
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Ingresos por Servicio</h2>
       <Bar data={data} options={options} height={220} />
     </div>
   );

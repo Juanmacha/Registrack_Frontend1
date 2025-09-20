@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { useNotification } from "../../../../../shared/contexts/NotificationContext.jsx";
 
 const EditarEmpleadoModal = ({
   showModal,
@@ -7,6 +8,7 @@ const EditarEmpleadoModal = ({
   empleadoEditando,
   handleActualizarEmpleado,
 }) => {
+  const { updateSuccess, updateError } = useNotification();
   const [formData, setFormData] = useState({
     id: "",
     nombre: "",
@@ -67,22 +69,10 @@ const EditarEmpleadoModal = ({
     e.preventDefault();
     if (validateForm()) {
       handleActualizarEmpleado(formData);
-
-      Swal.fire({
-        icon: "success",
-        title: "Empleado actualizado",
-        text: "Los datos del empleado se han actualizado correctamente.",
-        confirmButtonColor: "#3085d6",
-      });
-
+      updateSuccess('empleado');
       setShowModal(false);
     } else {
-      Swal.fire({
-        icon: "error",
-        title: "Campos incompletos",
-        text: "Por favor completa todos los campos obligatorios.",
-        confirmButtonColor: "#d33",
-      });
+      updateError('empleado');
     }
   };
 

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck } from "react-icons/bi";
+import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck, BiShow, BiHide, BiLeftArrowAlt } from "react-icons/bi";
 import { UserService, initializeMockData } from "../../../utils/mockDataService.js";
-import alertService from "../../../utils/alertService.js";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +14,8 @@ const Register = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -72,31 +73,27 @@ const Register = () => {
   const handleRegister = async () => {
     // Validar campos requeridos
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.documentType || !formData.documentNumber) {
-      alertService.validationError("Por favor, completa todos los campos requeridos.");
+      setErrors({ general: "Por favor, completa todos los campos requeridos." });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alertService.validationError("Las contraseñas no coinciden.");
+      setErrors({ general: "Las contraseñas no coinciden." });
       return;
     }
 
     if (formData.password.length < 6) {
-      alertService.validationError("La contraseña debe tener al menos 6 caracteres.");
+      setErrors({ general: "La contraseña debe tener al menos 6 caracteres." });
       return;
     }
 
     try {
-      // Mostrar alerta de carga
-      const loadingAlert = alertService.loading("Registrando usuario...");
-
       initializeMockData();
 
       // Validar que el email no exista
       const existingUser = UserService.getByEmail(formData.email);
       if (existingUser) {
-        alertService.close();
-        alertService.registerError("El email ya está registrado. Por favor, usa otro email.");
+        setErrors({ general: "El email ya está registrado. Por favor, usa otro email." });
         return;
       }
 
@@ -114,133 +111,254 @@ const Register = () => {
 
       const createdUser = UserService.create(newUser);
 
-      // Cerrar alerta de carga
-      alertService.close();
-
       if (createdUser) {
-        await alertService.registerSuccess();
         navigate("/login");
       } else {
-        alertService.registerError();
+        setErrors({ general: "Error al crear la cuenta. Por favor, intenta de nuevo." });
       }
     } catch (error) {
       console.error("Error en registro:", error);
-      alertService.close();
-      alertService.registerError();
+      setErrors({ general: "Error al crear la cuenta. Por favor, intenta de nuevo." });
     }
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md w-full">
-      <h2 className="text-2xl font-bold text-blue-900 text-center mb-6">
-        Registro - Certimarcas
-      </h2>
+    <div className="min-h-screen bg-white flex">
+      {/* Formulario de Registro - Lado Izquierdo */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-2xl">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            {/* Botón Volver */}
+            <div className="mb-4">
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <BiLeftArrowAlt className="mr-2" />
+                Volver al inicio
+              </button>
+            </div>
 
-      <div className="space-y-4">
-        <div className="relative">
-          <BiUser className="absolute left-3 top-3 text-blue-700" />
-          <input
-            name="firstName"
-            placeholder="Primer nombre"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            {/* Título */}
+            <h1 className="text-2xl font-bold text-blue-900 mb-8 text-center">
+              Registro - Certimarcas
+            </h1>
+
+            {/* Error Message */}
+            {errors.general && (
+              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm text-center">{errors.general}</p>
+              </div>
+            )}
+
+            {/* Formulario */}
+            <div className="space-y-6">
+              {/* Primera fila: Nombre y Apellido */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Campo Nombre */}
+                <div>
+                  <div className="relative">
+                    <BiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      name="firstName"
+                      placeholder="Nombre"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {errors.firstName && (
+                    <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                  )}
+                </div>
+
+                {/* Campo Apellido */}
+                <div>
+                  <div className="relative">
+                    <BiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      name="lastName"
+                      placeholder="Apellido"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {errors.lastName && (
+                    <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Segunda fila: Email */}
+              <div>
+                <div className="relative">
+                  <BiEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Tercera fila: Tipo de Documento y Número */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Tipo de Documento */}
+                <div>
+                  <div className="relative">
+                    <BiIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <select
+                      name="documentType"
+                      onChange={handleChange}
+                      value={formData.documentType}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                    >
+                      <option value="">Tipo de documento</option>
+                      <option value="CC">Cédula de ciudadanía</option>
+                      <option value="TI">Tarjeta de identidad</option>
+                      <option value="CE">Cédula de extranjería</option>
+                      <option value="PA">Pasaporte</option>
+                      <option value="PEP">Permiso Especial</option>
+                      <option value="NIT">NIT</option>
+                    </select>
+                  </div>
+                  {errors.documentType && (
+                    <p className="text-red-500 text-xs mt-1">{errors.documentType}</p>
+                  )}
+                </div>
+
+                {/* Número de Documento */}
+                <div>
+                  <div className="relative">
+                    <BiIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      name="documentNumber"
+                      placeholder="Número de documento"
+                      value={formData.documentNumber}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  {errors.documentNumber && (
+                    <p className="text-red-500 text-xs mt-1">{errors.documentNumber}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Cuarta fila: Contraseña y Confirmar Contraseña */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Campo Contraseña */}
+                <div>
+                  <div className="relative">
+                    <BiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Contraseña"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <BiHide className="text-lg" /> : <BiShow className="text-lg" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Confirmar Contraseña */}
+                <div>
+                  <div className="relative">
+                    <BiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Confirmar contraseña"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <BiHide className="text-lg" /> : <BiShow className="text-lg" />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Checkbox de Política de Privacidad */}
+              <div className="flex items-start">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
+                  required
+                />
+                <label className="ml-2 text-sm text-gray-600">
+                  Estoy de acuerdo con la{" "}
+                  <button className="text-blue-500 hover:text-blue-700 transition-colors">
+                    política de privacidad
+                  </button>
+                </label>
+              </div>
+
+              {/* Botón de Registro */}
+              <button
+                onClick={handleRegister}
+                disabled={!isFormValid()}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Crear Cuenta
+              </button>
+
+              {/* Enlace a Login */}
+              <div className="text-center">
+                <p className="text-sm text-gray-600">
+                  ¿Ya tienes una cuenta?{" "}
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="text-blue-500 hover:text-blue-700 font-medium transition-colors"
+                  >
+                    Iniciar Sesión
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Video Decorativo - Lado Derecho */}
+      <div className="flex-1 flex items-center justify-center bg-white">
+        <div className="w-full max-w-lg h-96 flex items-center justify-center">
+          <video
+            src="/images/Whisk_cauajgm4ymzhyjjkltawzjetndazzc1hn2y3lwe.mp4"
+            alt="Video Registrack"
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
           />
-          {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
         </div>
-
-        <div className="relative">
-          <BiUser className="absolute left-3 top-3 text-blue-700" />
-          <input
-            name="lastName"
-            placeholder="Primer apellido"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
-        </div>
-
-        <div className="relative">
-          <BiIdCard className="absolute left-3 top-3 text-blue-700" />
-          <select
-            name="documentType"
-            onChange={handleChange}
-            value={formData.documentType}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">Tipo de documento</option>
-            <option value="CC">Cédula de ciudadanía (CC)</option>
-            <option value="TI">Tarjeta de identidad (TI)</option>
-            <option value="CE">Cédula de extranjería (CE)</option>
-            <option value="PA">Pasaporte (PA)</option>
-            <option value="PEP">Permiso Especial de Permanencia (PEP)</option>
-            <option value="NIT">Número de Identificación Tributaria (NIT)</option>
-          </select>
-          {errors.documentType && <p className="text-xs text-red-600 mt-1">{errors.documentType}</p>}
-        </div>
-
-        <div className="relative">
-          <BiIdCard className="absolute left-3 top-3 text-blue-700" />
-          <input
-            name="documentNumber"
-            placeholder="Número de documento"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.documentNumber && <p className="text-xs text-red-600 mt-1">{errors.documentNumber}</p>}
-        </div>
-
-        <div className="relative">
-          <BiEnvelope className="absolute left-3 top-3 text-blue-700" />
-          <input
-            name="email"
-            placeholder="Correo electrónico"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
-        </div>
-
-        <div className="relative">
-          <BiLock className="absolute left-3 top-3 text-blue-700" />
-          <input
-            type="password"
-            name="password"
-            placeholder="Contraseña"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
-        </div>
-
-        <div className="relative">
-          <BiLock className="absolute left-3 top-3 text-blue-700" />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirmar contraseña"
-            onChange={handleChange}
-            className="w-full pl-10 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.confirmPassword && <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>}
-        </div>
-
-        <button
-          onClick={handleRegister}
-          className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold shadow-md hover:bg-blue-700 transition-all duration-300"
-          disabled={!isFormValid()}
-        >
-          Registrarse
-        </button>
-
-        <p className="text-center text-sm text-gray-600 mt-4">
-          ¿Ya tienes cuenta?{' '}
-          <span
-            onClick={() => navigate('/login')}
-            className="text-blue-600 hover:underline cursor-pointer"
-          >
-            Inicia sesión
-          </span>
-        </p>
       </div>
     </div>
   );

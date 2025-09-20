@@ -71,6 +71,25 @@ const FormularioCliente = ({
     e.preventDefault();
     setFormSubmitted(true);
     if (!validarCampos()) return;
+    
+    // Limpiar el formulario después de guardar
+    setForm({
+      tipoDocumento: "",
+      documento: "",
+      nombre: "",
+      apellido: "",
+      email: "",
+      telefono: "",
+      nitEmpresa: "",
+      nombreEmpresa: "",
+      marca: "",
+      tipoPersona: "",
+      estado: "Activo"
+    });
+    setFormSubmitted(false);
+    setTouched({});
+    setErrores({});
+    
     onGuardar(form);
   };
 

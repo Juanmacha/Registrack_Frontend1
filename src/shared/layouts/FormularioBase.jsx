@@ -12,6 +12,7 @@ import FormularioRespuesta from "../components/formularioRespuesta";
 import DemoPasarelaPagoModal from '../../features/landing/components/DemoPasarelaPagoModal';
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
+import AlertService from '../../utils/alertService.js';
 
 // Mapeo de formularios por servicio
 const FORMULARIOS_POR_SERVICIO = {
@@ -31,6 +32,31 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
   const [showPago, setShowPago] = useState(false);
   const [datosPago, setDatosPago] = useState(null);
   const [montoDemo, setMontoDemo] = useState(1848000); // Monto demo, puedes ajustarlo
+  
+  // Estado para el formulario específico
+  const [form, setForm] = useState({
+    tipoSolicitante: 'Representante Autorizado',
+    tipoDocumento: '',
+    numeroDocumento: '',
+    nombres: '',
+    apellidos: '',
+    email: '',
+    telefono: '',
+    direccion: '',
+    pais: '',
+    nitMarca: '',
+    nombreMarca: '',
+    clases: [{ numero: '', descripcion: '' }],
+    poderRepresentante: null,
+    poderAutorizacion: null,
+    fechaSolicitud: '',
+    estado: 'En revisión',
+    tipoSolicitud: tipoSolicitud,
+    encargado: 'Sin asignar',
+    proximaCita: null,
+    comentarios: []
+  });
+  const [errors, setErrors] = useState({});
 
   const siguientePaso = () => setStep(2);
   const pasoAnterior = () => setStep(1);
@@ -83,19 +109,11 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
     try {
       await onGuardar(datosPago); // Crear la solicitud solo después del pago
       generarComprobantePDF({ ...datosPago, ...pagoInfo });
-      Swal.fire({
-        icon: 'success',
-        title: 'Solicitud creada y pago realizado',
-        text: 'La solicitud se ha creado correctamente y el comprobante ha sido generado.'
-      });
+      AlertService.success("Solicitud creada y pago realizado", "La solicitud se ha creado correctamente y el comprobante ha sido generado.");
       setShowPago(false);
       onClose();
     } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al guardar',
-        text: err?.message || 'Ocurrió un error al guardar la solicitud.'
-      });
+      AlertService.error("Error al guardar", "");
     }
   };
 
@@ -230,12 +248,21 @@ const FormularioBaseModal = ({ onClose, children, titulo = "Solicitud de Servici
           <div className="space-y-4">
             {/* Renderizar el formulario dinámico según el tipo de solicitud */}
             {FormularioComponente ? (
-              <FormularioComponente 
-                isOpen={true}
-                onClose={onClose}
-                onGuardar={handleFinalizar}
-                tipoSolicitud={tipoSolicitud}
-              />
+              (() => {
+                console.log('🔧 [FormularioBaseModal] Pasando props al formulario:', { form, errors, tipoSolicitud });
+                return (
+                  <FormularioComponente 
+                    isOpen={true}
+                    onClose={onClose}
+                    onGuardar={handleFinalizar}
+                    tipoSolicitud={tipoSolicitud}
+                    form={form}
+                    setForm={setForm}
+                    errors={errors}
+                    setErrors={setErrors}
+                  />
+                );
+              })()
             ) : children || <Outlet />} {/* Fallback a children o Outlet si no hay formulario específico */}
             <div className="flex justify-between border-t pt-4">
               <button

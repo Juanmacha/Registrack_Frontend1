@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import NavBarLanding from '../../../landing/components/landingNavbar.jsx';
 import authData from '../../../auth/services/authData.js';
 import ProcesosActivos from './components/ProcesosActivos.jsx';
@@ -18,14 +18,19 @@ const MisProcesos = () => {
   const [estadoFiltroActivos, setEstadoFiltroActivos] = useState('Todos');
   const user = authData.getUser();
 
-  // Usar hook de sincronización para procesos del usuario
-  const [procesos, refreshProcesos, lastUpdate] = useSalesSync(
-    () => {
+  // Estabilizar la función dataFetcher para evitar bucles infinitos
+  const dataFetcher = useMemo(() => {
+    return () => {
       if (user && user.email) {
         return getSolicitudesUsuario(user.email);
       }
       return [];
-    },
+    };
+  }, [user?.email]);
+
+  // Usar hook de sincronización para procesos del usuario
+  const [procesos, refreshProcesos, lastUpdate] = useSalesSync(
+    dataFetcher,
     [user?.email]
   );
 
@@ -35,7 +40,7 @@ const MisProcesos = () => {
     } catch (err) {
       setError('Ocurrió un error al cargar tus procesos.');
     }
-  }, [user]);
+  }, [user?.email]); // Solo depender del email, no del objeto user completo
 
   if (!user) {
     return (
