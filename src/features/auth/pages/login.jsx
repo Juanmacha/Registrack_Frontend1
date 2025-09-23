@@ -19,7 +19,8 @@ const Login = () => {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const authContext = useAuth();
+  const { login } = authContext || { login: async () => ({ success: false, message: 'Contexto no disponible' }) };
 
   const validate = (field, value) => {
     let e = { ...fieldErrors };
@@ -72,6 +73,11 @@ const Login = () => {
           { confirmButtonText: "Continuar" }
         );
 
+        // Debug: Mostrar datos del usuario en consola
+        console.log('🔍 Datos del usuario recibidos:', result.user);
+        console.log('🔍 Rol del usuario:', result.user.rol || result.user.role);
+        console.log('🔍 Tipo de rol:', typeof (result.user.rol || result.user.role));
+
         // Redirección inteligente para rutas del landing
         const redirect = localStorage.getItem('postLoginRedirect');
         if (redirect &&
@@ -87,13 +93,32 @@ const Login = () => {
         }
         
         // Redirigir según el rol
-        if (result.user.role === "Administrador") {
-          navigate("/admin/dashboard");
-        } else if (result.user.role === "Empleado") {
-          navigate("/admin/dashboard");
+        const userRole = result.user.rol || result.user.role;
+        console.log('🎯 Rol detectado para redirección:', userRole);
+        
+        // Extraer el nombre del rol si es un objeto
+        let roleName = '';
+        if (typeof userRole === 'object' && userRole !== null) {
+          roleName = userRole.nombre || userRole.name || userRole.role || '';
         } else {
-          navigate("/"); // Clientes van al landing normal
+          roleName = userRole || '';
         }
+        
+        console.log('🎯 Nombre del rol extraído:', roleName);
+        
+        // Esperar un momento para que el contexto se actualice antes de redirigir
+        setTimeout(() => {
+          if (roleName === "administrador" || roleName === "Administrador" || roleName === "admin") {
+            console.log('✅ Redirigiendo a dashboard de administrador');
+            navigate("/admin/dashboard");
+          } else if (roleName === "empleado" || roleName === "Empleado" || roleName === "employee") {
+            console.log('✅ Redirigiendo a dashboard de empleado');
+            navigate("/admin/dashboard");
+          } else {
+            console.log('✅ Redirigiendo a landing (cliente)');
+            navigate("/"); // Clientes van al landing normal
+          }
+        }, 500); // Aumentar el delay para asegurar que el contexto se actualice
       } else {
         setError("Credenciales incorrectas. Intenta de nuevo.");
       }

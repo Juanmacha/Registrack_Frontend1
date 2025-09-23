@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiEnvelope, BiLeftArrowAlt } from "react-icons/bi";
-import { UserService } from '../../../utils/mockDataService.js';
+import authApiService from '../services/authApiService.js';
+import alertService from '../../../utils/alertService.js';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -16,18 +17,62 @@ const ForgotPassword = () => {
     return "";
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const err = validate(email);
     setError(err);
     if (err) return;
-    // Verifica en usuarios_mock
-    const found = UserService.getByEmail(email);
-    if (found) {
-      setError("");
-      localStorage.setItem("emailRecuperacion", email);
-      navigate("/codigoRecuperacion");
-    } else {
-      setError("Este correo no está registrado.");
+    
+    // Cerrar cualquier alerta previa
+    alertService.close();
+    
+    try {
+      console.log('🔐 [ForgotPassword] Enviando solicitud de recuperación para:', email);
+      console.log('🔐 [ForgotPassword] Tipo de email:', typeof email);
+      console.log('🔐 [ForgotPassword] Email vacío:', !email);
+      console.log('🔐 [ForgotPassword] Email validado:', !validate(email));
+      
+      console.log('🔄 [ForgotPassword] Llamando a forgotPasswordDirect...');
+      
+      // Usar la versión directa con fetch
+      const result = await authApiService.forgotPasswordDirect(email);
+      console.log('📥 [ForgotPassword] Respuesta recibida:', result);
+      
+      console.log('🔍 [ForgotPassword] Resultado completo:', result);
+      console.log('🔍 [ForgotPassword] result.success:', result.success);
+      console.log('🔍 [ForgotPassword] result.message:', result.message);
+      
+      if (result.success) {
+        console.log('✅ [ForgotPassword] Solicitud enviada exitosamente');
+        await alertService.success(
+          "¡Solicitud enviada!",
+          "Se ha enviado un código de recuperación a tu correo electrónico. Revisa tu bandeja de entrada y spam.",
+          { 
+            confirmButtonText: "Continuar",
+            timer: 3000,
+            timerProgressBar: true
+          }
+        );
+        localStorage.setItem("emailRecuperacion", email);
+        navigate("/codigoRecuperacion");
+      } else {
+        console.log('❌ [ForgotPassword] Error en la solicitud:', result.message);
+        await alertService.error(
+          "Error en la solicitud",
+          result.message || "No se pudo enviar el código de recuperación. Verifica que el email esté registrado e intenta de nuevo.",
+          { confirmButtonText: "Intentar de nuevo" }
+        );
+        setError(result.message || "Error al enviar la solicitud. Intenta de nuevo.");
+      }
+    } catch (error) {
+      console.error('💥 [ForgotPassword] Error general:', error);
+      // Asegurar que se cierre la alerta de carga
+      alertService.close();
+      await alertService.error(
+        "Error de conexión",
+        "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta de nuevo.",
+        { confirmButtonText: "Reintentar" }
+      );
+      setError("Error al enviar la solicitud. Intenta de nuevo.");
     }
   };
 
@@ -50,7 +95,7 @@ const ForgotPassword = () => {
 
             {/* Título */}
             <h1 className="text-2xl font-bold text-blue-900 mb-8 text-center">
-              Recuperar contraseña
+              Recuperar contraseña - Certimarcas
             </h1>
 
             {/* Error Message */}
@@ -68,7 +113,7 @@ const ForgotPassword = () => {
                   <BiEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
                   <input
                     type="email"
-                    placeholder="Correo electrónico"
+                    placeholder="admin@registrack.com"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -90,12 +135,15 @@ const ForgotPassword = () => {
 
               {/* Enlace de Regreso */}
               <div className="text-center">
-                <button
-                  onClick={() => navigate("/login")}
-                  className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
-                >
-                  Volver al inicio de sesión
-                </button>
+                <p className="text-sm text-gray-600">
+                  ¿Recordaste tu contraseña?{" "}
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="text-blue-500 hover:text-blue-700 font-medium transition-colors"
+                  >
+                    Inicia sesión
+                  </button>
+                </p>
               </div>
             </div>
           </div>

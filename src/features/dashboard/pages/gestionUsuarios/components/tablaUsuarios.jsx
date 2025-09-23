@@ -4,12 +4,44 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import StandardAvatar from "../../../../../shared/components/StandardAvatar";
 
 const CustomCheckbox = ({ isChecked, onChange, disabled }) => {
+  console.log('🔘 [CustomCheckbox] isChecked:', isChecked, 'disabled:', disabled);
+  
+  const handleChange = (e) => {
+    console.log('🔘 [CustomCheckbox] onChange triggered, isChecked:', isChecked);
+    if (onChange) {
+      onChange(e);
+    }
+  };
+  
   return (
     <label className={`flex items-center justify-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
       <div className="relative">
-        <input type="checkbox" className="sr-only" checked={isChecked} onChange={onChange} disabled={disabled} />
-        <div className={`block w-10 h-6 rounded-full ${isChecked ? 'bg-blue-600' : (disabled ? 'bg-gray-200' : 'bg-gray-300')}`}></div>
-        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isChecked ? 'transform translate-x-full' : ''}`}></div>
+        <input 
+          type="checkbox" 
+          className="sr-only" 
+          checked={isChecked} 
+          onChange={handleChange} 
+          disabled={disabled} 
+        />
+        <div 
+          className={`block w-10 h-6 rounded-full transition-all duration-300 ${
+            isChecked 
+              ? 'bg-blue-600' 
+              : (disabled ? 'bg-gray-200' : 'bg-gray-300')
+          }`}
+          style={{
+            backgroundColor: isChecked ? '#2563eb' : (disabled ? '#e5e7eb' : '#d1d5db')
+          }}
+        ></div>
+        <div 
+          className={`absolute top-1 bg-white w-4 h-4 rounded-full transition-all duration-300 ${
+            isChecked ? 'left-5' : 'left-1'
+          }`}
+          style={{
+            transform: isChecked ? 'translateX(0)' : 'translateX(0)',
+            left: isChecked ? '1.25rem' : '0.25rem'
+          }}
+        ></div>
       </div>
     </label>
   );
@@ -90,7 +122,7 @@ const TablaUsuarios = ({
                   </td>
                   <td className="px-6 py-4 text-center">
                     <CustomCheckbox
-                      isChecked={u.estado?.toLowerCase() === 'activo'}
+                      isChecked={typeof u.estado === 'boolean' ? u.estado : u.estado?.toLowerCase() === 'activo'}
                       onChange={() => onToggleEstado(u)}
                       disabled={deshabilitarAcciones}
                     />

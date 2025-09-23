@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import TablaUsuarios from "./components/tablaUsuarios";
 import FormularioUsuario from "./components/FormularioUsuario";
 import ProfileModal from "../../../../shared/components/ProfileModal";
-import { UserService, initializeMockData } from "../../../../utils/mockDataService.js";
+import userApiService from "../../../auth/services/userApiService.js";
 import { validarUsuario } from "./services/validarUsuario";
 import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import * as XLSX from "xlsx";
@@ -30,13 +30,74 @@ const GestionUsuarios = () => {
   const [indiceEditar, setIndiceEditar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const usuariosPorPagina = 5;
   const { deleteConfirm, deleteSuccess, deleteError, createSuccess, updateSuccess, createError, updateError } = useNotification();
 
+  // Función para cargar usuarios desde la API
+  const cargarUsuarios = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('🔄 [GestionUsuarios] Cargando usuarios desde la API...');
+      const result = await userApiService.getAllUsers();
+      
+      if (result.success) {
+        console.log('✅ [GestionUsuarios] Usuarios cargados exitosamente:', result.users);
+        // Mapear datos de la API al formato del frontend
+        const usuariosMapeados = result.users.map(usuario => ({
+          id: usuario.id_usuario,
+          documentType: usuario.tipo_documento,
+          documentNumber: usuario.documento,
+          firstName: usuario.nombre,
+          lastName: usuario.apellido,
+          email: usuario.correo,
+          role: obtenerNombreRol(usuario.id_rol), // Mapear desde id_rol
+          estado: usuario.estado !== undefined ? Boolean(usuario.estado) : true,
+          fechaCreacion: usuario.createdAt || usuario.fecha_creacion
+        }));
+        console.log('🔄 [GestionUsuarios] Usuarios mapeados con estados y roles:', JSON.stringify(usuariosMapeados.map(u => ({ id: u.id, nombre: u.firstName, estado: u.estado, role: u.role })), null, 2));
+        setUsuarios(usuariosMapeados);
+      } else {
+        console.error('❌ [GestionUsuarios] Error al cargar usuarios:', result.message);
+        setError(result.message);
+        // Mostrar error al usuario
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error al cargar usuarios',
+          text: result.message,
+          confirmButtonText: 'Reintentar',
+          showCancelButton: true,
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            cargarUsuarios();
+          }
+        });
+      }
+    } catch (error) {
+      console.error('💥 [GestionUsuarios] Error general al cargar usuarios:', error);
+      setError('Error de conexión con el servidor');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
+        confirmButtonText: 'Reintentar',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          cargarUsuarios();
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    initializeMockData();
-    const usuariosData = UserService.getAll();
-    setUsuarios(usuariosData);
+    cargarUsuarios();
   }, []);
 
   const handleInputChange = (e) => {
@@ -47,37 +108,77 @@ const GestionUsuarios = () => {
     }));
   };
 
-  const handleGuardarUsuario = (e) => {
+  const handleGuardarUsuario = async (e) => {
     e.preventDefault();
-    console.log("Guardando usuario:", nuevoUsuario);
-    console.log("Modo edición:", modoEdicion);
-    console.log("Índice editar:", indiceEditar);
-    console.log("Usuario seleccionado:", usuarioSeleccionado);
+    console.log("🔄 [GestionUsuarios] Guardando usuario:", nuevoUsuario);
+    console.log("🔄 [GestionUsuarios] Modo edición:", modoEdicion);
+    console.log("🔄 [GestionUsuarios] Usuario seleccionado:", usuarioSeleccionado);
     
     const esValido = validarUsuario(nuevoUsuario);
     if (!esValido) return;
     
-    if (modoEdicion && usuarioSeleccionado !== null && indiceEditar !== null) {
-      console.log("Actualizando usuario en índice:", indiceEditar);
-      const usuarioActualizado = UserService.update(usuarioSeleccionado.id, nuevoUsuario);
-      if (usuarioActualizado) {
-        const usuariosActualizados = UserService.getAll();
-        setUsuarios(usuariosActualizados);
-        console.log("Usuario actualizado exitosamente");
+    setLoading(true);
+    
+    try {
+      if (modoEdicion && usuarioSeleccionado) {
+        console.log("🔄 [GestionUsuarios] Actualizando usuario:", usuarioSeleccionado.id);
+        
+        // Mapear datos del frontend al formato de la API
+        const roleId = obtenerIdRol(nuevoUsuario.role);
+        console.log('🔄 [GestionUsuarios] Rol seleccionado:', nuevoUsuario.role, '→ RoleId:', roleId);
+        
+        const datosActualizacion = {
+          nombre: nuevoUsuario.firstName,
+          apellido: nuevoUsuario.lastName,
+          email: nuevoUsuario.email,
+          tipoDocumento: nuevoUsuario.documentType,
+          documento: nuevoUsuario.documentNumber,
+          roleId: roleId,
+          estado: usuarioSeleccionado.estado // Mantener el estado actual
+        };
+        
+        console.log('🔄 [GestionUsuarios] Datos completos de actualización:', JSON.stringify(datosActualizacion, null, 2));
+        
+        const result = await userApiService.updateUser(usuarioSeleccionado.id, datosActualizacion);
+        
+        if (result.success) {
+          console.log("✅ [GestionUsuarios] Usuario actualizado exitosamente");
+          updateSuccess('usuario');
+          await cargarUsuarios(); // Recargar la lista
+          console.log("🔄 [GestionUsuarios] Usuarios recargados después de la actualización");
+        } else {
+          console.error("❌ [GestionUsuarios] Error al actualizar usuario:", result.message);
+          updateError(result.message);
+          return;
       }
     } else {
-      console.log("Creando nuevo usuario");
-      const nuevoUsuarioCreado = UserService.create(nuevoUsuario);
-      if (nuevoUsuarioCreado) {
-        const usuariosActualizados = UserService.getAll();
-        setUsuarios(usuariosActualizados);
+        console.log("🔄 [GestionUsuarios] Creando nuevo usuario");
+        
+        // Mapear datos del frontend al formato de la API
+        const datosCreacion = {
+          nombre: nuevoUsuario.firstName,
+          apellido: nuevoUsuario.lastName,
+          email: nuevoUsuario.email,
+          password: nuevoUsuario.password,
+          tipoDocumento: nuevoUsuario.documentType,
+          documento: nuevoUsuario.documentNumber,
+          roleId: obtenerIdRol(nuevoUsuario.role)
+        };
+        
+        const result = await userApiService.createUser(datosCreacion);
+        
+        if (result.success) {
+          console.log("✅ [GestionUsuarios] Usuario creado exitosamente");
+          createSuccess('usuario');
+          await cargarUsuarios(); // Recargar la lista
+        } else {
+          console.error("❌ [GestionUsuarios] Error al crear usuario:", result.message);
+          createError(result.message);
+          return;
+        }
       }
-    }
-    if (modoEdicion) {
-      updateSuccess('usuario');
-    } else {
-      createSuccess('usuario');
-    }
+      
+      // Limpiar formulario y cerrar modal
     setModoEdicion(false);
     setUsuarioSeleccionado(null);
     setIndiceEditar(null);
@@ -90,49 +191,126 @@ const GestionUsuarios = () => {
       email: "",
       role: "usuario"
     });
+      
+    } catch (error) {
+      console.error("💥 [GestionUsuarios] Error general al guardar usuario:", error);
+      const errorMessage = modoEdicion ? 'Error al actualizar usuario' : 'Error al crear usuario';
+      if (modoEdicion) {
+        updateError(errorMessage);
+      } else {
+        createError(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleToggleEstado = (usuario) => {
-    const nuevoEstado = usuario.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
-    console.log("handleToggleEstado: Intentando cambiar estado para usuario:", usuario.id, "a", nuevoEstado);
-    Swal.fire({
+  // Función auxiliar para obtener el ID del rol
+  const obtenerIdRol = (nombreRol) => {
+    const rolesMap = {
+      'administrador': 1,
+      'empleado': 2,
+      'cliente': 3,
+      'usuario': 3, // Por defecto cliente
+      'admin': 1,
+      'employee': 2,
+      'customer': 3
+    };
+    const rolId = rolesMap[nombreRol?.toLowerCase()] || 3;
+    console.log('🔄 [GestionUsuarios] Mapeando rol:', nombreRol, '→ ID:', rolId);
+    return rolId;
+  };
+
+  // Función auxiliar para obtener el nombre del rol desde el ID
+  const obtenerNombreRol = (idRol) => {
+    const rolesMap = {
+      1: 'administrador',
+      2: 'empleado', 
+      3: 'cliente'
+    };
+    const nombreRol = rolesMap[idRol] || 'cliente';
+    console.log('🔄 [GestionUsuarios] Mapeando ID de rol:', idRol, '→ Nombre:', nombreRol);
+    return nombreRol;
+  };
+
+  const handleToggleEstado = async (usuario) => {
+    // Manejar tanto boolean como string para el estado
+    const estadoActual = typeof usuario.estado === 'boolean' ? usuario.estado : usuario.estado?.toLowerCase() === "activo";
+    const nuevoEstado = !estadoActual;
+    const nuevoEstadoTexto = nuevoEstado ? "activo" : "inactivo";
+    console.log("🔄 [GestionUsuarios] Intentando cambiar estado para usuario:", usuario.id, "a", nuevoEstadoTexto);
+    
+    const result = await Swal.fire({
       title: "¿Estás seguro?",
-      text: `¿Deseas cambiar el estado de ${usuario.firstName} ${usuario.lastName} a ${nuevoEstado}?`,
+      text: `¿Deseas cambiar el estado de ${usuario.firstName} ${usuario.lastName} a ${nuevoEstadoTexto}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, cambiar estado",
       cancelButtonText: "Cancelar"
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const usuarioActualizado = UserService.update(usuario.id, { estado: nuevoEstado });
-        if (usuarioActualizado) {
-          const usuariosActualizados = UserService.getAll();
-          setUsuarios(usuariosActualizados);
-          console.log("handleToggleEstado: Usuarios actualizados después de cambio de estado:", usuariosActualizados);
-          Swal.fire("¡Éxito!", `El estado del usuario ha sido cambiado a ${nuevoEstado}.`, "success");
-        } else {
-          console.error("handleToggleEstado: Fallo al actualizar el usuario en UserService.");
-          Swal.fire("Error", "No se pudo actualizar el estado del usuario.", "error");
-        }
-      }
     });
+    
+      if (result.isConfirmed) {
+      setLoading(true);
+      try {
+        // Mapear datos para la actualización
+        const datosActualizacion = {
+          nombre: usuario.firstName,
+          apellido: usuario.lastName,
+          email: usuario.email,
+          tipoDocumento: usuario.documentType,
+          documento: usuario.documentNumber,
+          roleId: obtenerIdRol(usuario.role),
+          estado: nuevoEstado
+        };
+        
+        const updateResult = await userApiService.updateUser(usuario.id, datosActualizacion);
+        
+        if (updateResult.success) {
+          console.log("✅ [GestionUsuarios] Estado del usuario actualizado exitosamente");
+          console.log("🔄 [GestionUsuarios] Recargando usuarios después del cambio de estado...");
+          await cargarUsuarios(); // Recargar la lista
+          console.log("✅ [GestionUsuarios] Usuarios recargados después del cambio de estado");
+          Swal.fire("¡Éxito!", `El estado del usuario ha sido cambiado a ${nuevoEstadoTexto}.`, "success");
+        } else {
+          console.error("❌ [GestionUsuarios] Error al actualizar estado:", updateResult.message);
+          Swal.fire("Error", updateResult.message || "No se pudo actualizar el estado del usuario.", "error");
+        }
+      } catch (error) {
+        console.error("💥 [GestionUsuarios] Error general al cambiar estado:", error);
+        Swal.fire("Error", "No se pudo actualizar el estado del usuario.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  const handleDelete = (usuario) => {
-    deleteConfirm('usuario').then((result) => {
+  const handleDelete = async (usuario) => {
+    console.log("🔄 [GestionUsuarios] Usuario a eliminar:", usuario);
+    
+    const result = await deleteConfirm('usuario');
       if (result.isConfirmed) {
-        const eliminado = UserService.delete(usuario.id);
-        if (eliminado) {
-          const usuariosActualizados = UserService.getAll();
-          setUsuarios(usuariosActualizados);
+      setLoading(true);
+      try {
+        console.log("🔄 [GestionUsuarios] Confirmado, eliminando usuario:", usuario.id);
+        const deleteResult = await userApiService.deleteUser(usuario.id);
+        
+        if (deleteResult.success) {
+          console.log("✅ [GestionUsuarios] Usuario eliminado exitosamente");
           deleteSuccess('usuario');
+          await cargarUsuarios(); // Recargar la lista
         } else {
-          deleteError('usuario');
+          console.error("❌ [GestionUsuarios] Error al eliminar usuario:", deleteResult.message);
+          deleteError(deleteResult.message);
         }
+      } catch (error) {
+        console.error("💥 [GestionUsuarios] Error general al eliminar usuario:", error);
+        deleteError('Error al eliminar usuario');
+      } finally {
+        setLoading(false);
       }
-    });
+    }
   };
 
   function normalizarTexto(texto) {
@@ -207,22 +385,59 @@ const GestionUsuarios = () => {
           />
 
           <div className="flex gap-3">
-            <button className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap" onClick={handleAbrirCrear}>
+            <button 
+              className="btn btn-primary px-4 py-2 text-sm rounded-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={handleAbrirCrear}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Cargando...
+                </>
+              ) : (
+                <>
               <i className="bi bi-plus-square"></i> Crear Usuario
+                </>
+              )}
             </button>
           </div>
         </div>
 
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="text-gray-600">Cargando usuarios...</span>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="text-red-600 mb-2">
+                <i className="bi bi-exclamation-triangle text-2xl"></i>
+              </div>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button 
+                onClick={cargarUsuarios}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Reintentar
+              </button>
+            </div>
+          </div>
+        ) : (
         <TablaUsuarios
           usuarios={usuariosPagina}
           handleDelete={handleDelete}
           onVer={handleVer}
           onEditar={handleEditar}
           onToggleEstado={handleToggleEstado}
-          deshabilitarAcciones={mostrarModal || mostrarModalVer}
+            deshabilitarAcciones={mostrarModal || mostrarModalVer || loading}
           mostrarBusqueda={false}
           mostrarPaginacion={false}
         />
+        )}
 
         <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
           <div className="text-sm text-gray-700">
@@ -285,9 +500,17 @@ const GestionUsuarios = () => {
                 <button
                   type="button"
                   onClick={handleGuardarUsuario}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
+                  disabled={loading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {modoEdicion ? "Guardar Cambios" : "Registrar Usuario"}
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
+                      {modoEdicion ? "Guardando..." : "Registrando..."}
+                    </>
+                  ) : (
+                    modoEdicion ? "Guardar Cambios" : "Registrar Usuario"
+                  )}
                 </button>
               </div>
             </div>

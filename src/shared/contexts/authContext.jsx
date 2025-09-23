@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import authApiService from '../../features/auth/services/authApiService.js';
+import userApiService from '../../features/auth/services/userApiService.js';
 
 // Crear el contexto de autenticación
 const AuthContext = createContext();
@@ -7,7 +9,26 @@ const AuthContext = createContext();
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+    console.error('useAuth debe ser usado dentro de un AuthProvider');
+    // Retornar valores por defecto en lugar de lanzar error
+    return {
+      user: null,
+      loading: false,
+      login: async () => ({ success: false, message: 'Contexto no disponible' }),
+      logout: () => {},
+      updateUser: async () => ({ success: false, message: 'Contexto no disponible' }),
+      isAuthenticated: () => false,
+      hasRole: () => false,
+      hasAnyRole: () => false,
+      hasPermission: () => false,
+      isAdmin: () => false,
+      isEmployee: () => false,
+      isClient: () => false,
+      setToken: () => {},
+      getToken: () => null,
+      removeToken: () => {},
+      getUser: () => null
+    };
   }
   return context;
 };
@@ -55,31 +76,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-          const decoded = decodeToken(token);
-          if (decoded && decoded.exp > Math.floor(Date.now() / 1000)) {
-            setUser(decoded);
-          } else {
-            // Token expirado
-            localStorage.removeItem(TOKEN_KEY);
-            localStorage.removeItem('currentUser'); // Limpiar datos antiguos
-          }
+        // Usar el servicio de autenticación real
+        if (authApiService.isAuthenticated()) {
+          const currentUser = authApiService.getCurrentUser();
+          setUser(currentUser);
         } else {
-          // Migrar datos antiguos si existen
-          const oldUser = localStorage.getItem('currentUser');
-          if (oldUser) {
-            const userData = JSON.parse(oldUser);
-            const token = generateToken(userData);
-            localStorage.setItem(TOKEN_KEY, token);
-            setUser(decodeToken(token));
-            localStorage.removeItem('currentUser'); // Limpiar datos antiguos
-          }
+          // Limpiar datos si no está autenticado
+          setUser(null);
         }
       } catch (error) {
         console.error('Error al verificar el estado de autenticación:', error);
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem('currentUser');
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -91,63 +98,93 @@ export const AuthProvider = ({ children }) => {
   // Función para iniciar sesión con email y password
   const login = async (email, password) => {
     try {
-      const usuarios = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-
-      const usuarioEncontrado = usuarios.find(
-        user => user.email === email && user.password === password
-      );
-
-      if (!usuarioEncontrado) {
-        return { success: false, message: "Credenciales inválidas" };
-      }
-
-      // Generar token JWT
-      const token = generateToken(usuarioEncontrado);
-      const userData = decodeToken(token);
-
-      setUser(userData);
-      localStorage.setItem(TOKEN_KEY, token);
+      setLoading(true);
+      console.log('🔐 [AuthContext] Iniciando login...');
       
-      // Limpiar datos antiguos
-      localStorage.removeItem('currentUser');
-
-      return { success: true, user: userData };
+      // Usar el servicio de autenticación real
+      const result = await authApiService.login({ email, password });
+      
+      console.log('📥 [AuthContext] Resultado del login:', result);
+      
+      if (result.success) {
+        console.log('✅ [AuthContext] Login exitoso, actualizando estado del usuario:', result.user);
+        setUser(result.user);
+        console.log('✅ [AuthContext] Estado del usuario actualizado en el contexto');
+        return { success: true, user: result.user, message: result.message };
+      } else {
+        console.log('❌ [AuthContext] Login falló:', result.message);
+        return { success: false, message: result.message };
+      }
     } catch (error) {
-      console.error('Error en login:', error);
+      console.error('💥 [AuthContext] Error en login:', error);
       return { success: false, message: "Error al iniciar sesión" };
+    } finally {
+      setLoading(false);
     }
   };
 
   // Función para cerrar sesión
   const logout = () => {
+    // Usar el servicio de autenticación real
+    authApiService.logout();
     setUser(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('currentUser'); // Limpiar datos antiguos
   };
 
   // Función para actualizar datos del usuario
-  const updateUser = (updatedUserData) => {
-    const updatedUser = { ...user, ...updatedUserData };
-    const token = generateToken(updatedUser);
-    const decodedUser = decodeToken(token);
-    
-    setUser(decodedUser);
-    localStorage.setItem(TOKEN_KEY, token);
+  const updateUser = async (updatedUserData) => {
+    try {
+      setLoading(true);
+      
+      // Usar el servicio de usuarios real
+      const result = await userApiService.updateProfile(updatedUserData);
+      
+      if (result.success) {
+        setUser(result.user);
+        return { success: true, user: result.user, message: result.message };
+      } else {
+        return { success: false, message: result.message };
+      }
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+      return { success: false, message: "Error al actualizar usuario" };
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Verificar si el usuario está autenticado
   const isAuthenticated = () => {
-    return user !== null;
+    return authApiService.isAuthenticated();
   };
 
   // Verificar si el usuario tiene un rol específico
   const hasRole = (role) => {
-    return user && user.role === role;
+    return user && (user.rol === role || user.role === role);
   };
 
   // Verificar si el usuario tiene uno de varios roles
   const hasAnyRole = (roles) => {
-    return user && roles.includes(user.role);
+    return user && (roles.includes(user.rol) || roles.includes(user.role));
+  };
+
+  // Verificar permisos específicos
+  const hasPermission = (resource, action) => {
+    return authApiService.hasPermission(resource, action);
+  };
+
+  // Verificar si es administrador
+  const isAdmin = () => {
+    return authApiService.isAdmin();
+  };
+
+  // Verificar si es empleado
+  const isEmployee = () => {
+    return authApiService.isEmployee();
+  };
+
+  // Verificar si es cliente
+  const isClient = () => {
+    return authApiService.isClient();
   };
 
   // Funciones compatibles con authData
@@ -178,6 +215,10 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     hasRole,
     hasAnyRole,
+    hasPermission,
+    isAdmin,
+    isEmployee,
+    isClient,
     // Funciones compatibles con authData
     setToken,
     getToken,

@@ -52,6 +52,7 @@ const alertService = {
 
   // Alerta de carga con spinner personalizado
   loading: (title = "Cargando...", options = {}) => {
+    const text = options.text || title;
     return Swal.fire({
       title: title,
       allowOutsideClick: false,
@@ -60,7 +61,7 @@ const alertService = {
       html: `
         <div class="flex flex-col items-center justify-center">
           <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-gray-600 mb-4"></div>
-          <p class="text-gray-600">${title}</p>
+          <p class="text-gray-600">${text}</p>
         </div>
       `,
       ...customConfig,

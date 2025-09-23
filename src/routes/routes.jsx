@@ -52,6 +52,10 @@ import CrearSolicitudPage from '../features/landing/pages/CrearSolicitudPage';
 // Componentes de prueba
 import TestSincronizacion from '../components/TestSincronizacion';
 import TestSimple from '../components/TestSimple';
+import TestApiConnection from '../components/TestApiConnection';
+import TestAuthIntegration from '../components/TestAuthIntegration';
+import TestConnection from '../components/TestConnection';
+import TestAuthState from '../components/TestAuthState';
 import SolicitudesCitas from '../features/dashboard/pages/solicitudesCitas/SolicitudesCitas';
 
 const AppRoutes = () => {
@@ -123,6 +127,10 @@ const AppRoutes = () => {
       {/* Rutas de prueba para sincronización */}
       <Route path="/test-sync" element={<TestSincronizacion />} />
       <Route path="/test-simple" element={<TestSimple />} />
+      <Route path="/test-api" element={<TestApiConnection />} />
+      <Route path="/test-auth" element={<TestAuthIntegration />} />
+      <Route path="/test-connection" element={<TestConnection />} />
+      <Route path="/test-auth-state" element={<TestAuthState />} />
 
       {/* Redirecciones para compatibilidad con URLs antiguas */}
       <Route path="/pages/cesionMarca" element={<Navigate to="/pages/cesion-marca" replace />} />

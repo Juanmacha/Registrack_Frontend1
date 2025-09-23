@@ -21,19 +21,32 @@ const FormularioUsuario = ({
 
   // Cargar roles activos del sistema
   useEffect(() => {
-    const roles = JSON.parse(localStorage.getItem("roles_mock")) || [];
-    const rolesActivos = roles.filter(rol => rol.estado === "Activo");
+    // Roles por defecto según la documentación de la API
+    const rolesPorDefecto = [
+      { id: 1, nombre: 'administrador', descripcion: 'Administrador del sistema' },
+      { id: 2, nombre: 'empleado', descripcion: 'Empleado de la empresa' },
+      { id: 3, nombre: 'cliente', descripcion: 'Cliente de la empresa' }
+    ];
+    
+    // Intentar cargar roles desde localStorage (si existen)
+    const rolesLocal = JSON.parse(localStorage.getItem("roles_mock")) || [];
+    const rolesActivos = rolesLocal.length > 0 ? 
+      rolesLocal.filter(rol => rol.estado === "Activo") : 
+      rolesPorDefecto;
+    
     setRolesDisponibles(rolesActivos);
   }, []);
 
   useEffect(() => {
     if (modoEdicion && usuarioEditar) {
+      console.log('🔄 [FormularioUsuario] Cargando datos para edición:', usuarioEditar);
       handleInputChange({ target: { name: "documentType", value: usuarioEditar.documentType } });
       handleInputChange({ target: { name: "documentNumber", value: usuarioEditar.documentNumber } });
       handleInputChange({ target: { name: "firstName", value: usuarioEditar.firstName } });
       handleInputChange({ target: { name: "lastName", value: usuarioEditar.lastName } });
       handleInputChange({ target: { name: "email", value: usuarioEditar.email } });
       handleInputChange({ target: { name: "role", value: usuarioEditar.role } });
+      console.log('🔄 [FormularioUsuario] Rol cargado para edición:', usuarioEditar.role);
     }
     // eslint-disable-next-line
   }, [modoEdicion, usuarioEditar]);
@@ -108,6 +121,7 @@ const FormularioUsuario = ({
 
   // Modificar handleInputChange para validar en tiempo real
   const handleInputChangeRealtime = (e) => {
+    console.log('🔄 [FormularioUsuario] Campo cambiado:', e.target.name, 'Valor:', e.target.value);
     handleInputChange(e);
     if (!modoEdicion) {
       validarCampos();

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiUser, BiIdCard, BiEnvelope, BiLock, BiUserCheck, BiShow, BiHide, BiLeftArrowAlt } from "react-icons/bi";
-import { UserService, initializeMockData } from "../../../utils/mockDataService.js";
+import authApiService from "../services/authApiService.js";
+import alertService from "../../../utils/alertService";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -88,33 +89,28 @@ const Register = () => {
     }
 
     try {
-      initializeMockData();
-
-      // Validar que el email no exista
-      const existingUser = UserService.getByEmail(formData.email);
-      if (existingUser) {
-        setErrors({ general: "El email ya está registrado. Por favor, usa otro email." });
-        return;
-      }
-
-      // Crear nuevo usuario
-      const newUser = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        documentType: formData.documentType,
-        documentNumber: formData.documentNumber,
+      // Usar el servicio de autenticación real
+      const result = await authApiService.register({
+        tipoDocumento: formData.documentType,
+        documento: formData.documentNumber,
+        nombre: formData.firstName,
+        apellido: formData.lastName,
         email: formData.email,
         password: formData.password,
-        role: "Cliente", // Por defecto, los nuevos usuarios son clientes
-        estado: "activo"
-      };
+        roleId: 3 // Cliente por defecto
+      });
 
-      const createdUser = UserService.create(newUser);
-
-      if (createdUser) {
+      if (result.success) {
+        // Mostrar alerta de registro exitoso
+        await alertService.success(
+          "¡Registro exitoso!",
+          "Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.",
+          { confirmButtonText: "Ir al Login" }
+        );
+        
         navigate("/login");
       } else {
-        setErrors({ general: "Error al crear la cuenta. Por favor, intenta de nuevo." });
+        setErrors({ general: result.message || "Error al crear la cuenta. Por favor, intenta de nuevo." });
       }
     } catch (error) {
       console.error("Error en registro:", error);

@@ -7,12 +7,9 @@ import './styles/alertAnimations.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import App from './App.jsx'
-import { PaymentProvider } from './shared/contexts/PaymentContext'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <PaymentProvider>
-      <App />
-    </PaymentProvider>
+    <App />
   </StrictMode>,
 )

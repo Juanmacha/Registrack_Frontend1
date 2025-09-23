@@ -15,8 +15,9 @@ const NavBarLanding = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Usar el contexto de autenticación unificado
-  const { user, logout: contextLogout } = useAuth();
+  // Usar el contexto de autenticación unificado con verificación de seguridad
+  const authContext = useAuth();
+  const { user, logout: contextLogout } = authContext || { user: null, logout: () => {} };
   const isLanding = location.pathname === "/";
 
   const handleLogout = async () => {
