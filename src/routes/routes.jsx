@@ -8,6 +8,7 @@ import Profile from '../features/auth/pages/profile';
 import ForgotPassword from '../features/auth/pages/forgotPassword';
 import ResetPassword from '../features/auth/pages/resetPassword';
 import CodigoRecuperacion from '../features/auth/pages/codigoRecuperacion';
+import ApiTest from '../components/ApiTest';
 
 import Dashboard from '../features/dashboard/pages/dashAdmin/dashboard';
 import Pagos from '../features/dashboard/pages/pagos/pagos';
@@ -65,6 +66,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/profile" element={<Profile />} />
       <Route path='/editProfile' element={<EditarProfile/>}/>
+      <Route path="/api-test" element={<ApiTest />} />
 
       {/* Páginas individuales de servicios */}
       <Route path="/pages/cesion-marca" element={<Cesion />} />

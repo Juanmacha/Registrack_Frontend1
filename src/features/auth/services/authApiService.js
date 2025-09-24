@@ -22,7 +22,10 @@ const authApiService = {
       if (response.success || response.mensaje) {
         // Guardar token y datos del usuario
         const token = response.data?.token || response.token;
-        const user = response.data?.usuario || response.usuario || response.user;
+        let user = response.data?.usuario || response.usuario || response.user;
+        
+        // ✅ Los roles ahora están correctos en la base de datos
+        // No se necesita corrección adicional
         
         console.log('✅ Login exitoso, guardando datos:', { 
           token: token ? 'Presente' : 'Ausente', 
@@ -393,7 +396,8 @@ const authApiService = {
       }
     };
 
-    const userRole = user.rol || user.role;
+    const userRole = user.rol?.nombre || user.rol || user.role;
+    console.log('🔍 [AuthApiService] Verificando permisos:', { userRole, user });
     const userPermissions = rolePermissions[userRole];
     if (!userPermissions) return false;
 
@@ -406,19 +410,34 @@ const authApiService = {
   // Verificar si es administrador
   isAdmin: () => {
     const user = authApiService.getCurrentUser();
-    return user && (user.rol === 'administrador' || user.role === 'administrador');
+    if (!user) return false;
+    
+    // Verificar tanto el formato antiguo como el nuevo
+    const userRole = user.rol?.nombre || user.rol || user.role;
+    console.log('🔍 [AuthApiService] Verificando si es admin:', { userRole, user });
+    return userRole === 'administrador';
   },
 
   // Verificar si es empleado
   isEmployee: () => {
     const user = authApiService.getCurrentUser();
-    return user && (user.rol === 'empleado' || user.role === 'empleado' || authApiService.isAdmin());
+    if (!user) return false;
+    
+    // Verificar tanto el formato antiguo como el nuevo
+    const userRole = user.rol?.nombre || user.rol || user.role;
+    console.log('🔍 [AuthApiService] Verificando si es empleado:', { userRole, user });
+    return userRole === 'empleado' || authApiService.isAdmin();
   },
 
   // Verificar si es cliente
   isClient: () => {
     const user = authApiService.getCurrentUser();
-    return user && (user.rol === 'cliente' || user.role === 'cliente');
+    if (!user) return false;
+    
+    // Verificar tanto el formato antiguo como el nuevo
+    const userRole = user.rol?.nombre || user.rol || user.role;
+    console.log('🔍 [AuthApiService] Verificando si es cliente:', { userRole, user });
+    return userRole === 'cliente';
   }
 };
 

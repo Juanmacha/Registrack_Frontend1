@@ -143,7 +143,12 @@ const Register = () => {
             {/* Error Message */}
             {errors.general && (
               <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm text-center">{errors.general}</p>
+                <p className="text-red-600 text-sm text-center">
+                  {typeof errors.general === 'string' ? errors.general : 
+                   errors.general?.message || 
+                   errors.general?.error || 
+                   'Error al crear la cuenta. Por favor, intenta de nuevo.'}
+                </p>
               </div>
             )}
 
