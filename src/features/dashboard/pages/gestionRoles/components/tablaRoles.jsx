@@ -1,7 +1,5 @@
 import React from "react";
 import eliminarRol from "./eliminarRol";
-// import { getEstadoBadge } from "../services/rolesG"; // Removed this import
-import { RoleService } from "../../../../../utils/mockDataService";
 
 const CustomCheckbox = ({ isChecked, onChange }) => {
   return (
@@ -15,7 +13,7 @@ const CustomCheckbox = ({ isChecked, onChange }) => {
   );
 };
 
-const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onToggleEstado }) => {
+const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onToggleEstado, loadRoles }) => {
   // Removed local toggleEstado function
 
   // Contar permisos activos
@@ -95,7 +93,7 @@ const TablaRoles = ({ roles, setRolEditable, setRolSeleccionado, setRoles, onTog
                       </button>
                       <button
                         className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 flex items-center justify-center h-10 w-10 border border-gray-300 transition-all duration-200"
-                        onClick={() => eliminarRol(index, roles, setRoles)}
+                        onClick={() => eliminarRol(rol.id, roles, setRoles, loadRoles)}
                         title="Eliminar rol"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

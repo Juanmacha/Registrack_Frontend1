@@ -20,11 +20,13 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones, 
         <thead className="text-left text-sm text-gray-500 bg-gray-50">
           <tr>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center">Nombre Completo</th>
+            <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden sm:table-cell">Tipo Doc</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden sm:table-cell">Documento</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden lg:table-cell">Email</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden xl:table-cell">Nit Empresa</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden lg:table-cell">Marca</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden xl:table-cell">T. Persona</th>
+            <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center hidden lg:table-cell">Origen</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center">Estado</th>
             <th className="px-3 sm:px-6 py-3 sm:py-4 font-bold text-center">Acciones</th>
           </tr>
@@ -40,15 +42,27 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones, 
                     />
                     <div className="text-left">
                       <div className="font-medium">{c.nombre} {c.apellido}</div>
-                      <div className="text-xs text-gray-500 sm:hidden">{c.documento}</div>
+                      <div className="text-xs text-gray-500 sm:hidden">{c.tipoDocumento} - {c.documento}</div>
                     </div>
                   </div>
                 </td>
+                <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden sm:table-cell">{c.tipoDocumento}</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden sm:table-cell">{c.documento}</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden lg:table-cell">{c.email}</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden xl:table-cell">{c.nitEmpresa}</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden lg:table-cell">{c.marca}</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden xl:table-cell">{c.tipoPersona}</td>
+                <td className="px-3 sm:px-6 py-3 sm:py-4 text-center hidden lg:table-cell">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    c.origen === 'solicitud' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : c.origen === 'directo' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-purple-100 text-purple-800'
+                  }`}>
+                    {c.origen === 'solicitud' ? 'Solicitud' : c.origen === 'directo' ? 'Directo' : 'Importado'}
+                  </span>
+                </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center">
                   <CustomCheckbox
                     isChecked={c.estado === 'Activo'}
@@ -85,7 +99,7 @@ const TablaClientes = ({ clientes, onVer, onToggleEstado, deshabilitarAcciones, 
             ))
           ) : (
             <tr>
-              <td colSpan="12" className="text-center py-4 text-sm text-gray-500">
+              <td colSpan="10" className="text-center py-4 text-sm text-gray-500">
                 No hay clientes registrados.
               </td>
             </tr>

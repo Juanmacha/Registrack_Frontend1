@@ -16,12 +16,21 @@ const DetalleRolModal = ({ rol, onClose, modelosDisponibles }) => {
       usuarios: "Usuarios",
       empleados: "Empleados", 
       clientes: "Clientes",
-      ventas: "Ventas",
-      pagos: "Pagos",
+      empresas: "Empresas",
+      servicios: "Servicios",
+      solicitudes: "Solicitudes",
       citas: "Citas",
+      pagos: "Pagos",
       roles: "Roles",
-      reportes: "Reportes",
-      configuracion: "Configuración"
+      permisos: "Permisos",
+      privilegios: "Privilegios",
+      seguimiento: "Seguimiento",
+      archivos: "Archivos",
+      tipo_archivos: "Tipos de Archivo",
+      formularios: "Formularios",
+      detalles_orden: "Detalles de Orden",
+      detalles_procesos: "Detalles de Procesos",
+      servicios_procesos: "Servicios y Procesos"
     };
 
     return Object.entries(permisos).map(([recurso, permisosRecurso]) => ({

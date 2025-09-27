@@ -54,10 +54,12 @@ import CrearSolicitudPage from '../features/landing/pages/CrearSolicitudPage';
 import TestSincronizacion from '../components/TestSincronizacion';
 import TestSimple from '../components/TestSimple';
 import TestApiConnection from '../components/TestApiConnection';
+import TestForgotPassword from '../components/TestForgotPassword';
 import TestAuthIntegration from '../components/TestAuthIntegration';
 import TestConnection from '../components/TestConnection';
 import TestAuthState from '../components/TestAuthState';
 import SolicitudesCitas from '../features/dashboard/pages/solicitudesCitas/SolicitudesCitas';
+import SolicitudesCitasApi from '../features/dashboard/pages/solicitudesCitas/SolicitudesCitasApi';
 
 const AppRoutes = () => {
   return (
@@ -107,6 +109,7 @@ const AppRoutes = () => {
         <Route path="empleados" element={<Empleados />} />
         <Route path='servicios' element={<Servicios/>}/>
         <Route path="solicitudesCitas" element={<SolicitudesCitas />} />
+        <Route path="solicitudesCitas-api" element={<SolicitudesCitasApi />} />
       </Route>
 
       {/* ✅ Redirección temporal por compatibilidad */}
@@ -130,6 +133,7 @@ const AppRoutes = () => {
       <Route path="/test-sync" element={<TestSincronizacion />} />
       <Route path="/test-simple" element={<TestSimple />} />
       <Route path="/test-api" element={<TestApiConnection />} />
+      <Route path="/test-forgot-password" element={<TestForgotPassword />} />
       <Route path="/test-auth" element={<TestAuthIntegration />} />
       <Route path="/test-connection" element={<TestConnection />} />
       <Route path="/test-auth-state" element={<TestAuthState />} />

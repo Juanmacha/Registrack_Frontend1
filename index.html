@@ -19,6 +19,153 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Filtro de errores de extensiones - Se ejecuta antes de React -->
+    <script>
+      // Filtro global de errores de extensiones del navegador - VERSIÓN AGRESIVA
+      (function() {
+        // Guardar funciones originales
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleLog = console.log;
+        
+        // Función para detectar errores de extensiones - MÁS AGRESIVA
+        function isExtensionError(message) {
+          if (typeof message !== 'string') return false;
+          
+          return (
+            // Errores de extensiones de escritura/IA
+            (message.includes('permission error') && 
+             (message.includes('pathPrefix') || message.includes('reqInfo'))) ||
+            
+            // Errores de extensiones de generación de contenido
+            (message.includes('code: 403') && 
+             (message.includes('generate') || message.includes('tone') || message.includes('writing'))) ||
+            
+            // Errores de extensiones de integración de sitios
+            (message.includes('site_integration') || message.includes('template_list')) ||
+            
+            // Errores de extensiones de Chrome
+            (message.includes('chrome-extension://') && message.includes('403')) ||
+            
+            // Errores de extensiones de Grammarly, LanguageTool, etc.
+            (message.includes('grammarly') || message.includes('languagetool') || message.includes('whisk')) ||
+            
+            // Errores específicos de extensiones con pathPrefix
+            (message.includes('pathPrefix: \'/generate\'') || 
+             message.includes('pathPrefix: \'/writing\'') || 
+             message.includes('pathPrefix: \'/site_integration\'')) ||
+            
+            // Errores con reqInfo y pathPrefix
+            (message.includes('reqInfo:') && message.includes('pathPrefix:')) ||
+            
+            // Errores de background.js de extensiones
+            (message.includes('background.js') && message.includes('permission error')) ||
+            
+            // NUEVOS PATRONES AGRESIVOS
+            message.includes('Uncaught (in promise) Object') ||
+            message.includes('code: 403') ||
+            message.includes('msg: \'permission error\'') ||
+            message.includes('error: \'exceptions.UserAuthError\'') ||
+            message.includes('handled: false') ||
+            message.includes('httpError: false') ||
+            message.includes('httpStatus: 200') ||
+            message.includes('httpStatusText: ""') ||
+            message.includes('message: "permission error"') ||
+            message.includes('name: "i"') ||
+            message.includes('originalError: {name: \'Error\'') ||
+            message.includes('stack: \'Error: permission error') ||
+            message.includes('at te.handleRes') ||
+            message.includes('at Te.handleRes') ||
+            message.includes('background.js:4644') ||
+            message.includes('background.js:4556') ||
+            message.includes('[[Prototype]]: Object') ||
+            message.includes('Understand this error')
+          );
+        }
+        
+        // Filtrar console.error - MÁS AGRESIVO
+        console.error = function(...args) {
+          const message = args[0]?.toString() || '';
+          if (isExtensionError(message)) {
+            // No hacer nada, simplemente ignorar
+            return;
+          }
+          originalConsoleError.apply(console, args);
+        };
+        
+        // Filtrar console.warn - MÁS AGRESIVO
+        console.warn = function(...args) {
+          const message = args[0]?.toString() || '';
+          if (isExtensionError(message)) {
+            // No hacer nada, simplemente ignorar
+            return;
+          }
+          originalConsoleWarn.apply(console, args);
+        };
+        
+        // Filtrar console.log - MÁS AGRESIVO
+        console.log = function(...args) {
+          const message = args[0]?.toString() || '';
+          if (isExtensionError(message)) {
+            // No hacer nada, simplemente ignorar
+            return;
+          }
+          originalConsoleLog.apply(console, args);
+        };
+        
+        // Filtrar errores no capturados - MÁS AGRESIVO
+        window.addEventListener('error', function(event) {
+          const message = event.message || event.error?.message || '';
+          if (isExtensionError(message)) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true); // Usar capture phase
+        
+        // Filtrar promesas rechazadas - MÁS AGRESIVO
+        window.addEventListener('unhandledrejection', function(event) {
+          const message = event.reason?.message || event.reason?.toString() || '';
+          const reason = event.reason;
+          
+          if (isExtensionError(message) || 
+              (reason && typeof reason === 'object' && 
+               (reason.code === 403 && reason.reqInfo && reason.reqInfo.pathPrefix))) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          }
+        }, true); // Usar capture phase
+        
+        // Interceptar console.error globalmente
+        Object.defineProperty(window, 'console', {
+          value: {
+            ...console,
+            error: function(...args) {
+              const message = args[0]?.toString() || '';
+              if (isExtensionError(message)) return;
+              originalConsoleError.apply(console, args);
+            },
+            warn: function(...args) {
+              const message = args[0]?.toString() || '';
+              if (isExtensionError(message)) return;
+              originalConsoleWarn.apply(console, args);
+            },
+            log: function(...args) {
+              const message = args[0]?.toString() || '';
+              if (isExtensionError(message)) return;
+              originalConsoleLog.apply(console, args);
+            }
+          }
+        });
+        
+        console.log('🛡️ Filtro AGRESIVO de errores de extensiones activado');
+      })();
+    </script>
+    
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,163 +1,114 @@
-import React, { useState } from 'react';
-import authApiService from '../features/auth/services/authApiService.js';
-import userApiService from '../features/auth/services/userApiService.js';
-import apiService from '../shared/services/apiService.js';
+import { useState } from 'react';
 import API_CONFIG from '../shared/config/apiConfig.js';
 
 const TestApiConnection = () => {
-  const [testResults, setTestResults] = useState([]);
+  const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const addResult = (test, success, message, data = null) => {
-    setTestResults(prev => [...prev, {
-      test,
-      success,
-      message,
-      data,
-      timestamp: new Date().toLocaleTimeString()
-    }]);
-  };
-
-  const testApiConnection = async () => {
+  const testConnection = async () => {
     setLoading(true);
-    setTestResults([]);
-
+    setResult('Probando conexión...');
+    
     try {
-      // Test 1: Verificar conexión básica
-      addResult('Conexión API', true, 'Iniciando pruebas de conexión...');
-
-      // Test 2: Probar endpoint de servicios (público)
-      try {
-        const servicesResponse = await apiService.get(API_CONFIG.ENDPOINTS.SERVICES);
-        addResult('Servicios Públicos', true, 'Servicios obtenidos correctamente', servicesResponse);
-      } catch (error) {
-        addResult('Servicios Públicos', false, `Error: ${error.message}`);
-      }
-
-      // Test 3: Probar login con credenciales de admin
-      try {
-        const loginResponse = await authApiService.login({
-          email: 'admin@registrack.com',
-          password: 'Admin123!'
-        });
-        
-        if (loginResponse.success) {
-          addResult('Login Admin', true, 'Login exitoso', loginResponse.user);
-          
-          // Test 4: Probar obtener usuarios (requiere autenticación)
-          try {
-            const usersResponse = await userApiService.getAllUsers();
-            addResult('Obtener Usuarios', usersResponse.success, usersResponse.message, usersResponse.users);
-          } catch (error) {
-            addResult('Obtener Usuarios', false, `Error: ${error.message}`);
-          }
-
-          // Test 5: Probar logout
-          try {
-            const logoutResponse = authApiService.logout();
-            addResult('Logout', logoutResponse.success, logoutResponse.message);
-          } catch (error) {
-            addResult('Logout', false, `Error: ${error.message}`);
-          }
-        } else {
-          addResult('Login Admin', false, loginResponse.message);
+      console.log('🧪 [TestApiConnection] Probando conexión a:', API_CONFIG.BASE_URL);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/servicios`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
-      } catch (error) {
-        addResult('Login Admin', false, `Error: ${error.message}`);
+      });
+      
+      console.log('🧪 [TestApiConnection] Respuesta:', response);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setResult(`✅ Conexión exitosa! Status: ${response.status}\nDatos: ${JSON.stringify(data, null, 2)}`);
+      } else {
+        setResult(`❌ Error HTTP: ${response.status} ${response.statusText}`);
       }
-
-      // Test 6: Probar registro de usuario
-      try {
-        const registerResponse = await authApiService.register({
-          tipoDocumento: 'CC',
-          documento: '12345678',
-          nombre: 'Test',
-          apellido: 'Usuario',
-          email: 'test@example.com',
-          password: 'Test123!',
-          roleId: 3
-        });
-        addResult('Registro Usuario', registerResponse.success, registerResponse.message, registerResponse.user);
-      } catch (error) {
-        addResult('Registro Usuario', false, `Error: ${error.message}`);
-      }
-
     } catch (error) {
-      addResult('Error General', false, `Error inesperado: ${error.message}`);
+      console.error('🧪 [TestApiConnection] Error:', error);
+      setResult(`💥 Error de conexión: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const clearResults = () => {
-    setTestResults([]);
+  const testForgotPassword = async () => {
+    setLoading(true);
+    setResult('Probando forgot-password...');
+    
+    try {
+      console.log('🧪 [TestApiConnection] Probando forgot-password...');
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/usuarios/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          correo: 'test@example.com'
+        })
+      });
+      
+      console.log('🧪 [TestApiConnection] Respuesta forgot-password:', response);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setResult(`✅ Forgot-password exitoso! Status: ${response.status}\nDatos: ${JSON.stringify(data, null, 2)}`);
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+        setResult(`❌ Error forgot-password: ${response.status} ${response.statusText}\nDatos: ${JSON.stringify(errorData, null, 2)}`);
+      }
+    } catch (error) {
+      console.error('🧪 [TestApiConnection] Error forgot-password:', error);
+      setResult(`💥 Error forgot-password: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="container mt-4">
-      <div className="card">
-        <div className="card-header">
-          <h3>🧪 Prueba de Conexión con API</h3>
-          <p className="text-muted">URL: {API_CONFIG.BASE_URL}</p>
+    <div className="p-6 bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">🧪 Prueba de Conexión API</h2>
+      
+      <div className="space-y-4">
+        <div>
+          <p className="text-sm text-gray-600 mb-2">
+            <strong>URL Base:</strong> {API_CONFIG.BASE_URL}
+          </p>
+          <p className="text-sm text-gray-600 mb-4">
+            <strong>Timeout:</strong> {API_CONFIG.TIMEOUT}ms
+          </p>
         </div>
-        <div className="card-body">
-          <div className="mb-3">
-            <button 
-              className="btn btn-primary me-2" 
-              onClick={testApiConnection}
-              disabled={loading}
-            >
-              {loading ? 'Probando...' : 'Iniciar Pruebas'}
-            </button>
-            <button 
-              className="btn btn-secondary" 
-              onClick={clearResults}
-              disabled={loading}
-            >
-              Limpiar Resultados
-            </button>
+        
+        <div className="flex space-x-4">
+          <button
+            onClick={testConnection}
+            disabled={loading}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+          >
+            {loading ? 'Probando...' : 'Probar Conexión General'}
+          </button>
+          
+          <button
+            onClick={testForgotPassword}
+            disabled={loading}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50"
+          >
+            {loading ? 'Probando...' : 'Probar Forgot Password'}
+          </button>
+        </div>
+        
+        {result && (
+          <div className="mt-4 p-4 bg-gray-100 rounded">
+            <h3 className="font-semibold mb-2">Resultado:</h3>
+            <pre className="text-sm whitespace-pre-wrap">{result}</pre>
           </div>
-
-          {testResults.length > 0 && (
-            <div className="mt-3">
-              <h5>Resultados de las Pruebas:</h5>
-              <div className="table-responsive">
-                <table className="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>Prueba</th>
-                      <th>Estado</th>
-                      <th>Mensaje</th>
-                      <th>Hora</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {testResults.map((result, index) => (
-                      <tr key={index} className={result.success ? 'table-success' : 'table-danger'}>
-                        <td>{result.test}</td>
-                        <td>
-                          <span className={`badge ${result.success ? 'bg-success' : 'bg-danger'}`}>
-                            {result.success ? '✅ Éxito' : '❌ Error'}
-                          </span>
-                        </td>
-                        <td>{result.message}</td>
-                        <td>{result.timestamp}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {loading && (
-            <div className="text-center mt-3">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Probando conexión...</span>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

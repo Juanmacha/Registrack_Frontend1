@@ -1,4 +1,5 @@
 import apiService from '../../../shared/services/apiService.js';
+import { clearAllAuthData } from '../../../shared/utils/authCleanup.js';
 import API_CONFIG from '../../../shared/config/apiConfig.js';
 
 // Servicio de autenticación que consume la API real
@@ -35,8 +36,17 @@ const authApiService = {
         });
         
         if (token && user) {
+          // Limpiar datos de autenticación anteriores antes de guardar los nuevos
+          console.log('🧹 [AuthApiService] Limpiando datos de autenticación anteriores...');
+          clearAllAuthData(false); // Limpiar sin logs verbosos
+          
+          // Guardar nuevos datos de autenticación
+          console.log('💾 [AuthApiService] Guardando nuevos datos de autenticación...');
           localStorage.setItem('authToken', token);
+          localStorage.setItem('token', token); // Para compatibilidad
           localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('user', JSON.stringify(user)); // Para compatibilidad
+          localStorage.setItem('userData', JSON.stringify(user)); // Para compatibilidad
           localStorage.setItem('isAuthenticated', 'true');
 
           return {
@@ -138,127 +148,44 @@ const authApiService = {
     }
   },
 
-  // Recuperar contraseña
+  // Recuperar contraseña - Implementación con nueva API
   forgotPassword: async (email) => {
+    console.log('🔐 [AuthApiService] Iniciando forgotPassword para:', email);
+    console.log('🔗 [AuthApiService] Endpoint:', API_CONFIG.ENDPOINTS.FORGOT_PASSWORD);
+    console.log('🌐 [AuthApiService] URL completa:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FORGOT_PASSWORD}`);
+    
     try {
-      console.log('🔐 [ForgotPassword] Enviando petición sin autenticación para:', email);
-      console.log('🔗 [ForgotPassword] URL completa:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FORGOT_PASSWORD}`);
-      
-      console.log('🔄 [ForgotPassword] Llamando a apiService.postPublic...');
-      
-      // Usar el método público que no incluye token de autorización
+      console.log('📤 [AuthApiService] Enviando petición...');
       const response = await apiService.postPublic(API_CONFIG.ENDPOINTS.FORGOT_PASSWORD, {
         correo: email
       });
-
-      console.log('📥 [ForgotPassword] Respuesta del servidor recibida:', response);
-
-      // El servidor responde con status 200, así que es exitoso
-      // Verificar si hay mensaje de éxito en la respuesta
-      const isSuccess = response.success || 
-                       response.mensaje || 
-                       response.message || 
-                       response.data?.mensaje || 
-                       response.data?.message ||
-                       response.status === 200;
-
-      console.log('✅ [ForgotPassword] Procesando respuesta exitosa');
-
-      return {
-        success: isSuccess,
-        message: response.mensaje || 
-                response.message || 
-                response.data?.mensaje || 
-                response.data?.message || 
-                'Código de recuperación enviado exitosamente'
-      };
-    } catch (error) {
-      console.error('💥 [ForgotPassword] Error completo:', error);
-      console.error('Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        stack: error.stack
-      });
-      
-      let errorMessage = 'Error de conexión con el servidor';
-      
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.response?.data?.mensaje) {
-        errorMessage = error.response.data.mensaje;
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Error de permisos: El endpoint de recuperación de contraseña no está disponible o requiere configuración especial';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Endpoint no encontrado: Verifica que la API esté funcionando correctamente';
-      } else if (error.response?.status >= 500) {
-        errorMessage = 'Error interno del servidor: Intenta más tarde';
-      }
-
-      return {
-        success: false,
-        message: errorMessage
-      };
-    }
-  },
-
-  // Recuperar contraseña - Versión alternativa con fetch directo
-  forgotPasswordDirect: async (email) => {
-    try {
-      console.log('🔐 [ForgotPasswordDirect] Enviando petición directa con fetch para:', email);
-      
-      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.FORGOT_PASSWORD}`;
-      console.log('🔗 [ForgotPasswordDirect] URL completa:', url);
-      
-      // Crear un timeout de 30 segundos
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          correo: email
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      
-      console.log('📥 [ForgotPasswordDirect] Status de respuesta:', response.status);
-      console.log('📥 [ForgotPasswordDirect] Response ok:', response.ok);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('💥 [ForgotPasswordDirect] Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('📥 [ForgotPasswordDirect] Datos de respuesta:', data);
+      console.log('📥 [AuthApiService] Respuesta recibida:', response);
 
       return {
         success: true,
-        message: data.mensaje || data.message || 'Código de recuperación enviado exitosamente'
+        message: response.mensaje || response.message || 'Código de recuperación enviado'
       };
     } catch (error) {
-      console.error('💥 [ForgotPasswordDirect] Error:', error);
+      console.log('💥 [AuthApiService] Error capturado:', error);
+      console.log('💥 [AuthApiService] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
-      let errorMessage = 'Error al enviar la solicitud';
+      // Manejar diferentes tipos de errores
+      let errorMessage = 'Error al enviar solicitud';
       
-      if (error.name === 'AbortError') {
-        errorMessage = 'La solicitud tardó demasiado tiempo. Intenta de nuevo.';
-      } else if (error.message.includes('403')) {
-        errorMessage = 'Error de permisos. El endpoint no está disponible.';
-      } else if (error.message.includes('404')) {
-        errorMessage = 'Endpoint no encontrado. Verifica la configuración.';
-      } else if (error.message.includes('500')) {
-        errorMessage = 'Error interno del servidor. Intenta más tarde.';
-      } else {
-        errorMessage = error.message || 'Error de conexión';
+      if (error.response?.status === 404) {
+        errorMessage = 'El email no está registrado en el sistema.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Error interno del servidor. Por favor, intenta de nuevo más tarde.';
+      } else if (error.response?.data?.mensaje) {
+        errorMessage = error.response.data.mensaje;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
       }
       
       return {
@@ -300,9 +227,12 @@ const authApiService = {
 
   // Cerrar sesión
   logout: () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('isAuthenticated');
+    console.log('🚪 [AuthApiService] Iniciando logout...');
+    
+    // Usar la utilidad centralizada para limpiar datos de autenticación
+    clearAllAuthData();
+    
+    console.log('✅ [AuthApiService] Logout completado');
     
     return {
       success: true,

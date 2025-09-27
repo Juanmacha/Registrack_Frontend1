@@ -1,7 +1,7 @@
 // Configuración de la API
 const API_CONFIG = {
   // URL base de la API desplegada
-  BASE_URL: 'https://api-registrack.onrender.com',
+  BASE_URL: 'https://api-registrack-2.onrender.com',
   
   // Endpoints de autenticación
   ENDPOINTS: {
@@ -31,10 +31,16 @@ const API_CONFIG = {
     CANCEL_REQUEST: (id) => `/api/gestion-solicitudes/anular/${id}`,
     
     // Citas
-    APPOINTMENTS: '/api/citas',
-    RESCHEDULE_APPOINTMENT: (id) => `/api/citas/${id}/reprogramar`,
-    CANCEL_APPOINTMENT: (id) => `/api/citas/${id}/anular`,
-    APPOINTMENTS_REPORT: '/api/citas/reporte/excel',
+    APPOINTMENTS: '/api/gestion-citas',
+    RESCHEDULE_APPOINTMENT: (id) => `/api/gestion-citas/${id}/reprogramar`,
+    CANCEL_APPOINTMENT: (id) => `/api/gestion-citas/${id}/anular`,
+    APPOINTMENTS_REPORT: '/api/gestion-citas/reporte/excel',
+    
+    // Solicitudes de Citas
+    APPOINTMENT_REQUESTS: '/api/gestion-solicitud-cita',
+    CREATE_APPOINTMENT_REQUEST: '/api/gestion-solicitud-cita',
+    MY_APPOINTMENT_REQUESTS: '/api/gestion-solicitud-cita/mis-solicitudes',
+    MANAGE_APPOINTMENT_REQUEST: (id) => `/api/gestion-solicitud-cita/${id}/gestionar`,
     
     // Seguimiento
     TRACKING: '/api/seguimiento',
@@ -52,6 +58,8 @@ const API_CONFIG = {
     // Clientes
     CLIENTS: '/api/gestion-clientes',
     CLIENT_BY_ID: (id) => `/api/gestion-clientes/${id}`,
+    CLIENT_UPDATE_EMPRESA: (id) => `/api/gestion-clientes/${id}/empresa`,
+    CLIENT_UPDATE_USUARIO: (id) => `/api/gestion-clientes/${id}/usuario`,
     CLIENTS_REPORT: '/api/gestion-clientes/reporte/excel',
     
     // Pagos
@@ -70,7 +78,22 @@ const API_CONFIG = {
     // Formularios dinámicos
     DYNAMIC_FORMS: '/api/formularios-dinamicos',
     FORM_BY_SERVICE: (id) => `/api/formularios-dinamicos/servicio/${id}`,
-    VALIDATE_FORM: '/api/formularios-dinamicos/validar'
+    VALIDATE_FORM: '/api/formularios-dinamicos/validar',
+    
+    // Empleados
+    EMPLOYEES: '/api/gestion-empleados',
+    EMPLOYEE_BY_ID: (id) => `/api/gestion-empleados/${id}`,
+    EMPLOYEE_ESTADO: (id) => `/api/gestion-empleados/${id}/estado`,
+    EMPLOYEES_REPORT: '/api/gestion-empleados/reporte/excel',
+    
+    // Roles y Permisos
+    ROLES: '/api/gestion-roles',
+    ROLE_BY_ID: (id) => `/api/gestion-roles/${id}`,
+    ROLE_STATE: (id) => `/api/gestion-roles/${id}/state`,
+    PERMISSIONS: '/api/gestion-permisos',
+    PERMISSION_BY_ID: (id) => `/api/gestion-permisos/${id}`,
+    PRIVILEGES: '/api/gestion-privilegios',
+    PRIVILEGE_BY_ID: (id) => `/api/gestion-privilegios/${id}`
   },
   
   // Configuración de headers por defecto

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import TablaClientes from "./components/tablaClientes";
-import ProfileModal from "../../../../shared/components/ProfileModal";
+import VerDetalleCliente from "./components/verDetalleCliente";
 import FormularioCliente from "./components/FormularioCliente";
-import { ClientService, initializeMockData } from "../../../../utils/mockDataService.js";
+import clientesApiService from "../../services/clientesApiService";
 import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
@@ -12,7 +12,7 @@ import DownloadButton from "../../../../shared/components/DownloadButton";
 
 const CAMPOS_REQUERIDOS = [
   "tipoDocumento",
-  "documento", "nombre", "apellido", "email", "telefono",
+  "documento", "nombre", "apellido", "email",
   "nitEmpresa", "nombreEmpresa", "marca", "tipoPersona"
 ];
 
@@ -26,15 +26,32 @@ const GestionClientes = () => {
   const [mostrarModalFormulario, setMostrarModalFormulario] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [clienteEditar, setClienteEditar] = useState(null);
+  const [cargando, setCargando] = useState(false);
   const rolUsuario = "administrador"; // Cambia a "empleado" para probar restricción
   const clientesPorPagina = 5;
   const { createSuccess, updateSuccess, createError, updateError } = useNotification();
 
   useEffect(() => {
-    initializeMockData();
-    const clientesData = ClientService.getAll();
-    setClientes(clientesData);
+    cargarClientes();
   }, []);
+
+  // Función para cargar clientes desde la API
+  const cargarClientes = async () => {
+    try {
+      setCargando(true);
+      console.log('🔄 [GestionClientes] Cargando clientes desde la API...');
+      
+      const clientesData = await clientesApiService.getAllClientes();
+      setClientes(clientesData);
+      
+      console.log('✅ [GestionClientes] Clientes cargados:', clientesData);
+    } catch (error) {
+      console.error('❌ [GestionClientes] Error al cargar clientes:', error);
+      createError('Error al cargar clientes: ' + error.message);
+    } finally {
+      setCargando(false);
+    }
+  };
 
   function normalizarTexto(texto) {
     return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -61,86 +78,138 @@ const GestionClientes = () => {
     setDeshabilitarAcciones(true);
   };
 
-  const handleToggleEstado = (idx) => {
+  const handleToggleEstado = async (idx) => {
+    try {
     const cliente = clientesPagina[idx];
     const nuevoEstado = cliente.estado === "Activo" ? "Inactivo" : "Activo";
-    const clienteActualizado = ClientService.update(cliente.id, { estado: nuevoEstado });
-    if (clienteActualizado) {
-      const clientesActualizados = ClientService.getAll();
-      setClientes(clientesActualizados);
+      
+      console.log(`🔄 [GestionClientes] Cambiando estado del cliente ${cliente.id} a: ${nuevoEstado}`);
+      
+      await clientesApiService.changeClienteEstado(cliente.id, nuevoEstado);
+      
+      console.log('✅ [GestionClientes] Estado cambiado en API');
+      updateSuccess('Estado del cliente actualizado correctamente');
+      
+      // Recargar datos
+      await cargarClientes();
+      
+    } catch (error) {
+      console.error('❌ [GestionClientes] Error al cambiar estado:', error);
+      updateError('Error al cambiar estado: ' + error.message);
     }
   };
 
-  const handleCrearCliente = () => {
-    setModoEdicion(false);
-    setClienteEditar(null);
-    setMostrarModalFormulario(true);
-  };
   const handleEditarCliente = (idx) => {
+    console.log('🔄 [GestionClientes] Editando cliente en índice:', idx);
+    console.log('🔄 [GestionClientes] Cliente a editar:', clientesPagina[idx]);
+    console.log('🔄 [GestionClientes] ID del cliente:', clientesPagina[idx]?.id);
+    
     setModoEdicion(true);
     setClienteEditar(clientesPagina[idx]);
     setMostrarModalFormulario(true);
   };
   const handleGuardarCliente = async (nuevoCliente) => {
     try {
+      console.log(`🔄 [GestionClientes] ${modoEdicion ? 'Actualizando' : 'Creando'} cliente:`, nuevoCliente);
+      console.log(`🔄 [GestionClientes] Modo edición:`, modoEdicion);
+      console.log(`🔄 [GestionClientes] ID del cliente:`, nuevoCliente.id);
+      
+      let clienteGuardado;
+      
       if (modoEdicion) {
-        // Editar
-        const actualizado = ClientService.update(nuevoCliente.id, nuevoCliente);
-        if (actualizado) {
-          setClientes(ClientService.getAll());
-          setMostrarModalFormulario(false);
-          updateSuccess('cliente');
-        } else {
-          updateError('cliente');
+        // Editar cliente existente - usar endpoints específicos según la documentación
+        console.log('🔄 [GestionClientes] Actualizando cliente con endpoints específicos...');
+        
+        // 1. Actualizar datos del usuario asociado al cliente
+        const usuarioData = {
+          nombre: nuevoCliente.nombre,
+          apellido: nuevoCliente.apellido,
+          correo: nuevoCliente.email,
+          tipo_documento: nuevoCliente.tipoDocumento,
+          documento: nuevoCliente.documento
+        };
+        
+        // Filtrar solo campos que tienen valores
+        const usuarioDataFiltrado = Object.fromEntries(
+          Object.entries(usuarioData).filter(([key, value]) => value !== undefined && value !== '')
+        );
+        
+        if (Object.keys(usuarioDataFiltrado).length > 0) {
+          console.log('🔄 [GestionClientes] Actualizando datos del usuario...');
+          await clientesApiService.updateUsuarioCliente(nuevoCliente.id, usuarioDataFiltrado);
+          console.log('✅ [GestionClientes] Usuario actualizado en API');
         }
-      } else {
-        // Crear
-        const creado = ClientService.create(nuevoCliente);
-        if (creado) {
-          setClientes(ClientService.getAll());
-          setMostrarModalFormulario(false);
-          createSuccess('cliente');
-        } else {
-          createError('cliente');
+        
+        // 2. Actualizar datos de la empresa si hay cambios
+        if (nuevoCliente.id_empresa && (
+          nuevoCliente.direccionEmpresa || 
+          nuevoCliente.telefonoEmpresa || 
+          nuevoCliente.correoEmpresa ||
+          nuevoCliente.ciudadEmpresa ||
+          nuevoCliente.paisEmpresa
+        )) {
+          console.log('🔄 [GestionClientes] Actualizando datos de empresa...');
+          
+          const empresaData = {
+            id_empresa: nuevoCliente.id_empresa,
+            direccion: nuevoCliente.direccionEmpresa || '',
+            telefono: nuevoCliente.telefonoEmpresa || '',
+            email: nuevoCliente.correoEmpresa || '',
+            ciudad: nuevoCliente.ciudadEmpresa || '',
+            pais: nuevoCliente.paisEmpresa || ''
+          };
+          
+          await clientesApiService.updateEmpresaCliente(nuevoCliente.id, empresaData);
+          console.log('✅ [GestionClientes] Empresa actualizada en API');
         }
+        
+        // 3. Actualizar datos básicos del cliente (marca, tipo_persona, estado)
+        const clienteData = {
+          marca: nuevoCliente.marca,
+          tipoPersona: nuevoCliente.tipoPersona,
+          estado: nuevoCliente.estado
+        };
+        
+        clienteGuardado = await clientesApiService.updateCliente(nuevoCliente.id, clienteData);
+        console.log('✅ [GestionClientes] Cliente actualizado en API:', clienteGuardado);
+        
+        updateSuccess('Cliente, usuario y empresa actualizados correctamente');
+        } else {
+        // Crear nuevo cliente
+        clienteGuardado = await clientesApiService.createCliente(nuevoCliente);
+        console.log('✅ [GestionClientes] Cliente creado en API');
+        createSuccess('Cliente creado correctamente');
       }
+      
+      // Cerrar modal
+          setMostrarModalFormulario(false);
+      
+      // Recargar datos
+      await cargarClientes();
+      
     } catch (error) {
-      console.error("Error al guardar cliente:", error);
+      console.error("❌ [GestionClientes] Error al guardar cliente:", error);
       if (modoEdicion) {
-        updateError('cliente');
+        updateError('Error al actualizar cliente: ' + error.message);
       } else {
-        createError('cliente');
+        createError('Error al crear cliente: ' + error.message);
       }
     }
   };
 
-  const handleExportarExcel = () => {
-    const encabezados = [
-      "Tipo de persona", "Tipo de documento", "Número de documento", "Nombre", "Apellido", "Email", "Teléfono", "Estado", "NIT Empresa", "Nombre Empresa", "Marca"
-    ];
-    const datosExcel = clientesFiltrados.map((c) => ({
-      "Tipo de persona": c.tipoPersona,
-      "Tipo de documento": c.tipoDocumento,
-      "Número de documento": c.documento,
-      "Nombre": c.nombre,
-      "Apellido": c.apellido,
-      "Email": c.email,
-      "Teléfono": c.telefono,
-      "Estado": c.estado,
-      "NIT Empresa": c.nitEmpresa,
-      "Nombre Empresa": c.nombreEmpresa,
-      "Marca": c.marca
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(datosExcel, { header: encabezados });
-    worksheet["!cols"] = [
-      { wch: 12 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 18 }
-    ];
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Clientes");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "clientes.xlsx");
-    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
+  const handleExportarExcel = async () => {
+    try {
+      console.log('🔄 [GestionClientes] Descargando reporte Excel...');
+      
+      await clientesApiService.downloadReporteExcel();
+      
+      console.log('✅ [GestionClientes] Reporte Excel descargado');
+      createSuccess('Reporte Excel descargado exitosamente');
+      
+    } catch (error) {
+      console.error('❌ [GestionClientes] Error al descargar reporte Excel:', error);
+      createError('Error al descargar reporte: ' + error.message);
+    }
   };
 
   return (
@@ -159,14 +228,6 @@ const GestionClientes = () => {
           />
 
           <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
-            <button
-              className="btn btn-primary px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-md whitespace-nowrap flex-1 sm:flex-none"
-              onClick={handleCrearCliente}
-            >
-              <i className="bi bi-plus-square mr-1"></i> 
-              <span className="hidden sm:inline">Crear Cliente</span>
-              <span className="sm:hidden">Crear</span>
-            </button>
             <DownloadButton
               type="excel"
               onClick={handleExportarExcel}
@@ -175,6 +236,32 @@ const GestionClientes = () => {
           </div>
         </div>
 
+        {/* Mensaje informativo */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 mx-2 sm:mx-4">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <i className="bi bi-info-circle text-blue-500 text-lg"></i>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">
+                Los clientes se crean automáticamente
+              </h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Los clientes se crean automáticamente cuando los usuarios registrados hacen solicitudes de servicios. 
+                No es necesario crear clientes manualmente.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {cargando ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Cargando clientes...</p>
+            </div>
+          </div>
+        ) : (
         <TablaClientes
           clientes={clientesPagina}
           onVer={handleVer}
@@ -182,6 +269,7 @@ const GestionClientes = () => {
           deshabilitarAcciones={deshabilitarAcciones}
           onEditar={handleEditarCliente}
         />
+        )}
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 sm:px-4 py-3 bg-white border-t border-gray-200">
           <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
@@ -225,14 +313,13 @@ const GestionClientes = () => {
           </div>
         </div>
 
-        <ProfileModal
-          user={selectedCliente}
+        <VerDetalleCliente
+          cliente={selectedCliente}
           isOpen={mostrarModalVer}
           onClose={() => {
             setMostrarModalVer(false);
             setDeshabilitarAcciones(false);
           }}
-          onEdit={handleEditarCliente}
         />
         {mostrarModalFormulario && (
           <FormularioCliente

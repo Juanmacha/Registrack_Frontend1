@@ -3,6 +3,10 @@ import API_CONFIG from '../config/apiConfig.js';
 
 // Función para hacer peticiones HTTP usando fetch
 const makeHttpRequest = async (url, options = {}) => {
+  console.log('🔧 [makeHttpRequest] Iniciando petición HTTP...');
+  console.log('🔗 [makeHttpRequest] URL:', url);
+  console.log('⚙️ [makeHttpRequest] Options:', options);
+  
   const defaultOptions = {
     headers: {
       ...API_CONFIG.DEFAULT_HEADERS,
@@ -15,27 +19,75 @@ const makeHttpRequest = async (url, options = {}) => {
   };
 
   // Agregar token de autenticación si existe
-  const token = localStorage.getItem('authToken');
+  // Intentar ambas claves para compatibilidad
+  const token = localStorage.getItem('authToken') || localStorage.getItem('token');
   if (token) {
     defaultOptions.headers.Authorization = `Bearer ${token}`;
+    console.log('🔑 [makeHttpRequest] Token agregado');
+  } else {
+    console.log('🔓 [makeHttpRequest] Sin token (petición pública)');
   }
 
-  const response = await fetch(`${API_CONFIG.BASE_URL}${url}`, defaultOptions);
-  
-  if (!response.ok) {
-    const error = new Error(`HTTP error! status: ${response.status}`);
-    error.response = {
+  const fullUrl = `${API_CONFIG.BASE_URL}${url}`;
+  console.log('🌐 [makeHttpRequest] URL completa:', fullUrl);
+  console.log('📤 [makeHttpRequest] Enviando fetch...');
+
+  // Crear un AbortController para timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.log('⏰ [makeHttpRequest] Timeout alcanzado, cancelando petición...');
+    controller.abort();
+  }, API_CONFIG.TIMEOUT || 30000); // 30 segundos por defecto
+
+  try {
+    const response = await fetch(fullUrl, {
+      ...defaultOptions,
+      signal: controller.signal
+    });
+    
+    // Limpiar el timeout si la petición fue exitosa
+    clearTimeout(timeoutId);
+    console.log('📥 [makeHttpRequest] Respuesta recibida:', {
       status: response.status,
-      data: await response.json().catch(() => ({ error: 'Error desconocido' }))
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    if (!response.ok) {
+      console.log('❌ [makeHttpRequest] Error HTTP:', response.status);
+      const error = new Error(`HTTP error! status: ${response.status}`);
+      error.response = {
+        status: response.status,
+        data: await response.json().catch(() => ({ error: 'Error desconocido' }))
+      };
+      throw error;
+    }
+
+    const responseData = await response.json();
+    console.log('✅ [makeHttpRequest] Datos parseados:', responseData);
+
+    return {
+      data: responseData,
+      status: response.status,
+      statusText: response.statusText
     };
+  } catch (error) {
+    // Limpiar el timeout en caso de error
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      console.log('⏰ [makeHttpRequest] Petición cancelada por timeout');
+      const timeoutError = new Error('La petición tardó demasiado tiempo. Verifica tu conexión e intenta de nuevo.');
+      timeoutError.response = {
+        status: 408,
+        data: { error: 'Timeout de conexión' }
+      };
+      throw timeoutError;
+    }
+    
+    console.log('💥 [makeHttpRequest] Error en fetch:', error);
     throw error;
   }
-
-  return {
-    data: await response.json(),
-    status: response.status,
-    statusText: response.statusText
-  };
 };
 
 // Función para hacer peticiones con reintentos
@@ -47,6 +99,7 @@ const makeRequest = async (url, options = {}, retries = API_CONFIG.RETRY_ATTEMPT
     // Si el token expiró o es inválido, limpiar localStorage
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       localStorage.removeItem('currentUser');
       localStorage.removeItem('isAuthenticated');
       
@@ -112,7 +165,13 @@ export const apiService = {
 
   // POST request público (sin autenticación)
   postPublic: async (endpoint, data = {}, config = {}) => {
+    console.log('🌐 [ApiService] Iniciando postPublic...');
+    console.log('🔗 [ApiService] Endpoint:', endpoint);
+    console.log('📤 [ApiService] Data:', data);
+    console.log('🌐 [ApiService] URL completa:', `${API_CONFIG.BASE_URL}${endpoint}`);
+    
     try {
+      console.log('📡 [ApiService] Haciendo petición HTTP...');
       const response = await makeHttpRequest(endpoint, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -122,9 +181,15 @@ export const apiService = {
         },
         ...config
       });
+      console.log('✅ [ApiService] Petición exitosa, respuesta:', response);
       return response.data;
     } catch (error) {
-      console.error('💥 [postPublic] Error en petición pública:', error);
+      console.error('💥 [ApiService] Error en petición pública:', error);
+      console.error('💥 [ApiService] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       throw error;
     }
   },

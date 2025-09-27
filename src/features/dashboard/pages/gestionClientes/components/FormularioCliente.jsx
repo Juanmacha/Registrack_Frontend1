@@ -14,9 +14,13 @@ const FormularioCliente = ({
     nombre: "",
     apellido: "",
     email: "",
-    telefono: "",
     nitEmpresa: "",
     nombreEmpresa: "",
+    direccionEmpresa: "",
+    telefonoEmpresa: "",
+    correoEmpresa: "",
+    ciudadEmpresa: "",
+    paisEmpresa: "",
     marca: "",
     tipoPersona: "",
     estado: "Activo"
@@ -43,7 +47,6 @@ const FormularioCliente = ({
     if (!form.nombre || form.nombre.trim().length < 2) nuevosErrores.nombre = "El nombre es obligatorio y debe tener al menos 2 letras.";
     if (!form.apellido || form.apellido.trim().length < 2) nuevosErrores.apellido = "El apellido es obligatorio.";
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) nuevosErrores.email = "El email no es válido.";
-    if (!form.telefono || form.telefono.length < 7) nuevosErrores.telefono = "El teléfono es obligatorio y debe tener al menos 7 dígitos.";
     if (!form.nitEmpresa) nuevosErrores.nitEmpresa = "El NIT de la empresa es obligatorio.";
     if (!form.nombreEmpresa) nuevosErrores.nombreEmpresa = "El nombre de la empresa es obligatorio.";
     if (!form.marca) nuevosErrores.marca = "La marca es obligatoria.";
@@ -79,9 +82,13 @@ const FormularioCliente = ({
       nombre: "",
       apellido: "",
       email: "",
-      telefono: "",
       nitEmpresa: "",
       nombreEmpresa: "",
+      direccionEmpresa: "",
+      telefonoEmpresa: "",
+      correoEmpresa: "",
+      ciudadEmpresa: "",
+      paisEmpresa: "",
       marca: "",
       tipoPersona: "",
       estado: "Activo"
@@ -96,8 +103,8 @@ const FormularioCliente = ({
   // Determinar si el campo debe estar deshabilitado
   const isDisabled = (campo) => {
     if (rolUsuario === "administrador") return false;
-    // Empleado solo puede editar email y telefono
-    return !["email", "telefono"].includes(campo);
+    // Empleado solo puede editar email
+    return !["email"].includes(campo);
   };
 
   return (
@@ -117,7 +124,18 @@ const FormularioCliente = ({
         </div>
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="pt-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Sección de Información Personal */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-full mr-3">
+                <i className="bi bi-person text-blue-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800">Información Personal</h3>
+                <p className="text-sm text-blue-600">Datos del usuario y cliente</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tipo de Documento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -213,60 +231,6 @@ const FormularioCliente = ({
               />
               {mostrarError('email') && <p className="text-red-600 text-sm mt-1">{errores.email}</p>}
             </div>
-            {/* Teléfono */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-telephone text-gray-400 mr-2"></i>
-                Teléfono <span className="text-gray-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="telefono"
-                value={form.telefono}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('telefono') ? 'border-red-500' : 'border-gray-300'}`}
-                required
-                disabled={isDisabled("telefono")}
-              />
-              {mostrarError('telefono') && <p className="text-red-600 text-sm mt-1">{errores.telefono}</p>}
-            </div>
-            {/* NIT Empresa */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-building text-gray-400 mr-2"></i>
-                NIT Empresa <span className="text-gray-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="nitEmpresa"
-                value={form.nitEmpresa}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('nitEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
-                required
-                disabled={isDisabled("nitEmpresa")}
-              />
-              {mostrarError('nitEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.nitEmpresa}</p>}
-            </div>
-            {/* Nombre Empresa */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <i className="bi bi-building text-gray-400 mr-2"></i>
-                Nombre Empresa <span className="text-gray-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="nombreEmpresa"
-                value={form.nombreEmpresa}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('nombreEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
-                required
-                disabled={isDisabled("nombreEmpresa")}
-              />
-              {mostrarError('nombreEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.nombreEmpresa}</p>}
-            </div>
             {/* Marca */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -306,7 +270,147 @@ const FormularioCliente = ({
               </select>
               {mostrarError('tipoPersona') && <p className="text-red-600 text-sm mt-1">{errores.tipoPersona}</p>}
             </div>
+            </div>
           </div>
+
+          {/* Sección de Información de Empresa */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center mb-4">
+              <div className="bg-green-100 p-2 rounded-full mr-3">
+                <i className="bi bi-building text-green-600 text-lg"></i>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-green-800">Información de Empresa</h3>
+                <p className="text-sm text-green-600">Datos de la empresa asociada al cliente</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* NIT Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-building text-gray-400 mr-2"></i>
+                  NIT Empresa <span className="text-gray-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="nitEmpresa"
+                  value={form.nitEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('nitEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  required
+                  disabled={isDisabled("nitEmpresa")}
+                />
+                {mostrarError('nitEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.nitEmpresa}</p>}
+              </div>
+              {/* Nombre Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-building text-gray-400 mr-2"></i>
+                  Nombre Empresa <span className="text-gray-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="nombreEmpresa"
+                  value={form.nombreEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('nombreEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  required
+                  disabled={isDisabled("nombreEmpresa")}
+                />
+                {mostrarError('nombreEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.nombreEmpresa}</p>}
+              </div>
+              {/* Dirección Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-geo-alt text-gray-400 mr-2"></i>
+                  Dirección Empresa
+                </label>
+                <input
+                  type="text"
+                  name="direccionEmpresa"
+                  value={form.direccionEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('direccionEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isDisabled("direccionEmpresa")}
+                />
+                {mostrarError('direccionEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.direccionEmpresa}</p>}
+              </div>
+              {/* Teléfono Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-telephone text-gray-400 mr-2"></i>
+                  Teléfono Empresa
+                </label>
+                <input
+                  type="text"
+                  name="telefonoEmpresa"
+                  value={form.telefonoEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('telefonoEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isDisabled("telefonoEmpresa")}
+                />
+                {mostrarError('telefonoEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.telefonoEmpresa}</p>}
+              </div>
+              {/* Correo Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-envelope text-gray-400 mr-2"></i>
+                  Correo Empresa
+                </label>
+                <input
+                  type="email"
+                  name="correoEmpresa"
+                  value={form.correoEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('correoEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isDisabled("correoEmpresa")}
+                />
+                {mostrarError('correoEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.correoEmpresa}</p>}
+              </div>
+              {/* Ciudad Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-geo text-gray-400 mr-2"></i>
+                  Ciudad Empresa
+                </label>
+                <input
+                  type="text"
+                  name="ciudadEmpresa"
+                  value={form.ciudadEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Ej: Bogotá"
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('ciudadEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isDisabled("ciudadEmpresa")}
+                />
+                {mostrarError('ciudadEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.ciudadEmpresa}</p>}
+              </div>
+              {/* País Empresa */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <i className="bi bi-globe text-gray-400 mr-2"></i>
+                  País Empresa
+                </label>
+                <input
+                  type="text"
+                  name="paisEmpresa"
+                  value={form.paisEmpresa}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Ej: Colombia"
+                  className={`w-full px-3 py-2 border rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-blue-500 ${mostrarError('paisEmpresa') ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isDisabled("paisEmpresa")}
+                />
+                {mostrarError('paisEmpresa') && <p className="text-red-600 text-sm mt-1">{errores.paisEmpresa}</p>}
+              </div>
+            </div>
+          </div>
+
           {/* Footer */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500 flex items-center">

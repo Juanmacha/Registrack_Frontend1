@@ -231,9 +231,11 @@ const userApiService = {
       const response = await apiService.put(API_CONFIG.ENDPOINTS.USER_BY_ID(currentUser.id_usuario), {
         nombre: profileData.nombre,
         apellido: profileData.apellido,
-        correo: profileData.email,
+        correo: profileData.correo,
+        telefono: profileData.telefono,
         tipo_documento: profileData.tipoDocumento,
-        documento: profileData.documento
+        documento: profileData.documento,
+        contrasena: profileData.contrasena
       });
 
       if (response.success || response.mensaje) {

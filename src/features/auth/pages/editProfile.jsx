@@ -2,24 +2,31 @@ import React, { useEffect, useState } from "react";
 import {
   BiArrowBack, BiHide, BiShow
 } from "react-icons/bi";
-import authData from "../services/authData";
-import { mostrarMensajeExito } from "../../../utils/alerts";
+import { useAuth } from "../../../shared/contexts/authContext";
+import alertService from "../../../utils/alertService";
 import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
-  const [usuario, setUsuario] = useState(null);
+const EditProfile = () => {
+  const { user: usuario, updateUser } = useAuth();
   const [editMode, setEditMode] = useState(true);
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Nuevo estado para mostrar/ocultar confirmación
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = authData.getUser();
-    setUsuario(user);
-    setFormData({ ...user, password: "", confirmPassword: "" }); // Agregar confirmPassword
-  }, []);
+    if (usuario) {
+      setFormData({ 
+        ...usuario, 
+        password: "", 
+        confirmPassword: "",
+        firstName: usuario.nombre || usuario.firstName || '',
+        lastName: usuario.apellido || usuario.lastName || '',
+        email: usuario.correo || usuario.email || ''
+      });
+    }
+  }, [usuario]);
 
   const validate = (data = formData) => {
     const errs = {};
@@ -49,20 +56,51 @@ const Profile = () => {
     navigate("/profile");
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
     const errs = validate(formData);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    const updated = { ...usuario, ...formData };
-    if (!formData.password) delete updated.password;
-    delete updated.confirmPassword; // No guardar confirmPassword
-    localStorage.setItem("usuario", JSON.stringify(updated));
-    setUsuario(updated);
-    mostrarMensajeExito("Perfil actualizado correctamente");
-    navigate("/profile");
+
+    try {
+      const updatedData = {
+        nombre: formData.firstName,
+        apellido: formData.lastName,
+        correo: formData.email,
+        telefono: formData.phone || formData.telefono
+      };
+
+      // Solo incluir contraseña si se proporcionó
+      if (formData.password && formData.password.trim()) {
+        updatedData.contrasena = formData.password;
+      }
+
+      const result = await updateUser(updatedData);
+      
+      if (result.success) {
+        await alertService.success(
+          "¡Perfil actualizado!",
+          "Tus datos se han guardado correctamente.",
+          { confirmButtonText: "Entendido" }
+        );
+        navigate("/profile");
+      } else {
+        await alertService.error(
+          "Error",
+          result.message || "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+          { confirmButtonText: "Entendido" }
+        );
+      }
+    } catch (error) {
+      console.error('Error al guardar perfil:', error);
+      await alertService.error(
+        "Error",
+        "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+        { confirmButtonText: "Entendido" }
+      );
+    }
   };
 
   if (!usuario) return <div className="h-screen flex justify-center items-center">Cargando perfil...</div>;
@@ -224,4 +262,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default EditProfile;

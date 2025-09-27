@@ -205,10 +205,21 @@ const ProfileModal = ({ isOpen, onClose, user, onEdit }) => {
                 Estado
               </h3>
               <div className="flex items-center space-x-3">
-                <div className={`w-3 h-3 rounded-full ${user.estado ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                <span className={`font-medium ${user.estado ? 'text-green-700' : 'text-red-700'}`}>
-                  {user.estado ? 'Activo' : 'Inactivo'}
+                {(() => {
+                  // Manejar tanto booleanos como strings para el estado
+                  const isActive = typeof user.estado === 'boolean' 
+                    ? user.estado 
+                    : user.estado?.toLowerCase() === 'activo';
+                  
+                  return (
+                    <>
+                      <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className={`font-medium ${isActive ? 'text-green-700' : 'text-red-700'}`}>
+                        {isActive ? 'Activo' : 'Inactivo'}
                 </span>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           )}

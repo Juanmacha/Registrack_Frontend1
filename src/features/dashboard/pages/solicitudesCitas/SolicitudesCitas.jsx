@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TablaSolicitudesCitas from './TablaSolicitudesCitas';
-import { mockDataService } from '../../../../utils/mockDataService.js';
+import solicitudesCitasApiService from '../../services/solicitudesCitasApiService.js';
+import alertService from '../../../../utils/alertService.js';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -21,25 +22,23 @@ const SolicitudesCitas = () => {
 
   useEffect(() => {
     cargarSolicitudes();
-    
-    // Suscribirse a cambios en las solicitudes
-    const unsubscribe = mockDataService.DataChangeNotifier?.subscribe?.((dataType, action, data) => {
-      if (dataType === 'solicitudCita') {
-        cargarSolicitudes();
-      }
-    });
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
   }, []);
 
-  const cargarSolicitudes = () => {
+  const cargarSolicitudes = async () => {
     try {
-      const data = mockDataService.SolicitudCitaService.getAll();
-      setSolicitudes(data);
+      console.log('📋 [SolicitudesCitas] Cargando solicitudes desde la API...');
+      const result = await solicitudesCitasApiService.getAllSolicitudesCitas();
+      
+      if (result.success) {
+        console.log('✅ [SolicitudesCitas] Solicitudes cargadas:', result.data);
+        setSolicitudes(result.data || []);
+      } else {
+        console.error('❌ [SolicitudesCitas] Error al cargar solicitudes:', result.message);
+        await alertService.error('Error', result.message);
+      }
     } catch (error) {
-      console.error('Error al cargar solicitudes:', error);
+      console.error('💥 [SolicitudesCitas] Error al cargar solicitudes:', error);
+      await alertService.error('Error', 'Error al cargar las solicitudes de citas');
     }
   };
 
@@ -48,10 +47,18 @@ const SolicitudesCitas = () => {
   }
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
-    const texto = `${s.nombre} ${s.email} ${s.numeroDocumento} ${s.tipoSolicitud} ${s.estado}`;
+    // Estructura de datos según la API: cliente embebido, fecha_solicitada, etc.
+    const nombreCliente = s.cliente?.nombre || '';
+    const apellidoCliente = s.cliente?.apellido || '';
+    const emailCliente = s.cliente?.correo || '';
+    const tipo = s.tipo || '';
+    const estado = s.estado || '';
+    const descripcion = s.descripcion || '';
+    
+    const texto = `${nombreCliente} ${apellidoCliente} ${emailCliente} ${tipo} ${estado} ${descripcion}`;
     const cumpleBusqueda = normalizarTexto(texto).includes(normalizarTexto(busqueda));
     const cumpleEstado = !filterEstado || s.estado === filterEstado;
-    const cumpleTipo = !filterTipo || s.tipoSolicitud === filterTipo;
+    const cumpleTipo = !filterTipo || s.tipo === filterTipo;
     
     return cumpleBusqueda && cumpleEstado && cumpleTipo;
   });
@@ -73,18 +80,20 @@ const SolicitudesCitas = () => {
 
   const handleExportarExcel = () => {
     const encabezados = [
-      "Nombre", "Email", "Teléfono", "Tipo Documento", "Número Documento", "Tipo Solicitud", "Estado", "Fecha", "Mensaje"
+      "ID", "Fecha Solicitada", "Hora Solicitada", "Tipo", "Modalidad", "Estado", "Cliente", "Email", "Descripción", "Fecha Creación"
     ];
     const datosExcel = solicitudesFiltradas.map((s) => ({
-      "Nombre": s.nombre,
-      "Email": s.email,
-      "Teléfono": s.telefono,
-      "Tipo Documento": s.tipoDocumento,
-      "Número Documento": s.numeroDocumento,
-      "Tipo Solicitud": s.tipoSolicitud,
-      "Estado": s.estado,
-      "Fecha": new Date(s.fechaCreacion).toLocaleDateString(),
-      "Mensaje": s.mensaje
+      "ID": s.id || '',
+      "Fecha Solicitada": s.fecha_solicitada || '',
+      "Hora Solicitada": s.hora_solicitada || '',
+      "Tipo": s.tipo || '',
+      "Modalidad": s.modalidad || '',
+      "Estado": s.estado || '',
+      "Cliente": `${s.cliente?.nombre || ''} ${s.cliente?.apellido || ''}`.trim(),
+      "Email": s.cliente?.correo || '',
+      "Descripción": s.descripcion || '',
+      "Observaciones": s.observacion_admin || '',
+      "Fecha Creación": s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''
     }));
     const worksheet = XLSX.utils.json_to_sheet(datosExcel, { header: encabezados });
     worksheet["!cols"] = [
@@ -95,10 +104,10 @@ const SolicitudesCitas = () => {
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "solicitudes_citas.xlsx");
-    AlertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
+    alertService.success("¡Éxito!", "Archivo Excel descargado exitosamente.");
   };
 
-  const tiposSolicitud = [...new Set(solicitudes.map(s => s.tipoSolicitud))];
+  const tiposSolicitud = [...new Set(solicitudes.map(s => s.tipo).filter(tipo => tipo))];
 
   return (
     <div className="flex-1 flex justify-center">
@@ -229,20 +238,20 @@ const SolicitudesCitas = () => {
                     <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                       <div className="flex items-center space-x-2">
                         <img
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedSolicitud.nombre}`}
-                          alt={selectedSolicitud.nombre}
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedSolicitud.cliente?.nombre || 'Cliente'}`}
+                          alt={selectedSolicitud.cliente?.nombre || 'Cliente'}
                           className="w-10 h-10 rounded-full"
                         />
                         <div>
-                          <div className="font-medium text-gray-800 text-sm">{selectedSolicitud.nombre}</div>
-                          <div className="text-xs text-gray-500">{selectedSolicitud.email}</div>
+                          <div className="font-medium text-gray-800 text-sm">{selectedSolicitud.cliente?.nombre || 'N/A'}</div>
+                          <div className="text-xs text-gray-500">{selectedSolicitud.cliente?.correo || 'N/A'}</div>
                         </div>
                       </div>
                       <div className="pt-2 border-t border-gray-200 space-y-1 text-xs">
                         <div className="flex items-center space-x-2">
                           <i className="bi bi-card-text text-gray-400"></i>
                           <span className="text-gray-600">Documento:</span>
-                          <span className="font-medium text-gray-800">{selectedSolicitud.tipoDocumento} - {selectedSolicitud.numeroDocumento}</span>
+                          <span className="font-medium text-gray-800">{selectedSolicitud.cliente?.documento || 'N/A'}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <i className="bi bi-telephone text-gray-400"></i>
@@ -271,12 +280,12 @@ const SolicitudesCitas = () => {
                       <div className="flex items-center space-x-2">
                         <i className="bi bi-bookmark text-gray-400"></i>
                         <span className="text-gray-600">Tipo:</span>
-                        <span className="font-medium text-gray-800">{selectedSolicitud.tipoSolicitud}</span>
+                        <span className="font-medium text-gray-800">{selectedSolicitud.tipo}</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <i className="bi bi-calendar text-gray-400"></i>
                         <span className="text-gray-600">Fecha:</span>
-                        <span className="font-medium text-gray-800">{new Date(selectedSolicitud.fechaCreacion).toLocaleDateString()}</span>
+                        <span className="font-medium text-gray-800">{selectedSolicitud.fecha_solicitada}</span>
                       </div>
                     </div>
                   </div>
@@ -286,25 +295,25 @@ const SolicitudesCitas = () => {
                     <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Mensaje del Cliente</h3>
                     <div className="bg-gray-50 rounded-lg p-3">
                       <p className="text-gray-700 text-xs leading-relaxed">
-                        {selectedSolicitud.mensaje || "Sin mensaje"}
+                        {selectedSolicitud.descripcion || "Sin mensaje"}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Observaciones o Motivo de Rechazo */}
-                {(selectedSolicitud.observaciones || selectedSolicitud.motivoRechazo) && (
+                {selectedSolicitud.observacion_admin && (
                   <div className="mt-4">
                     <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                      {selectedSolicitud.observaciones ? 'Observaciones' : 'Motivo de Rechazo'}
+                      {selectedSolicitud.estado === 'Rechazada' ? 'Motivo de Rechazo' : 'Observaciones del Administrador'}
                     </h3>
                     <div className={`rounded-lg p-3 ${
-                      selectedSolicitud.observaciones ? 'bg-blue-50' : 'bg-red-50'
+                      selectedSolicitud.estado === 'Rechazada' ? 'bg-red-50' : 'bg-blue-50'
                     }`}>
                       <p className={`text-xs leading-relaxed ${
-                        selectedSolicitud.observaciones ? 'text-blue-700' : 'text-red-700'
+                        selectedSolicitud.estado === 'Rechazada' ? 'text-red-700' : 'text-blue-700'
                       }`}>
-                        {selectedSolicitud.observaciones || selectedSolicitud.motivoRechazo}
+                        {selectedSolicitud.observacion_admin}
                       </p>
                     </div>
                   </div>

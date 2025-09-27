@@ -29,7 +29,9 @@ const esLocale = {
   },
   noEventsText: 'No hay eventos para mostrar'
 };
-import { AppointmentService, EmployeeService } from "../../../../utils/mockDataService.js";
+import citasApiService from "../../services/citasApiService.js";
+import alertService from "../../../../utils/alertService.js";
+import { EmployeeService } from "../../../../utils/mockDataService.js";
 import DownloadButton from "../../../../shared/components/DownloadButton";
 import VerDetalleCita from "../gestionCitas/components/verDetallecita";
 import Swal from "sweetalert2";
@@ -49,6 +51,7 @@ const Calendario = () => {
   const [citaAReprogramar, setCitaAReprogramar] = useState(null);
   const [currentView, setCurrentView] = useState("dayGridMonth");
   const [busqueda, setBusqueda] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const calendarRef = useRef(null);
   const { isSidebarExpanded } = useSidebar();
   const [formData, setFormData] = useState({
@@ -68,26 +71,111 @@ const Calendario = () => {
   const [errores, setErrores] = useState({});
   const [touched, setTouched] = useState({});
 
-  useEffect(() => {
+  // Función para cargar citas desde la API
+  const cargarCitasDesdeAPI = async () => {
+    setIsLoading(true);
     try {
-      const storedEvents = JSON.parse(localStorage.getItem("citas")) || [];
-      let eventosValidos = storedEvents.filter(ev =>
-        ev && ev.start && ev.end && ev.id && ev.extendedProps
-      );
-      eventosValidos = eventosValidos.map(event => {
-        if (!event.id && event.extendedProps) {
-          const idUnico = `${event.extendedProps.cedula}_${event.start.split('T')[0]}_${event.start.split('T')[1]}`;
-          return { ...event, id: idUnico };
+      console.log('📅 [Calendario] Cargando citas desde la API...');
+      const result = await citasApiService.getAllCitas();
+      
+      if (result.success) {
+        console.log('✅ [Calendario] Citas cargadas desde API:', result.data);
+        console.log('📊 [Calendario] Análisis de estructura de datos:', {
+          isArray: Array.isArray(result.data),
+          length: Array.isArray(result.data) ? result.data.length : 'N/A',
+          firstItem: Array.isArray(result.data) && result.data.length > 0 ? result.data[0] : 'N/A',
+          firstItemKeys: Array.isArray(result.data) && result.data.length > 0 ? Object.keys(result.data[0]) : 'N/A'
+        });
+        
+        if (!Array.isArray(result.data) || result.data.length === 0) {
+          console.log('⚠️ [Calendario] No hay citas en la API');
+          setEvents([]);
+          return;
         }
-        return event;
-      });
-      if (eventosValidos.length > 0) {
-        setEvents(eventosValidos);
+        
+        // Convertir las citas de la API al formato de FullCalendar
+        const eventosCalendario = result.data.map((cita, index) => {
+          console.log(`📋 [Calendario] Procesando cita ${index + 1}:`, cita);
+          
+          const evento = {
+            id: cita.id_cita || cita.id,
+            title: `${cita.tipo || 'Sin tipo'} - ${cita.cliente?.nombre || cita.cliente?.nombre_completo || 'Cliente'}`,
+            start: `${cita.fecha}T${cita.hora_inicio}`,
+            end: `${cita.fecha}T${cita.hora_fin}`,
+            backgroundColor: getColorByEstado(cita.estado),
+            borderColor: getColorByEstado(cita.estado),
+            textColor: '#ffffff',
+            extendedProps: {
+              // Mapear datos de la API al formato que espera VerDetalleCita
+              id: cita.id_cita || cita.id,
+              nombre: cita.cliente?.nombre || cita.cliente?.nombre_completo || 'N/A',
+              apellido: cita.cliente?.apellido || '',
+              cedula: cita.cliente?.documento || cita.cliente?.cedula || 'N/A',
+              telefono: cita.cliente?.telefono || 'N/A',
+              email: cita.cliente?.email || cita.cliente?.correo || 'N/A',
+              tipoCita: cita.tipo || 'N/A',
+              horaInicio: cita.hora_inicio || 'N/A',
+              horaFin: cita.hora_fin || 'N/A',
+              asesor: cita.empleado?.nombre || cita.empleado?.nombre_completo || 'N/A',
+              detalle: cita.descripcion || cita.observacion || 'Sin detalle',
+              estado: cita.estado || 'N/A',
+              modalidad: cita.modalidad || 'N/A',
+              observacionAnulacion: cita.observacion_anulacion || '',
+              fecha: cita.fecha || 'N/A',
+              // Datos originales de la API para referencia
+              datosOriginales: cita,
+              cliente: cita.cliente,
+              empleado: cita.empleado,
+              // Datos adicionales de la solicitud original
+              observacionAdmin: cita.observacion_admin || '',
+              fechaSolicitada: cita.fecha_solicitada || '',
+              horaSolicitada: cita.hora_solicitada || ''
+            }
+          };
+          
+          console.log(`📅 [Calendario] Evento ${index + 1} creado:`, evento);
+          return evento;
+        });
+        
+        setEvents(eventosCalendario);
+        console.log('📅 [Calendario] Eventos del calendario actualizados desde API:', eventosCalendario);
+      } else {
+        console.error('❌ [Calendario] Error al cargar citas desde API:', result.message);
+        
+        // Si es error 404, significa que el endpoint no existe
+        if (result.message.includes('404') || result.message.includes('not found')) {
+          await alertService.info(
+            'Endpoint no disponible', 
+            'El endpoint /api/gestion-citas no está implementado en la API. Las citas se crean automáticamente al aprobar solicitudes.'
+          );
+        } else {
+          await alertService.error('Error', result.message || 'No se pudieron cargar las citas desde la API');
+        }
       }
-      // Si no hay eventos válidos, no setear events a [] para no borrar localStorage
     } catch (error) {
-      // No hacer nada, así no se borra el localStorage
+      console.error('💥 [Calendario] Error inesperado al cargar desde API:', error);
+      await alertService.error('Error', 'Error de conexión con la API');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Función para obtener color según el estado
+  const getColorByEstado = (estado) => {
+    const estadoLower = (estado || '').toLowerCase();
+    
+    if (estadoLower.includes('programada')) return '#3B82F6'; // Azul
+    if (estadoLower.includes('pendiente')) return '#F59E0B'; // Amarillo
+    if (estadoLower.includes('reprogramada')) return '#8B5CF6'; // Púrpura
+    if (estadoLower.includes('anulada') || estadoLower.includes('cancelada')) return '#EF4444'; // Rojo
+    if (estadoLower.includes('completada') || estadoLower.includes('finalizada')) return '#10B981'; // Verde
+    
+    return '#6B7280'; // Gris por defecto
+  };
+
+  useEffect(() => {
+    // Cargar citas desde la API al montar el componente
+    cargarCitasDesdeAPI();
 
     // Forzar el re-renderizado del calendario después de que el DOM esté estable
     if (calendarRef.current) {
@@ -186,6 +274,116 @@ const Calendario = () => {
     return { backgroundColor: "#fbbf24" };
   };
 
+  // Función para crear cita usando la API
+  const handleCreateCita = async (citaData) => {
+    setIsLoading(true);
+    try {
+      console.log('📅 [Calendario] Creando nueva cita...', citaData);
+      const result = await citasApiService.createCita(citaData);
+      
+      if (result.success) {
+        await alertService.success(
+          "Cita creada",
+          result.message || "La cita se ha creado exitosamente.",
+          { confirmButtonText: "Entendido" }
+        );
+        
+        cerrarModal();
+        // Recargar citas desde la API
+        await cargarCitasDesdeAPI();
+      } else {
+        await alertService.error(
+          "Error al crear cita",
+          result.message || "No se pudo crear la cita. Intenta de nuevo.",
+          { confirmButtonText: "Entendido" }
+        );
+      }
+    } catch (error) {
+      console.error('💥 [Calendario] Error al crear cita:', error);
+      await alertService.error(
+        "Error de conexión",
+        "No se pudo conectar con el servidor. Intenta de nuevo.",
+        { confirmButtonText: "Entendido" }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Función para reprogramar cita usando la API
+  const handleReprogramarCita = async (citaId, newData) => {
+    setIsLoading(true);
+    try {
+      console.log('📅 [Calendario] Reprogramando cita ID:', citaId, newData);
+      const result = await citasApiService.reprogramarCita(citaId, newData);
+      
+      if (result.success) {
+        await alertService.success(
+          "Cita reprogramada",
+          result.message || "La cita se ha reprogramado exitosamente.",
+          { confirmButtonText: "Entendido" }
+        );
+        
+        setModoReprogramar(false);
+        setCitaAReprogramar(null);
+        setShowModal(false);
+        // Recargar citas desde la API
+        await cargarCitasDesdeAPI();
+      } else {
+        await alertService.error(
+          "Error al reprogramar cita",
+          result.message || "No se pudo reprogramar la cita. Intenta de nuevo.",
+          { confirmButtonText: "Entendido" }
+        );
+      }
+    } catch (error) {
+      console.error('💥 [Calendario] Error al reprogramar cita:', error);
+      await alertService.error(
+        "Error de conexión",
+        "No se pudo conectar con el servidor. Intenta de nuevo.",
+        { confirmButtonText: "Entendido" }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Función para anular cita usando la API
+  const handleAnularCita = async (citaId, observacion) => {
+    setIsLoading(true);
+    try {
+      console.log('📅 [Calendario] Anulando cita ID:', citaId, observacion);
+      const result = await citasApiService.anularCita(citaId, observacion);
+      
+      if (result.success) {
+        await alertService.success(
+          "Cita anulada",
+          result.message || "La cita se ha anulado exitosamente.",
+          { confirmButtonText: "Entendido" }
+        );
+        
+        setShowDetalle(false);
+        // Recargar citas desde la API
+        await cargarCitasDesdeAPI();
+      } else {
+        await alertService.error(
+          "Error al anular cita",
+          result.message || "No se pudo anular la cita. Intenta de nuevo.",
+          { confirmButtonText: "Entendido" }
+        );
+      }
+    } catch (error) {
+      console.error('💥 [Calendario] Error al anular cita:', error);
+      await alertService.error(
+        "Error de conexión",
+        "No se pudo conectar con el servidor. Intenta de nuevo.",
+        { confirmButtonText: "Entendido" }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGuardarCita = (e) => {
     e.preventDefault();
     
@@ -251,48 +449,49 @@ const Calendario = () => {
     }
 
     if (modoReprogramar && citaAReprogramar) {
-      const nuevaFechaYHoraInicio = `${fechaBase}T${formData.horaInicio}`;
-      const nuevaFechaYHoraFin = `${fechaBase}T${formData.horaFin}`;
-      setEvents(prev =>
-        prev.map(ev =>
-          ev.id === citaAReprogramar.id
-            ? {
-                ...ev,
-                start: nuevaFechaYHoraInicio,
-                end: nuevaFechaYHoraFin,
-                extendedProps: {
-                  ...ev.extendedProps,
-                  ...formData,
-                  estado: "Reprogramada"
-                },
-                ...getEventColors("Reprogramada")
-              }
-            : ev
-        )
-      );
-      setModoReprogramar(false);
-      setCitaAReprogramar(null);
-      setShowModal(false);
-      AlertService.success("Cita reprogramada", "");
+      // Reprogramar cita usando la API
+      handleReprogramarCita(citaAReprogramar.id, {
+        fecha: fechaBase,
+        hora_inicio: formData.horaInicio.includes(':') && formData.horaInicio.split(':').length === 2 ? formData.horaInicio + ':00' : formData.horaInicio,
+        hora_fin: formData.horaFin.includes(':') && formData.horaFin.split(':').length === 2 ? formData.horaFin + ':00' : formData.horaFin,
+        tipo: formData.tipoCita,
+        modalidad: "Presencial",
+        observacion: formData.detalle || ''
+      });
       return;
     }
 
-    // Guardar cita
-    const idUnico = `${formData.cedula}_${fechaBase}_${formData.horaInicio}`;
-    const estado = "Programada";
-    const colores = getEventColors(estado);
-    const nuevaCita = {
-      id: idUnico,
-      title: `Asesor: ${formData.asesor}`,
-      start: `${fechaBase}T${formData.horaInicio}`,
-      end: `${fechaBase}T${formData.horaFin}`,
-      extendedProps: { ...formData, estado },
-      ...colores,
+    // Crear cita usando la API
+    const citaData = {
+      fecha: fechaBase,
+      hora_inicio: formData.horaInicio.includes(':') && formData.horaInicio.split(':').length === 2 ? formData.horaInicio + ':00' : formData.horaInicio,
+      hora_fin: formData.horaFin.includes(':') && formData.horaFin.split(':').length === 2 ? formData.horaFin + ':00' : formData.horaFin,
+      tipo: formData.tipoCita,
+      modalidad: "Presencial",
+      id_cliente: parseInt(formData.cedula) || 1, // Convertir a número entero
+      id_empleado: parseInt(formData.asesor) || 1, // Convertir a número entero
+      observacion: formData.detalle || '',
+      cliente: {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        documento: formData.cedula,
+        telefono: formData.telefono
+      }
     };
-    setEvents(prev => [...prev, nuevaCita]);
-    console.log('🔧 [Calendario] Cita creada exitosamente:', nuevaCita);
-    cerrarModal();
-    AlertService.success("Cita agendada", "La cita ha sido agendada correctamente.");
+    
+    console.log('📤 [Calendario] Datos a enviar para crear cita:', citaData);
+    console.log('📊 [Calendario] FormData completo:', formData);
+    console.log('🔍 [Calendario] Validación de tipos:', {
+      fecha: typeof citaData.fecha,
+      hora_inicio: typeof citaData.hora_inicio,
+      hora_fin: typeof citaData.hora_fin,
+      tipo: typeof citaData.tipo,
+      modalidad: typeof citaData.modalidad,
+      id_cliente: typeof citaData.id_cliente,
+      id_empleado: typeof citaData.id_empleado
+    });
+    
+    handleCreateCita(citaData);
   };
 
   // Cambiar la generación de opciones de hora a intervalos de 1 hora
@@ -333,12 +532,14 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
   });
 
   const handleEventClick = (clickInfo) => {
+    console.log('🖱️ [Calendario] Click en evento:', clickInfo.event);
+    console.log('📋 [Calendario] ExtendedProps del evento:', clickInfo.event.extendedProps);
     setCitaSeleccionada(clickInfo.event.extendedProps);
     setCitaAReprogramar(clickInfo.event);
     setShowDetalle(true);
   };
 
-  const handleAnularCita = () => {
+  const handleAnularCitaModal = () => {
     Swal.fire({
       title: "Observación obligatoria",
       input: "textarea",
@@ -353,21 +554,10 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Anular cita",
       cancelButtonText: "Cancelar"
-    }).then((result) => {
-      if (result.isConfirmed && citaAReprogramar) {
+    }).then(async (result) => {
+      if (result.isConfirmed && citaSeleccionada) {
         const observacion = result.value;
-        setEvents((prev) => prev.map(ev =>
-          ev.id === citaAReprogramar.id
-            ? {
-                ...ev,
-                extendedProps: { ...ev.extendedProps, estado: "Cita anulada", observacionAnulacion: observacion },
-                ...getEventColors("Cita anulada")
-              }
-            : ev
-        ));
-        setShowDetalle(false);
-        setCitaAReprogramar(null);
-        AlertService.success("Cita anulada", "La cita ha sido anulada correctamente.");
+        await handleAnularCita(citaSeleccionada.id, observacion);
       }
     });
   };
@@ -623,13 +813,57 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
           <p className="text-blue-100 text-lg mt-1">Gestiona tus citas administrativas de forma eficiente</p>
         </div>
         <button className="bg-white text-[#174B8A] font-semibold px-6 py-2 rounded-full shadow hover:bg-gray-100 transition-all">
-          {events.length} Citas Registradas
+          {isLoading ? 'Cargando...' : `${events.length} Citas de API`}
         </button>
       </div>
 
       {/* Barra de controles */}
       <div className="bg-white rounded-xl shadow flex flex-wrap items-center justify-between px-6 py-4 mb-6 gap-4">
         <div className="flex gap-2 items-center">
+          {/* Indicador de que se está usando API */}
+          <div className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium">
+            🌐 Conectado a API
+          </div>
+          
+          {/* Botón de verificar citas */}
+          <button
+            onClick={async () => {
+              console.log('🔍 [Calendario] Verificando citas existentes...');
+              const result = await citasApiService.checkCitasExists();
+              console.log('🔍 [Calendario] Resultado de verificación:', result);
+              if (result.success) {
+                if (result.hasCitas) {
+                  await alertService.success('Citas encontradas', `Se encontraron ${result.count} citas en la base de datos`);
+                } else {
+                  await alertService.info('Sin citas', 'No hay citas registradas en la base de datos');
+                }
+              } else {
+                // Si es error 404, significa que el endpoint no existe
+                if (result.message && (result.message.includes('404') || result.message.includes('not found'))) {
+                  await alertService.info(
+                    'Endpoint no disponible', 
+                    'El endpoint /api/gestion-citas no está implementado. Las citas se crean automáticamente al aprobar solicitudes de cita.'
+                  );
+                } else {
+                  await alertService.error('Error', result.message || 'No se pudo verificar las citas');
+                }
+              }
+            }}
+            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <FaCalendarDay className="w-4 h-4" />
+            <span>Verificar Citas</span>
+          </button>
+          
+          {/* Botón de refrescar */}
+          <button
+            onClick={cargarCitasDesdeAPI}
+            disabled={isLoading}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <FaSearch className="w-4 h-4" />
+            <span>{isLoading ? 'Cargando...' : 'Refrescar'}</span>
+          </button>
           <button
             className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
             onClick={() => {
@@ -1039,7 +1273,7 @@ const empleadosActivos = EmployeeService.getAll().filter(emp => emp.estado === '
               detalle: citaSeleccionada.detalle,
             });
           }}
-          onAnular={handleAnularCita}
+          onAnular={handleAnularCitaModal}
           puedeReprogramar={citaSeleccionada?.estado !== "Cita anulada"}
           puedeAnular={citaSeleccionada?.estado !== "Cita anulada"}
         />

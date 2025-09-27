@@ -65,14 +65,18 @@ const EditarEmpleadoModal = ({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      handleActualizarEmpleado(formData);
-      updateSuccess('empleado');
+      try {
+        await handleActualizarEmpleado(formData);
       setShowModal(false);
+      } catch (error) {
+        console.error('Error al actualizar empleado:', error);
+        updateError('Error al actualizar empleado');
+      }
     } else {
-      updateError('empleado');
+      updateError('Por favor, corrija los errores en el formulario');
     }
   };
 

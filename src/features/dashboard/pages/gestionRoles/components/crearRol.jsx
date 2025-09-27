@@ -11,17 +11,26 @@ const CrearRolModal = ({
 }) => {
   if (!showModal) return null;
 
-  // Mapear los recursos del sistema centralizado
+  // Mapear los recursos del sistema centralizado (18 módulos reales de la API)
   const recursosSistema = [
     { key: 'usuarios', nombre: 'Usuarios' },
     { key: 'empleados', nombre: 'Empleados' },
     { key: 'clientes', nombre: 'Clientes' },
-    { key: 'ventas', nombre: 'Ventas' },
-    { key: 'pagos', nombre: 'Pagos' },
+    { key: 'empresas', nombre: 'Empresas' },
+    { key: 'servicios', nombre: 'Servicios' },
+    { key: 'solicitudes', nombre: 'Solicitudes' },
     { key: 'citas', nombre: 'Citas' },
+    { key: 'pagos', nombre: 'Pagos' },
     { key: 'roles', nombre: 'Roles' },
-    { key: 'reportes', nombre: 'Reportes' },
-    { key: 'configuracion', nombre: 'Configuración' }
+    { key: 'permisos', nombre: 'Permisos' },
+    { key: 'privilegios', nombre: 'Privilegios' },
+    { key: 'seguimiento', nombre: 'Seguimiento' },
+    { key: 'archivos', nombre: 'Archivos' },
+    { key: 'tipo_archivos', nombre: 'Tipos de Archivo' },
+    { key: 'formularios', nombre: 'Formularios' },
+    { key: 'detalles_orden', nombre: 'Detalles de Orden' },
+    { key: 'detalles_procesos', nombre: 'Detalles de Procesos' },
+    { key: 'servicios_procesos', nombre: 'Servicios y Procesos' }
   ];
 
   return (

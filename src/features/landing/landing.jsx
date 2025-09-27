@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingNavbar from '../landing/components/landingNavbar';
 import Hero from './components/hero';
+import SolicitudCitaLanding from './components/SolicitudCitaLanding';
 import Footer from './components/footer';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import authData from '../auth/services/authData';
@@ -22,6 +23,7 @@ const Landing = () => {
       <LandingNavbar />
       <div>
         <Hero />
+        <SolicitudCitaLanding />
         <Footer />
       </div>
       <ScrollToTopButton />

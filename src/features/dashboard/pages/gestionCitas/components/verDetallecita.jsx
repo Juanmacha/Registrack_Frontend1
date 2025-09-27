@@ -63,6 +63,7 @@ const VerDetalleCita = ({ cita, isOpen, onClose, onReprogramar, onAnular, puedeR
                     <div className="font-medium text-gray-800">{cita.nombre} {cita.apellido}</div>
                     <div className="text-sm text-gray-500">Cédula: {cita.cedula}</div>
                     <div className="text-sm text-gray-500">Teléfono: {cita.telefono}</div>
+                    {cita.email && <div className="text-sm text-gray-500">Email: {cita.email}</div>}
                   </div>
                 </div>
                 <div className="pt-2 border-t border-gray-200">
@@ -117,6 +118,38 @@ const VerDetalleCita = ({ cita, isOpen, onClose, onReprogramar, onAnular, puedeR
               </div>
             </div>
           </div>
+          
+          {/* Información de la Solicitud Original */}
+          {(cita.fechaSolicitada || cita.horaSolicitada || cita.observacionAdmin) && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Información de la Solicitud Original</h3>
+              <div className="bg-blue-50 rounded-lg p-4 space-y-3">
+                {cita.fechaSolicitada && (
+                  <div className="flex items-center space-x-2 text-sm">
+                    <i className="bi bi-calendar-date text-blue-400"></i>
+                    <span className="text-blue-600">Fecha Solicitada:</span>
+                    <span className="font-medium text-blue-800">{cita.fechaSolicitada}</span>
+                  </div>
+                )}
+                {cita.horaSolicitada && (
+                  <div className="flex items-center space-x-2 text-sm">
+                    <i className="bi bi-clock text-blue-400"></i>
+                    <span className="text-blue-600">Hora Solicitada:</span>
+                    <span className="font-medium text-blue-800">{cita.horaSolicitada}</span>
+                  </div>
+                )}
+                {cita.observacionAdmin && (
+                  <div className="flex items-start space-x-2 text-sm">
+                    <i className="bi bi-chat-left-dots text-blue-400 mt-1"></i>
+                    <div>
+                      <span className="text-blue-600">Observación del Administrador:</span>
+                      <div className="text-blue-800 bg-blue-100 rounded p-2 mt-1 whitespace-pre-line">{cita.observacionAdmin}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

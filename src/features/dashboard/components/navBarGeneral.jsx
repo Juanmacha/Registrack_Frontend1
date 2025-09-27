@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CgProfile } from "react-icons/cg";
-import authData from "../../auth/services/authData";
+import { useAuth } from "../../../shared/contexts/authContext";
 import alertService from "../../../utils/alertService.js";
 
 const NavBar = () => {
@@ -9,6 +9,7 @@ const NavBar = () => {
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const toggleMenu = () => setMenuAbierto(!menuAbierto);
 
@@ -23,8 +24,8 @@ const NavBar = () => {
     const result = await alertService.logoutConfirm();
     
     if (result.isConfirmed) {
-      // Limpiar token usando el servicio authData
-      authData.removeToken();
+      // Usar el logout del contexto de autenticación
+      logout();
       
       // Mostrar alerta de éxito
       await alertService.success("Sesión cerrada", "Has cerrado sesión correctamente.");

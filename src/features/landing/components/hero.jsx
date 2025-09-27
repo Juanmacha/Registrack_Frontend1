@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { mockDataService } from "../../../utils/mockDataService.js";
 import authData from '../../auth/services/authData';
 import alertService from '../../../utils/alertService.js';
+import { useAuth } from '../../../shared/contexts/authContext.jsx';
 
 // Formularios y Modal
 import FormularioBaseModal from "../../../shared/layouts/FormularioBase";
@@ -220,6 +221,7 @@ const useModal = () => {
 // Componente principal Hero
 const Hero = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const { servicios, loading } = useServicios();
   const { modalAbierto, servicioSeleccionado, tituloModal, abrirModal, cerrarModal } = useModal();
   const [modalCitaOpen, setModalCitaOpen] = useState(false);
@@ -306,11 +308,12 @@ const Hero = () => {
   };
 
   const handleAgendarCitaClick = async () => {
-    const user = authData.getUser && typeof authData.getUser === 'function'
-      ? authData.getUser()
-      : JSON.parse(localStorage.getItem('user'));
-
-    if (!user) {
+    console.log('🔧 [Hero] handleAgendarCitaClick llamado');
+    console.log('🔧 [Hero] Usuario del contexto:', user);
+    console.log('🔧 [Hero] isAuthenticated:', isAuthenticated());
+    
+    if (!user || !isAuthenticated()) {
+      console.log('🔧 [Hero] Usuario no autenticado, redirigiendo al login');
       localStorage.setItem('postLoginRedirect', window.location.pathname);
       await alertService.warning(
         "¡Atención!",
@@ -321,7 +324,8 @@ const Hero = () => {
       return;
     }
 
-    if (user.rol && user.rol.toLowerCase() === 'admin') {
+    // Verificar si es administrador
+    if (user.role && user.role.toLowerCase() === 'administrador') {
       await alertService.warning(
         "¡Atención!",
         "Esta acción solo está disponible para clientes.",
@@ -330,6 +334,7 @@ const Hero = () => {
       return;
     }
 
+    console.log('🔧 [Hero] Usuario autenticado como cliente, abriendo modal de cita');
     setModalCitaOpen(true);
   };
 

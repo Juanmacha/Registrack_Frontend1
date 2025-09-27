@@ -7,7 +7,7 @@ import EditarRolModal from "./components/editarRol";
 import DetalleRolModal from "./components/verRol";
 import { useNotification } from "../../../../shared/contexts/NotificationContext.jsx";
 import { modelosDisponibles, guardarRoles } from "./services/rolesG";
-import { RoleService } from "../../../../utils/mockDataService";
+import rolesApiService from "./services/rolesApiService";
 
 const GestionRoles = () => {
   const [roles, setRoles] = useState([]);
@@ -23,26 +23,43 @@ const GestionRoles = () => {
   });
 
   useEffect(() => {
-    // Cargar roles desde el sistema centralizado
-    const rolesCentralizados = RoleService.getAll();
-    setRoles(rolesCentralizados);
+    // Cargar roles desde la API real
+    loadRoles();
   }, []);
 
-  const handleSubmit = (e) => {
+  const loadRoles = async () => {
+    try {
+      console.log('🔄 [GestionRoles] Cargando roles desde la API...');
+      const rolesData = await rolesApiService.getAllRoles();
+      setRoles(rolesData);
+      console.log('✅ [GestionRoles] Roles cargados exitosamente:', rolesData);
+    } catch (error) {
+      console.error('❌ [GestionRoles] Error cargando roles:', error);
+      createError('Error al cargar los roles');
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (nuevoRol.nombre.trim() !== "") {
-      // Usar RoleService para crear el rol
-      const rolCreado = RoleService.create(nuevoRol);
-      if (rolCreado) {
-        setRoles(RoleService.getAll());
+      try {
+        console.log('🔄 [GestionRoles] Creando nuevo rol:', nuevoRol);
+        const rolCreado = await rolesApiService.createRole(nuevoRol);
+        console.log('✅ [GestionRoles] Rol creado exitosamente:', rolCreado);
+        
+        // Recargar la lista de roles
+        await loadRoles();
+        
+        // Limpiar formulario y cerrar modal
         setNuevoRol({ nombre: "", estado: "Activo", permisos: {} });
         setShowModal(false);
         createSuccess('rol');
-      } else {
-        createError('rol');
+      } catch (error) {
+        console.error('❌ [GestionRoles] Error creando rol:', error);
+        createError('Error al crear el rol');
       }
     } else {
-      createError('rol');
+      createError('El nombre del rol es obligatorio');
     }
   };
 
@@ -59,8 +76,9 @@ const GestionRoles = () => {
     }));
   };
 
-  const handleToggleEstado = (rol) => {
+  const handleToggleEstado = async (rol) => {
     const nuevoEstado = rol.estado?.toLowerCase() === "activo" ? "inactivo" : "activo";
+    
     Swal.fire({
       title: "¿Estás seguro?",
       text: `¿Deseas cambiar el estado de ${rol.nombre} a ${nuevoEstado}?`,
@@ -70,22 +88,26 @@ const GestionRoles = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, cambiar estado",
       cancelButtonText: "Cancelar"
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        const rolActualizado = RoleService.update(rol.id, { estado: nuevoEstado });
-        if (rolActualizado) {
-          const rolesActualizados = RoleService.getAll();
-          setRoles(rolesActualizados);
+        try {
+          console.log(`🔄 [GestionRoles] Cambiando estado del rol ${rol.id} a: ${nuevoEstado}`);
+          const rolActualizado = await rolesApiService.changeRoleState(rol.id, nuevoEstado === "activo");
+          console.log('✅ [GestionRoles] Estado del rol cambiado exitosamente:', rolActualizado);
+          
+          // Recargar la lista de roles
+          await loadRoles();
           updateSuccess('rol');
-        } else {
-          updateError('rol');
+        } catch (error) {
+          console.error('❌ [GestionRoles] Error cambiando estado del rol:', error);
+          updateError('Error al cambiar el estado del rol');
         }
       }
     });
   };
 
-  const handleActualizarRoles = () => {
-    setRoles(RoleService.getAll());
+  const handleActualizarRoles = async () => {
+    await loadRoles();
   };
 
   return (
@@ -109,6 +131,7 @@ const GestionRoles = () => {
           setRolSeleccionado={setRolSeleccionado}
           setRoles={setRoles}
           onToggleEstado={handleToggleEstado}
+          loadRoles={loadRoles}
         />
 
         <CrearRolModal
